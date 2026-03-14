@@ -1,0 +1,173 @@
+# Debugging TCP Handshake Failures
+
+TCP connectivity issues are extremely common in distributed systems.
+
+Senior SREs must be able to diagnose **why a TCP connection fails**.
+
+---
+
+# 1. TCP Three-Way Handshake
+
+A TCP connection starts with three packets.
+
+Client → SYN
+Server → SYN-ACK
+Client → ACK
+
+After this, the connection becomes **ESTABLISHED**.
+
+---
+
+# 2. Viewing Connections
+
+Show active connections.
+
+```bash
+ss -ant
+```
+
+Example states:
+
+LISTEN
+SYN_SENT
+SYN_RECV
+ESTABLISHED
+TIME_WAIT
+
+---
+
+# 3. Common TCP States
+
+LISTEN
+Server waiting for connections.
+
+SYN_SENT
+Client initiated connection.
+
+SYN_RECV
+Server received SYN.
+
+ESTABLISHED
+Connection active.
+
+TIME_WAIT
+Connection closing.
+
+---
+
+# 4. Check Listening Ports
+
+Verify service is listening.
+
+```bash
+ss -lntp
+```
+
+---
+
+# 5. Test Port Connectivity
+
+Use netcat.
+
+```bash
+nc -vz host 443
+```
+
+Example result:
+
+Connection successful.
+
+---
+
+# 6. Capture Packets
+
+Use tcpdump to inspect handshake.
+
+```bash
+tcpdump -i eth0 port 443
+```
+
+Look for:
+
+SYN
+SYN-ACK
+ACK
+
+Missing SYN-ACK often indicates firewall blocking.
+
+---
+
+# 7. Common TCP Failures
+
+## Service Not Listening
+
+Check:
+
+```bash
+ss -lntp
+```
+
+---
+
+## Firewall Blocking Traffic
+
+Check firewall rules.
+
+```bash
+iptables -L
+```
+
+---
+
+## Network Routing Issues
+
+Check routing.
+
+```bash
+ip route
+```
+
+---
+
+## Load Balancer Misconfiguration
+
+Verify backend health.
+
+---
+
+# 8. SYN Flood
+
+A SYN flood is a denial of service attack.
+
+Symptoms:
+
+Many connections stuck in SYN_RECV.
+
+Check using:
+
+```bash
+ss -s
+```
+
+---
+
+# 9. Advanced Debugging
+
+Capture traffic.
+
+```bash
+tcpdump -nn host example.com
+```
+
+Analyze packets using Wireshark.
+
+---
+
+# Conclusion
+
+Understanding TCP handshake behavior is essential for diagnosing:
+
+* connection failures
+* load balancer issues
+* firewall problems
+* latency problems
