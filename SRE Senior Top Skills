@@ -1,0 +1,506 @@
+sre-senior-labs/
+│
+├── README.md
+│
+├── 1_Linux/
+│   ├── README.md
+│   ├── basic_commands.md
+│   ├── troubleshooting_high_cpu.md
+│   ├── troubleshooting_disk_full.md
+│   ├── troubleshooting_memory_leak.md
+│   ├── troubleshooting_process_hanging.md
+│
+├── 2_Networking/
+│   ├── README.md
+│   ├── tcp_ip.md
+│   ├── dns_routing.md
+│   ├── firewall.md
+│   ├── arp_rarp.md
+│   ├── troubleshooting_network.md
+│
+├── 3_Git/
+│   ├── README.md
+│   ├── git_basics.md
+│   ├── branching_merging.md
+│   ├── remote_repos.md
+│   ├── stashing_diff_tags.md
+│   ├── lab_exercises.md
+│
+├── 4_Bash_Scripting/
+│   ├── README.md
+│   ├── basic_scripting.md
+│   ├── automation_examples.md
+│   ├── cron_jobs.md
+│   ├── troubleshooting_scripts.md
+│
+├── 5_Python/
+│   ├── README.md
+│   ├── python_basics.md
+│   ├── automation_scripts.md
+│   ├── monitoring_alerts.md
+│   ├── aws_sdk_boto3.md
+│
+├── 6_Databases/
+│   ├── README.md
+│   ├── relational_db.md
+│   ├── nosql_db.md
+│   ├── backup_restore.md
+│   ├── performance_monitoring.md
+│
+├── 7_AWS/
+│   ├── README.md
+│   ├── core_services.md
+│   ├── vpc_subnets.md
+│   ├── ec2_s3_lambda.md
+│   ├── iam_security.md
+│   ├── cloudwatch_monitoring.md
+│   ├── terraform_lab.md
+│
+├── 8_CI_CD/
+│   ├── README.md
+│   ├── jenkins_pipeline.md
+│   ├── github_actions.md
+│   ├── automated_deployments.md
+│
+├── 9_Observability_Monitoring/
+│   ├── README.md
+│   ├── prometheus_grafana.md
+│   ├── logging_elk.md
+│   ├── alerting_pagerduty.md
+│   ├── tracing_opentelemetry.md
+│
+├── 10_Incident_Management/
+│   ├── README.md
+│   ├── runbooks.md
+│   ├── postmortem.md
+│   ├── incident_lab.md
+│
+└── 11_Labs_Exercises/
+    ├── README.md
+    ├── lab_linux.md
+    ├── lab_networking.md
+    ├── lab_git.md
+    ├── lab_bash.md
+    ├── lab_python.md
+    ├── lab_databases.md
+    ├── lab_aws.md
+    ├── lab_ci_cd.md
+    ├── lab_monitoring.md
+    ├── lab_incidents.md
+
+
+
+# Senior Site Reliability Engineer (SRE) – Skills & Lab Guide
+
+## Overview
+
+This repository is a comprehensive reference for **Senior SREs**, covering:
+
+- Systems & Linux
+- Networking
+- Git & Version Control
+- Bash & Python scripting
+- Databases (RDBMS & NoSQL)
+- AWS Cloud & IaC
+- CI/CD pipelines
+- Observability & Monitoring
+- Incident Management
+
+It is designed for **hands-on labs** and **automation-focused learning** for top-tier SRE roles.
+
+---
+
+## Core Responsibilities
+
+- Design, operate, and maintain **highly available systems**
+- Automate repetitive tasks and CI/CD pipelines
+- Monitor, alert, and troubleshoot incidents
+- Manage **cloud infrastructure & databases**
+- Implement security best practices
+- Create **runbooks and postmortems**
+- Mentor junior engineers
+
+---
+
+## Skills & Knowledge Areas
+
+**Systems & Linux**
+- CPU, memory, disk, process, network troubleshooting
+- Logs, journalctl, top, ps, lsof, netstat
+- Bash/Shell scripting
+
+**Programming**
+- Bash for operational scripts
+- Python for automation, monitoring, and integrations
+
+**Cloud (AWS)**
+- EC2, S3, Lambda, RDS, DynamoDB, VPC, ELB
+- Terraform / CloudFormation
+- CloudWatch, alarms, monitoring, alerts
+- IAM, Security Groups, Secrets Manager
+
+**Databases**
+- PostgreSQL, MySQL, Redis, DynamoDB, MongoDB
+- Backup, restore, replication, scaling, monitoring
+- SQL queries and optimization
+
+**Networking**
+- TCP/IP, UDP, DNS, routing, firewall, NAT
+- Troubleshooting network issues
+
+**Observability & Monitoring**
+- Prometheus, Grafana, CloudWatch, ELK/EFK, X-Ray
+- Alerts: PagerDuty, OpsGenie, SNS
+
+**CI/CD**
+- Jenkins, GitHub Actions, AWS CodePipeline
+- Automated testing & deployments
+
+**Incident Management**
+- Runbooks, RCA, postmortems
+- Communication & incident resolution
+- Continuous improvement
+
+---
+
+## Labs & Hands-On Practice
+
+- Linux troubleshooting: CPU, memory, disk, hung processes
+- Networking labs: ping, traceroute, netstat, tcpdump
+- Git: branching, merging, conflicts, stashing
+- Bash/Python automation scripts
+- Databases: backup/restore, replication, performance tuning
+- AWS labs: EC2, S3, Lambda, VPC, CloudWatch, IaC
+- Observability: Prometheus/Grafana dashboards, alerting
+- CI/CD: Jenkins pipelines, GitHub Actions workflows
+- Incident simulations: AZ failures, service crashes, network outages
+
+---
+
+## Learning Path (Basic → Advanced)
+
+1. Linux fundamentals  
+2. Bash scripting → Python scripting  
+3. Git & version control  
+4. AWS core services & IaC  
+5. CI/CD pipelines & automation  
+6. Databases: RDBMS & NoSQL  
+7. Networking & troubleshooting  
+8. Observability & monitoring  
+9. Distributed systems & high-availability  
+10. Incident management & postmortems
+
+---
+
+## Recommended Certifications
+
+- AWS Certified SysOps Administrator – Associate  
+- AWS Certified DevOps Engineer – Professional  
+- Kubernetes Administrator (CKA)  
+- Terraform Associate (optional)  
+- Prometheus/Grafana courses
+
+---
+
+## Best Practices
+
+- Automate everything possible  
+- Use Infrastructure as Code  
+- Version control **all scripts & configs**  
+- Implement monitoring & alerts for all services  
+- Test failover & DR strategies  
+- Document processes & postmortems  
+- Mentor and guide team members  
+
+---
+
+This repository is your **complete lab & reference guide for Senior SRE skills**, globally applicable.
+
+
+SRE Senior Ultimate Lab & Reference Guide
+# SRE Senior Ultimate Lab & Reference Guide
+
+---
+
+## 1️⃣ Linux Fundamentals
+
+Linux is the foundation for SRE operations. Understanding filesystems, processes, logs, and permissions is essential.
+
+### File System Basics
+```bash
+ls -lah       # List files with permissions, sizes, and hidden files
+cd /path      # Change directory
+pwd           # Show current directory
+mkdir newdir  # Create a directory
+rm -rf folder # Remove directory recursively
+Process Monitoring
+top           # Real-time system monitor
+htop          # Interactive process viewer
+ps aux        # List all processes
+kill <pid>    # Kill a process
+Disk Usage
+df -h         # Disk usage per filesystem
+du -sh /path  # Directory size summary
+Logs
+journalctl -xe           # Systemd logs
+tail -f /var/log/syslog  # Follow log file in real-time
+Users & Permissions
+whoami                       # Current user
+id                            # User ID and groups
+chmod 755 file                # Change file permissions
+chown user:group file         # Change ownership
+2️⃣ Linux Troubleshooting
+High CPU Usage
+top                        # Monitor CPU usage
+ps aux --sort=-%cpu | head # Top CPU processes
+uptime                      # Load averages
+kill -9 <pid>               # Kill process if needed
+Disk Full
+df -h                       # Check disk usage
+du -sh /*                    # Largest directories
+lsof | grep deleted         # Open deleted files consuming space
+Memory Leaks
+free -m                     # Memory usage
+top                         # Check high memory processes
+ps aux --sort=-%mem | head
+Hanging Processes
+ps -ef | grep process_name
+kill -9 <pid>
+
+🔹 Tip: In containers/K8s, use docker stats or kubectl top pod.
+
+3️⃣ Networking Fundamentals
+TCP/IP
+
+TCP: reliable, connection-oriented, flow control
+
+UDP: connectionless, fast, no guarantee of delivery
+
+Ports: Well-known 0–1023, Registered 1024–49151, Dynamic 49152–65535
+
+Useful Commands
+ping <host>
+traceroute <host>
+netstat -tulnp   # Shows listening ports and connections
+ss -tulwn        # Modern alternative to netstat
+ARP / RARP
+arp -a           # List MAC addresses
+# Understand Proxy ARP, Gratuitous ARP, Reverse ARP
+DNS & Routing
+nslookup <domain>
+dig <domain> +short
+route -n
+ip route show
+Firewalls
+iptables -L   # List firewall rules
+ufw status    # Simple firewall status
+Troubleshooting
+tcpdump -i eth0
+curl -v http://example.com
+nc -zv host port
+4️⃣ Git for SRE
+Initialization & Configuration
+git init
+git config --global user.name "Your Name"
+git config --global user.email "youremail@example.com"
+git config --list
+File Workflow
+git status
+git add <file>
+git add .
+git commit -m "commit message"
+Branching
+git branch              # List branches
+git checkout -b <name>  # Create & switch
+git switch <name>       # Switch branch
+git branch -d <name>    # Delete branch
+Merging & Conflicts
+git checkout main
+git merge feature-branch
+# Resolve conflicts:
+git add <file>
+git commit
+Remote Repositories
+git remote add origin <url>
+git push -u origin main
+git pull origin main
+git clone <url>
+git fetch
+Stashing
+git stash
+git stash list
+git stash apply
+git stash pop
+git stash drop <id>
+git stash clear
+Tags
+git tag -a v1.0 -m "version 1.0"
+git push --tags
+5️⃣ Bash/Shell Scripting
+Basics
+#!/bin/bash
+name="SRE"
+echo $name
+Loops & Conditionals
+for i in {1..5}; do echo "Iteration $i"; done
+
+if [ -f /etc/passwd ]; then
+  echo "File exists"
+fi
+Functions
+myfunc() { echo "Hello $1"; }
+myfunc "World"
+Cron Jobs
+crontab -e
+# Run every 5 minutes:
+*/5 * * * * /usr/local/bin/backup.sh
+6️⃣ Python for SRE
+Basics
+name = "SRE"
+print(name)
+Functions
+def greet(name):
+    return f"Hello {name}"
+
+print(greet("World"))
+Files & Subprocess
+with open("/tmp/test.txt", "w") as f:
+    f.write("Hello SRE")
+
+import subprocess
+output = subprocess.check_output(["ls", "-lah"])
+print(output.decode())
+Automation & Monitoring
+
+Log parsing and monitoring scripts
+
+AWS automation with boto3
+
+JSON/YAML configuration parsing
+
+7️⃣ Databases for SRE
+Relational (MySQL/PostgreSQL)
+
+Backups, restore, replication
+
+Monitor connections & performance
+
+SHOW PROCESSLIST;
+SELECT * FROM pg_stat_activity;
+NoSQL (Redis/MongoDB)
+
+Cache monitoring
+
+Data expiry and replication policies
+
+8️⃣ AWS for SRE
+Core Services
+
+Compute: EC2, Lambda, AutoScaling
+
+Storage: S3, EBS, Glacier
+
+Networking: VPC, Subnets, Security Groups, NAT
+
+Monitoring: CloudWatch, CloudTrail, X-Ray
+
+IAM & Security
+
+Users, Roles, Policies
+
+MFA, access key rotation
+
+Principle of least privilege
+
+Automation
+
+Terraform / CloudFormation
+
+Boto3 scripting
+
+CloudWatch alarms & auto-remediation
+
+9️⃣ CI/CD
+
+Jenkins, GitHub Actions, GitLab CI
+
+Automated testing and deployments
+
+Canary & Blue-Green releases
+
+🔟 Observability & Monitoring
+
+Prometheus + Grafana
+
+ELK Stack: Elasticsearch, Logstash, Kibana
+
+Alerting: PagerDuty, Opsgenie
+
+Distributed Tracing: OpenTelemetry, AWS X-Ray
+
+11️⃣ Incident Management
+
+Runbooks for common failures
+
+Postmortem templates
+
+Incident response automation
+
+Auto-restart & scaling
+
+12️⃣ Labs & Exercises
+
+Linux: CPU, memory, disk, process
+
+Networking: ping, traceroute, tcpdump, firewall
+
+Git: branching, merging, stashing, conflict resolution
+
+Bash/Python: scripts, cron jobs, AWS SDK
+
+Database: backup, restore, performance
+
+AWS: EC2, S3, Lambda, CloudWatch
+
+CI/CD: build pipelines, deploy apps
+
+Monitoring: Prometheus, Grafana
+
+Incident simulation: follow runbook, postmortem
+
+13️⃣ Best Practices
+
+One commit per logical change
+
+Feature branches for work
+
+Document incidents & experiments
+
+Automate repetitive tasks
+
+Monitor and alert continuously
+
+Infrastructure as Code
+
+Cloud-agnostic but AWS-proficient
+
+Security first mindset
+
+14️⃣ Quick References
+# Linux
+top, ps aux, df -h, du -sh, tail -f
+
+# Git
+git init, git status, git add ., git commit -m "msg", git branch, git checkout, git merge, git push
+
+# Bash
+#!/bin/bash, loops, if/else, functions
+
+# Python
+print(), def function(), subprocess.check_output()
+
+# AWS
+aws ec2 describe-instances, aws s3 ls, aws lambda invoke
+
+# Monitoring
+prometheus, grafana, cloudwatch, cloudtrail
