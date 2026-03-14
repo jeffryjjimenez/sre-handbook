@@ -1,0 +1,53 @@
+# Incident Postmortem
+
+## Incident Summary
+
+Date:
+Duration:
+Impact:
+
+Example:
+
+Service unavailable for 15 minutes affecting API traffic.
+
+---
+
+## Timeline
+
+Example:
+
+14:05 - Alert triggered (High CPU)
+14:07 - On-call engineer responded
+14:10 - Identified runaway process
+14:12 - Restarted service
+14:15 - System recovered
+
+---
+
+## Root Cause
+
+Example:
+
+Application memory leak caused excessive CPU usage.
+
+---
+
+## Resolution
+
+Restarted application service.
+
+---
+
+## Prevention Actions
+
+Add monitoring alert for CPU > 80%.
+
+Add autoscaling policy.
+
+Add memory leak detection.
+
+---
+
+## Lessons Learned
+
+Improve alert thresholds and observability.
