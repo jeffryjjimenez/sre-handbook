@@ -1,0 +1,104 @@
+# Incident Response Runbook
+
+This runbook defines the steps to follow when a production incident occurs.
+
+## 1. Identify the Incident
+
+Common indicators:
+
+* High latency
+* High CPU
+* Memory exhaustion
+* Disk full
+* Service unavailable
+* Network failures
+
+Verify system state:
+
+```
+uptime
+top
+free -m
+df -h
+```
+
+---
+
+## 2. Check System Logs
+
+```
+journalctl -xe
+dmesg
+```
+
+Check specific service:
+
+```
+journalctl -u service_name
+```
+
+---
+
+## 3. Identify Root Cause
+
+Check processes:
+
+```
+ps aux --sort=-%cpu
+ps aux --sort=-%mem
+```
+
+Check network usage:
+
+```
+ss -lntp
+netstat -tulpn
+```
+
+Check disk space:
+
+```
+du -sh /*
+```
+
+---
+
+## 4. Apply Immediate Mitigation
+
+Examples:
+
+Restart service:
+
+```
+systemctl restart service_name
+```
+
+Kill runaway process:
+
+```
+kill -9 PID
+```
+
+Clear disk space:
+
+```
+rm large_file
+```
+
+---
+
+## 5. Validate Recovery
+
+Confirm system stability:
+
+```
+uptime
+top
+systemctl status service_name
+```
+
+---
+
+## 6. Document the Incident
+
+Every incident must be documented using a postmortem template.
