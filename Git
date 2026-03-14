@@ -1,834 +1,362 @@
-# Git Handbook for SRE
+1. What is Git
 
-Git is an essential tool for Site Reliability Engineers.
-It is used to manage infrastructure code, automation scripts, configuration files, and production deployments.
+Git is a distributed version control system used to track changes in files and coordinate work between multiple engineers.
 
-Examples where SREs use Git:
+Key features:
 
-* Infrastructure as Code
-* CI/CD pipelines
-* Kubernetes manifests
-* Configuration management
-* Incident rollback
+Tracks file changes
 
----
+Maintains history of code
 
-# 1. Introduction to Git
+Enables collaboration
 
-Git is a **distributed version control system** used to track changes in files.
+Allows branching and merging
 
-Key characteristics:
+Works locally and remotely
 
-* Tracks file changes over time
-* Allows collaboration between engineers
-* Maintains full history of changes
-* Supports branching and merging
-* Works with local and remote repositories
+Important concepts:
 
-Common workflow:
+Repository: project tracked by Git
 
-```
-Working Directory → Staging Area → Repository
-```
+Commit: snapshot of project state
 
-Important concept:
+Branch: parallel line of development
 
-**Commit**
+Remote: hosted repository (GitHub/GitLab)
 
-A commit is a snapshot of your project at a specific moment.
-
----
-
-# 2. Installation and Setup
+2. Installing Git
 
 Check if Git is installed:
 
-```bash
 git --version
-```
 
-Displays the installed Git version.
+Install Git:
 
----
+Ubuntu/Debian:
 
-Install Git on Linux.
-
-Ubuntu / Debian:
-
-```bash
 sudo apt install git
-```
 
-Installs Git using the package manager.
+RHEL/CentOS:
 
-CentOS / RHEL:
-
-```bash
 sudo yum install git -y
-```
 
-Installs Git automatically without confirmation.
+Verify installation:
 
----
+git --version
+3. Initial Git Configuration
 
-Initialize a repository:
+Git requires identity information for commits.
 
-```bash
-git init
-```
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+git config --list
 
-Creates a `.git` directory that stores repository metadata.
+And so on…
 
-View hidden files:
+If you want, I can take your full current Git file and apply this formatting to all 27 sections, so the final version is fully spaced, with clear headings and lab-friendly separation.
 
-```bash
-ls -a
-```
+Do you want me to do the full rewrite now in that style?
 
-Shows hidden files including `.git`.
+yes give me the full document to copy and paste. Remember to innclude all the info I have prooived so that it is pretty complete and easey to ready anf ollow
 
----
+Perfect! Here’s the fully rewritten Git handbook, formatted for easy lab use, readability, and senior SRE focus, including all your original info + enhancements.
 
-Configure Git identity.
+You can copy-paste this directly into your repo as git-handbook.md.
 
-```bash
-git config --global user.name "yourname"
-```
+Git Handbook for Senior SRE
 
-Sets the username used in commits.
+Git is a distributed version control system used to track changes in files, coordinate work between engineers, and manage infrastructure/configuration code in production.
 
-```bash
-git config --global user.email "youremail@example.com"
-```
+This guide covers everything from basic Git to advanced SRE workflows.
 
-Sets the email used in commits.
+1. What is Git
+
+Git is an open-source distributed version control system.
+
+Key features:
+
+Tracks changes in files
+
+Maintains history of code
+
+Enables collaboration
+
+Supports branching and merging
+
+Works locally and remotely
+
+Core concepts:
+
+Repository: project tracked by Git
+
+Commit: snapshot of project state
+
+Branch: parallel line of development
+
+Remote: hosted repository (GitHub, GitLab, Bitbucket)
+
+2. Installing Git
+
+Check if Git is installed:
+
+git --version
+
+Install Git:
+
+Ubuntu/Debian:
+
+sudo apt install git
+
+RHEL/CentOS:
+
+sudo yum install git -y
+
+Verify installation:
+
+git --version
+3. Initial Git Configuration
+
+Set your identity:
+
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
 
 View configuration:
 
-```bash
 git config --list
-```
-
-Displays all Git configuration settings.
-
----
-
-# 3. Git Workflow and File States
+4. Creating a Repository
+mkdir git-lab
+cd git-lab
+git init
+ls -a  # shows .git directory
+5. Git Architecture & Workflow
 
 Git uses three main areas:
 
-1. Working Directory
-2. Staging Area
-3. Repository
+Working Directory: where you edit files
 
-Working Directory
+Staging Area (Index): files prepared for commit
 
-Where files are edited.
+Local Repository: commits stored permanently
 
-Staging Area
+Workflow Example:
 
-Where files are prepared before committing.
+edit file → git add → git commit
+6. File States
+State	Description
+Untracked	New file not yet tracked
+Modified	Tracked file changed
+Staged	Ready to commit
+Committed	Snapshot saved in repository
 
-Repository
+Check status:
 
-Where commits are permanently stored.
-
----
-
-File states:
-
-| State     | Description                 |
-| --------- | --------------------------- |
-| Untracked | New file not tracked by Git |
-| Modified  | File changed but not staged |
-| Staged    | File ready to be committed  |
-| Committed | File saved in repository    |
-
-Example lifecycle:
-
-```
-file → git add → staged → git commit → repository
-```
-
----
-
-# 4. Basic Git Commands
-
-Check repository status.
-
-```bash
 git status
-```
-
-Shows:
-
-* modified files
-* staged files
-* untracked files
-
----
-
-Add file to staging area.
-
-```bash
-git add <file>
-```
-
-Stages a file to be included in the next commit.
-
-Add all files.
-
-```bash
-git add .
-```
-
-Stages all modified and new files.
-
----
-
-Create a commit.
-
-```bash
-git commit -m "commit message"
-```
-
-Creates a snapshot of staged changes.
-
-Best practice:
-
-One commit per logical change.
-
----
-
-View commit history.
-
-```bash
+7. First Commit (Lab)
+touch app.txt
+echo "Hello SRE" >> app.txt
+git add app.txt
+git commit -m "initial commit"
 git log
-```
-
-Shows detailed commit history.
-
-Short version:
-
-```bash
-git log --oneline
-```
-
-Displays condensed commit history.
-
----
-
-View commit details.
-
-```bash
-git show <commit_id>
-```
-
-Shows changes introduced by a specific commit.
-
----
-
-# 5. File Tracking and Staging
-
-Discard local changes.
-
-```bash
-git restore <file>
-```
-
-Restores file to the last committed state.
-
----
-
-Unstage a file.
-
-```bash
-git restore --staged <file>
-```
-
-Moves a file from staged → modified state.
-
----
-
-Remove file from Git but keep locally.
-
-```bash
-git rm --cached <file>
-```
-
-Stops tracking a file but keeps it on disk.
-
----
-
-Rename or move files.
-
-```bash
-git mv old_name new_name
-```
-
-Renames or moves a file while keeping history.
-
----
-
-Delete file.
-
-```bash
-git rm <file>
-```
-
-Removes the file from Git and the filesystem.
-
----
-
-List tracked files.
-
-```bash
-git ls-files
-```
-
-Shows files currently tracked by Git.
-
----
-
-# 6. Commit Operations
-
-Commit all tracked files.
-
-```bash
-git commit -a -m "message"
-```
-
-Commits modified tracked files without staging.
-
----
-
-Amend last commit.
-
-```bash
-git commit --amend
-```
-
-Modifies the previous commit.
-
-Use cases:
-
-* fix commit message
-* add forgotten files
-
----
-
-Revert a commit.
-
-```bash
-git revert <commit_id>
-```
-
-Creates a new commit that reverses changes.
-
-Safe for shared repositories.
-
----
-
-Reset to previous commit (dangerous).
-
-```bash
-git reset --hard <commit_id>
-```
-
-Moves HEAD and deletes changes after the commit.
-
-Use with caution.
-
----
-
-# 7. Branching
-
-Show branches.
-
-```bash
-git branch
-```
-
-Lists local branches.
-
-Show remote branches.
-
-```bash
-git branch -a
-```
-
-Lists local and remote branches.
-
----
-
-Create branch.
-
-```bash
-git branch <branch_name>
-```
-
-Creates a new branch.
-
----
-
-Create and switch branch.
-
-```bash
-git checkout -b <branch_name>
-```
-
-Creates and switches to the branch.
-
-Alternative modern command:
-
-```bash
-git switch -c <branch_name>
-```
-
----
-
-Switch branches.
-
-```bash
-git switch <branch_name>
-```
-
-Changes current working branch.
-
----
-
-Delete branch.
-
-Safe delete:
-
-```bash
-git branch -d <branch_name>
-```
-
-Deletes branch if already merged.
-
-Force delete:
-
-```bash
-git branch -D <branch_name>
-```
-
-Deletes branch even if not merged.
-
----
-
-Rename branch.
-
-```bash
-git branch -m new_name
-```
-
-Renames current branch.
-
----
-
-Important concept:
-
-HEAD always points to the current branch or commit.
-
----
-
-# 8. Merging and Conflict Resolution
-
-Merge branches.
-
-```bash
-git merge <branch>
-```
-
-Combines another branch into the current branch.
-
-Example:
-
-```
-git switch main
-git merge feature-branch
-```
-
----
-
-Merge types:
+8. Adding Files
+git add file.txt       # stage a specific file
+git add .              # stage all files
+git status             # check staged files
+9. Viewing Commit History
+git log                  # full commit history
+git log --oneline        # short version
+git log --graph --oneline --all   # graph view
+git show <commit_id>     # detailed info
+10. Git Diff
+git diff                 # changes in working directory
+git diff --staged        # staged changes
+git diff <commit1> <commit2>   # compare commits
+11. Undoing Changes
+git restore file.txt                  # discard changes in working directory
+git restore --staged file.txt        # unstage changes
+git revert <commit_id>               # safely undo a commit
+git reset --hard <commit_id>         # reset to previous commit (dangerous)
+12. Branching
+git branch                      # list branches
+git branch feature-login        # create branch
+git checkout -b feature-login   # create & switch
+git switch -c feature-login     # alternative to checkout
+git checkout main               # switch branch
+git branch -d feature-login     # delete branch safely
+git branch -D feature-login     # force delete
+git branch -m new-name          # rename branch
+13. Merging Branches
+git checkout main
+git merge feature-login
+
+Merge Types:
 
 Fast-forward merge
 
-History moves forward without creating merge commit.
+Merge commit (no fast-forward)
 
-Merge commit
+14. Merge Conflicts
 
-Creates a new commit combining both branches.
+When conflicts occur:
 
----
+<<<<<<< HEAD
+code from current branch
+=======
+code from feature branch
+>>>>>>> feature-login
 
-Conflict resolution.
+Resolve Steps:
 
-Steps:
+Edit conflicted files
 
-1. Open conflicted file
-2. Resolve conflict manually
-3. Stage file
+Stage changes: git add file
 
-```
-git add file
-```
+Commit: git commit
 
-4. Complete merge
+15. Remote Repositories
 
-```
-git commit
-```
+Common platforms: GitHub, GitLab, Bitbucket
 
----
+git clone <repo_url>            # copy remote repo
+git remote add origin <url>     # add remote
+git remote -v                   # view remotes
+git remote remove origin        # remove remote
+16. Push & Pull
+git push origin main            # push branch
+git push -u origin main         # set upstream
+git push --all origin           # push all branches
+git pull origin main            # pull changes
+git fetch                       # download changes without merging
+git push --tags                 # push tags
+17. Stashing
 
-# 9. Remote Repositories
+Temporarily save uncommitted changes:
 
-Remote repositories allow collaboration.
-
-Common platforms:
-
-* GitHub
-* GitLab
-* Bitbucket
-
----
-
-Add remote repository.
-
-```bash
-git remote add origin <url>
-```
-
-Links local repo to remote repository.
-
----
-
-View remotes.
-
-```bash
-git remote -v
-```
-
-Shows configured remote URLs.
-
----
-
-Remove remote.
-
-```bash
-git remote remove origin
-```
-
-Deletes remote configuration.
-
----
-
-Push commits.
-
-```bash
-git push origin <branch>
-```
-
-Uploads commits to remote repository.
-
----
-
-Push all branches.
-
-```bash
-git push --all origin
-```
-
-Pushes every local branch.
-
----
-
-Pull changes.
-
-```bash
-git pull origin <branch>
-```
-
-Fetches and merges remote changes.
-
----
-
-Fetch changes only.
-
-```bash
-git fetch
-```
-
-Downloads changes but does not merge them.
-
----
-
-Clone repository.
-
-```bash
-git clone <url>
-```
-
-Creates a local copy of a remote repository.
-
----
-
-# 10. Stashing
-
-Stashing temporarily saves uncommitted changes.
-
-Create stash.
-
-```bash
-git stash
-```
-
-Saves working directory changes.
-
----
-
-List stashes.
-
-```bash
-git stash list
-```
-
-Displays all stored stashes.
-
----
-
-Apply stash.
-
-```bash
-git stash apply
-```
-
-Applies the latest stash.
-
----
-
-Apply and remove stash.
-
-```bash
-git stash pop
-```
-
-Applies stash and deletes it.
-
----
-
-Delete stash.
-
-```bash
-git stash drop <stash_id>
-```
-
-Removes a specific stash.
-
----
-
-Clear all stashes.
-
-```bash
-git stash clear
-```
-
-Deletes all stashes.
-
----
-
-# 11. Git Diff and Log
-
-Show changes in working directory.
-
-```bash
-git diff
-```
-
-Shows modifications not staged.
-
----
-
-Show staged changes.
-
-```bash
-git diff --staged
-```
-
-Displays differences between staged files and last commit.
-
----
-
-Compare commits.
-
-```bash
-git diff commit1 commit2
-```
-
-Shows differences between commits.
-
----
-
-# 12. Tags
-
-Tags mark important versions.
-
-Create annotated tag.
-
-```bash
-git tag -a v1.0 -m "version 1.0"
-```
-
-Creates a release tag.
-
----
-
-List tags.
-
-```bash
+git stash                  # save
+git stash list             # list stashes
+git stash show <stash_id>  # view stash changes
+git stash apply <stash_id> # apply stash
+git stash pop              # apply and remove stash
+git stash drop <stash_id>  # delete stash
+git stash clear            # delete all stashes
+18. Tags
+git tag -a v1.0 -m "first release"
 git tag
-```
-
-Displays all tags.
-
----
-
-Show tag details.
-
-```bash
 git show v1.0
-```
-
-Displays commit associated with tag.
-
----
-
-Push tags.
-
-```bash
 git push --tags
-```
+19. Advanced Git (Senior SRE Focus)
+Git Rebase
+git rebase main
 
-Uploads tags to remote repository.
+Linear history, cleaner logs
 
----
+Git Cherry-Pick
+git cherry-pick <commit_id>
 
-# 13. .gitignore
+Apply a specific commit, useful for hotfixes
 
-Used to exclude files from version control.
+Git Reflog (Recovery)
+git reflog
+git reset --hard HEAD@{2}   # recover lost commit
+Git Bisect (Debugging)
+git bisect start
+git bisect bad
+git bisect good <commit>
 
-Example:
+Binary search to find faulty commit
 
-```
-*.log
-node_modules/
-.env
-```
+20. Git Hooks
 
-Add file to ignore list.
+.git/hooks/ directory
 
-```
-echo ".env" >> .gitignore
-```
+Examples: pre-commit, pre-push, post-merge
 
-Commit ignore rules.
+Use cases: tests, security checks, formatting enforcement
 
-```
-git add .gitignore
-git commit -m "add gitignore"
-```
+21. Git Submodules
+git submodule add <repo_url>
+git submodule init
+git submodule update
 
----
+Manage nested repositories
 
-# 14. Undoing Changes
+22. Git Troubleshooting (SRE Section)
 
-Discard working directory changes.
+Recover deleted commit:
 
-```
-git restore file
-```
+git reflog
+git reset --hard <commit>
 
-Unstage file.
+Undo bad merge:
 
-```
-git restore --staged file
-```
+git reset --hard HEAD~1
 
-Revert commit.
+Restore deleted file:
 
-```
-git revert commit_id
-```
+git checkout <commit> -- file.txt
 
-Hard reset (dangerous).
+Find bug introduction commit:
 
-```
-git reset --hard commit_id
-```
+git bisect
+23. Git Best Practices for SRE
 
----
+Branches: feature/*, bugfix/*, hotfix/*
 
-# 15. Authentication (GitHub)
+Commit messages:
 
-GitHub no longer supports password authentication.
+fix: memory leak
+feat: retry logic
+docs: update README
 
-Use **Personal Access Token (PAT)**.
+Avoid force pushes on shared branches
 
-Steps:
+Use pull requests for review
 
-1. Settings
-2. Developer Settings
-3. Personal Access Tokens
-4. Generate token
+Small, logical commits
 
-Use the token as password.
+24. Production Workflow Example
+git checkout -b fix-memory-leak
+git add .
+git commit -m "fix: memory leak in worker"
+git push origin fix-memory-leak
 
----
+Workflow:
 
-# 16. Git Best Practices (SRE)
+Create branch → Implement → Commit → Push → PR → Review → Merge → Deploy
 
-Best practices used by SRE teams:
-
-* Commit small logical changes
-* Use descriptive commit messages
-* Use feature branches
-* Protect main branch
-* Review code through pull requests
-* Tag production releases
-* Keep repository clean
-
----
-
-# 17. Quick Reference
-
-```
+25. Quick Command Reference
 git init
+git clone
 git status
 git add .
-git commit -m "msg"
+git commit -m
 git log
+git diff
 git branch
-git switch branch
-git merge branch
-git push origin branch
-git pull origin branch
+git checkout
+git merge
+git push
+git pull
 git stash
 git stash pop
-git tag -a v1.0 -m "msg"
-git push --tags
-```
+git tag
+git reflog
+git bisect
+git rebase
+26. Practice Labs
 
----
+Lab 1: Create repository, commit 3 files, view history
+Lab 2: Create feature branch, make changes, merge to main
+Lab 3: Create merge conflict, resolve manually
+Lab 4: Use git stash during branch switch
+Lab 5: Recover lost commit using reflog
 
-# Conclusion
+27. Senior SRE Skills with Git
 
-Git is a critical tool for SRE workflows including:
-
-* Infrastructure management
-* CI/CD automation
-* Incident rollback
-* Configuration versioning
-* Production debugging
+✔ Branching strategies
+✔ Rebasing vs merging
+✔ Resolving conflicts
+✔ Recovering lost commits
+✔ Debugging history with bisect
+✔ Managing remote repositories
+✔ CI/CD Git workflows
