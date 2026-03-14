@@ -1,0 +1,822 @@
+# Networking Handbook for Senior SRE
+
+Networking knowledge is essential for Site Reliability Engineers because many production outages involve networking failures.
+
+Examples:
+
+* DNS resolution failures
+* Load balancer issues
+* Packet loss
+* Routing misconfigurations
+* Firewall blocking traffic
+* Latency spikes
+
+This document covers networking from **fundamentals to advanced production troubleshooting**.
+
+---
+
+# 1. OSI Model
+
+The OSI model describes how data travels across a network using seven layers.
+
+1. Physical
+2. Data Link
+3. Network
+4. Transport
+5. Session
+6. Presentation
+7. Application
+
+### Physical Layer
+
+Responsible for transmitting raw bits across physical media.
+
+Examples:
+
+* Ethernet cables
+* Fiber optics
+* Wireless signals
+
+---
+
+### Data Link Layer
+
+Responsible for communication between devices on the same network.
+
+Key functions:
+
+* MAC addressing
+* Frame transmission
+* Error detection
+
+Devices operating at this layer:
+
+* Switches
+* Network interface cards
+
+---
+
+### Network Layer
+
+Responsible for routing packets between networks.
+
+Key functions:
+
+* Logical addressing (IP)
+* Packet forwarding
+* Routing
+
+Protocols:
+
+* IP
+* ICMP
+* ARP
+
+---
+
+### Transport Layer
+
+Responsible for reliable or fast data transmission.
+
+Protocols:
+
+TCP and UDP.
+
+---
+
+### Session Layer
+
+Responsible for establishing and managing communication sessions.
+
+---
+
+### Presentation Layer
+
+Responsible for data formatting, encryption and compression.
+
+Examples:
+
+* TLS
+* SSL
+
+---
+
+### Application Layer
+
+Provides services directly to applications.
+
+Examples:
+
+* HTTP
+* FTP
+* SMTP
+* DNS
+
+---
+
+# 2. TCP/IP Model
+
+The TCP/IP model contains four layers.
+
+1. Network Access
+2. Internet
+3. Transport
+4. Application
+
+This model is the practical implementation used on the internet.
+
+---
+
+# 3. TCP vs UDP
+
+## TCP
+
+Transmission Control Protocol.
+
+Characteristics:
+
+* Connection oriented
+* Reliable delivery
+* Packet ordering
+* Flow control
+* Congestion control
+* Retransmission of lost packets
+
+Used for:
+
+* HTTP
+* SSH
+* Database connections
+
+---
+
+## UDP
+
+User Datagram Protocol.
+
+Characteristics:
+
+* Connectionless
+* Unreliable
+* Stateless
+* Lightweight
+* Very fast
+
+Used for:
+
+* DNS
+* Streaming
+* Real-time applications
+* VoIP
+
+---
+
+# 4. TCP Three-Way Handshake
+
+TCP connections begin with a handshake.
+
+Steps:
+
+1. SYN
+2. SYN-ACK
+3. ACK
+
+Purpose:
+
+* Establish reliable connection
+* Synchronize sequence numbers
+
+---
+
+# 5. TCP Windowing
+
+TCP windowing controls the amount of data that can be sent before receiving an acknowledgment.
+
+Purpose:
+
+* Avoid network congestion
+* Optimize throughput
+
+---
+
+# 6. Common Network Protocols
+
+## HTTP
+
+Hypertext Transfer Protocol.
+
+* Stateless
+* Request-response protocol
+
+Port:
+
+TCP **80**
+
+---
+
+## HTTPS
+
+Secure version of HTTP using TLS encryption.
+
+Port:
+
+TCP **443**
+
+---
+
+## FTP
+
+File Transfer Protocol.
+
+Two modes exist.
+
+Active mode:
+
+Client connects to port **21** and server initiates data connection from port **20**.
+
+Passive mode:
+
+Client initiates both control and data connections.
+
+---
+
+## TFTP
+
+Trivial File Transfer Protocol.
+
+Characteristics:
+
+* Simpler than FTP
+* No authentication
+* Uses client-server model
+
+Port:
+
+UDP **69**
+
+---
+
+## SMTP
+
+Simple Mail Transfer Protocol.
+
+Used for sending email.
+
+Port:
+
+TCP **25**
+
+---
+
+## IMAP
+
+Internet Message Access Protocol.
+
+Emails remain on the mail server.
+
+Port:
+
+TCP **143**
+
+---
+
+## POP3
+
+Post Office Protocol.
+
+Downloads email locally.
+
+Port:
+
+TCP **110**
+
+---
+
+## LDAP
+
+Lightweight Directory Access Protocol.
+
+Port:
+
+TCP **389**
+
+---
+
+## RDP
+
+Remote Desktop Protocol.
+
+Port:
+
+TCP **3389**
+
+---
+
+## NTP
+
+Network Time Protocol.
+
+Used to synchronize time between systems.
+
+Port:
+
+UDP **123**
+
+---
+
+# 7. DHCP Process
+
+Dynamic Host Configuration Protocol assigns IP addresses dynamically.
+
+Steps:
+
+1. Discover
+2. Offer
+3. Request
+4. Acknowledge
+
+Ports:
+
+Server → 67
+Client → 68
+
+---
+
+# 8. Port Ranges
+
+Ports are categorized as follows.
+
+Well Known Ports:
+
+0 – 1023
+
+Registered Ports:
+
+1024 – 49151
+
+Dynamic / Private Ports:
+
+49152 – 65535
+
+---
+
+# 9. ARP
+
+Address Resolution Protocol maps an IP address to a MAC address.
+
+Example:
+
+IP → MAC mapping.
+
+---
+
+## Proxy ARP
+
+A device responds to ARP requests on behalf of another device.
+
+---
+
+## Reverse ARP
+
+Used to discover the IP address based on a MAC address.
+
+---
+
+## Gratuitous ARP
+
+A device sends an ARP request for its own IP address.
+
+Used for:
+
+* detecting duplicate IP addresses
+* updating ARP tables
+
+---
+
+# 10. MTU
+
+Maximum Transmission Unit.
+
+Defines the maximum packet size that can be transmitted.
+
+Typical Ethernet MTU:
+
+1500 bytes
+
+---
+
+# 11. IP Header
+
+Important fields:
+
+* Source IP
+* Destination IP
+* Protocol
+* TTL (Time To Live)
+* Priority
+
+---
+
+# 12. TCP Header
+
+Contains:
+
+* Source port
+* Destination port
+* Sequence number
+* Acknowledgment number
+* Window size
+* Checksum
+
+---
+
+# 13. UDP Header
+
+Contains:
+
+* Source port
+* Destination port
+* Length
+* Checksum
+
+---
+
+# 14. Routing Fundamentals
+
+Routers determine the best path to send packets across networks.
+
+Routing can be:
+
+Static routing
+Dynamic routing
+
+Dynamic routing protocols automatically update routing tables.
+
+---
+
+# 15. Administrative Distance
+
+Administrative Distance determines which routing protocol is preferred.
+
+Lower value = more trusted.
+
+Connected → 0
+Static → 1
+EIGRP → 90
+OSPF → 110
+External BGP → 20
+Internal BGP → 200
+
+---
+
+# 16. Distance Vector vs Link State
+
+## Distance Vector
+
+Characteristics:
+
+* Routers know topology through neighbors
+* Entire routing table is shared
+* Slower convergence
+
+Example:
+
+RIP
+
+---
+
+## Link State
+
+Characteristics:
+
+* Routers know full network topology
+* Only updates are shared
+* Faster convergence
+
+Example:
+
+OSPF
+
+---
+
+# 17. OSPF
+
+Open Shortest Path First.
+
+Characteristics:
+
+* Interior Gateway Protocol
+* Link State routing protocol
+* Classless
+* Scalable
+
+Algorithm used:
+
+Shortest Path First (SPF)
+
+---
+
+OSPF maintains three tables.
+
+Neighbor table
+Link State Database
+Routing table
+
+---
+
+OSPF packet types:
+
+* Hello
+* Database Description
+* Link State Request
+* Link State Update
+* Link State Acknowledgment
+
+---
+
+# 18. BGP
+
+Border Gateway Protocol.
+
+Used for routing between Autonomous Systems on the internet.
+
+Characteristics:
+
+* Path vector protocol
+* Inter-domain routing
+* Runs over TCP
+
+Port:
+
+TCP **179**
+
+---
+
+## BGP Types
+
+IBGP → Internal BGP
+EBGP → External BGP
+
+---
+
+## BGP Neighbor States
+
+Idle
+Connect
+Active
+OpenSent
+OpenConfirm
+Established
+
+---
+
+## BGP Messages
+
+Open
+Keepalive
+Update
+Notification
+Refresh
+
+---
+
+## BGP Route Selection
+
+Route selection follows this order.
+
+1. Highest Local Preference
+2. Shortest AS Path
+3. Lowest Origin
+4. Lowest MED
+5. Prefer EBGP over IBGP
+
+---
+
+# 19. Linux Networking Commands for SRE
+
+Check network interfaces.
+
+```bash
+ip a
+```
+
+Shows all network interfaces and IP addresses.
+
+---
+
+Check routing table.
+
+```bash
+ip route
+```
+
+Displays routing paths used by the system.
+
+---
+
+Check open ports.
+
+```bash
+ss -lntp
+```
+
+Shows listening TCP ports and associated processes.
+
+---
+
+View active connections.
+
+```bash
+netstat -tulpn
+```
+
+Displays open connections and listening ports.
+
+---
+
+Test connectivity.
+
+```bash
+ping host
+```
+
+Tests reachability and latency.
+
+---
+
+Trace packet path.
+
+```bash
+traceroute host
+```
+
+Shows network path between source and destination.
+
+---
+
+DNS lookup.
+
+```bash
+dig google.com
+```
+
+Queries DNS servers and shows resolution details.
+
+---
+
+# 20. Network Troubleshooting for SRE
+
+Most production incidents involve networking.
+
+Common problems include:
+
+* DNS failures
+* packet loss
+* firewall blocking traffic
+* routing issues
+* load balancer misconfiguration
+
+---
+
+## DNS Resolution Failure
+
+Check resolver configuration.
+
+```bash
+cat /etc/resolv.conf
+```
+
+Test DNS server.
+
+```bash
+dig domain.com
+```
+
+---
+
+## Port Not Reachable
+
+Check listening services.
+
+```bash
+ss -lntp
+```
+
+Check firewall rules.
+
+```bash
+iptables -L
+```
+
+---
+
+## Packet Loss
+
+Test connectivity.
+
+```bash
+ping host
+```
+
+Trace packet path.
+
+```bash
+traceroute host
+```
+
+Use advanced diagnostics.
+
+```bash
+mtr host
+```
+
+---
+
+## High Latency
+
+Possible causes:
+
+* network congestion
+* routing issues
+* DNS delays
+* overloaded servers
+
+Tools used:
+
+ping
+traceroute
+mtr
+
+---
+
+# 21. Load Balancing (SRE Context)
+
+Load balancers distribute traffic across multiple servers.
+
+Benefits:
+
+* high availability
+* scalability
+* fault tolerance
+
+Types:
+
+Layer 4 (TCP)
+
+Layer 7 (HTTP)
+
+Examples:
+
+Nginx
+HAProxy
+Cloud Load Balancers
+
+---
+
+# 22. DNS Basics
+
+DNS translates domain names into IP addresses.
+
+Example:
+
+example.com → 93.184.216.34
+
+Important DNS records:
+
+A record
+AAAA record
+CNAME
+MX
+TXT
+
+---
+
+# 23. Observability for Networking
+
+SRE teams monitor networking using:
+
+* latency metrics
+* packet loss
+* request rates
+* connection errors
+
+Tools commonly used:
+
+Prometheus
+Grafana
+tcpdump
+Wireshark
+
+---
+
+# Conclusion
+
+Networking knowledge is critical for Senior Site Reliability Engineers.
+
+Key skills include:
+
+* understanding TCP/IP
+* routing protocols
+* DNS infrastructure
+* packet analysis
+* troubleshooting production incidents
