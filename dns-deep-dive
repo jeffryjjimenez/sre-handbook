@@ -1,0 +1,242 @@
+# DNS Deep Dive for SRE
+
+DNS failures are one of the **most common causes of production outages**.
+
+Senior SREs must understand how DNS works internally in order to debug issues quickly.
+
+---
+
+# 1. What DNS Does
+
+DNS converts **domain names into IP addresses**.
+
+Example:
+
+example.com → 93.184.216.34
+
+Without DNS, users would need to remember IP addresses instead of domain names.
+
+---
+
+# 2. DNS Resolution Process
+
+When a client resolves a domain:
+
+1. Application requests DNS resolution
+2. OS checks local cache
+3. OS queries configured resolver
+4. Resolver queries root servers
+5. Root refers to TLD servers
+6. TLD refers to authoritative server
+7. Authoritative server returns record
+
+Example flow:
+
+Client
+↓
+Recursive Resolver
+↓
+Root Server
+↓
+TLD Server (.com)
+↓
+Authoritative Server
+
+---
+
+# 3. DNS Record Types
+
+## A Record
+
+Maps a domain to an IPv4 address.
+
+example.com → 192.168.1.1
+
+---
+
+## AAAA Record
+
+Maps a domain to an IPv6 address.
+
+---
+
+## CNAME
+
+Alias record.
+
+Example:
+
+api.example.com → backend.example.com
+
+---
+
+## MX Record
+
+Defines mail servers.
+
+Used by email systems.
+
+---
+
+## TXT Record
+
+Stores arbitrary text data.
+
+Often used for:
+
+* SPF
+* DKIM
+* domain verification
+
+---
+
+## NS Record
+
+Specifies authoritative DNS servers.
+
+---
+
+# 4. DNS TTL
+
+TTL = Time To Live
+
+Controls how long DNS responses are cached.
+
+Example:
+
+TTL = 300 seconds
+
+Effects:
+
+Lower TTL
+
+* faster DNS changes
+* more DNS queries
+
+Higher TTL
+
+* better performance
+* slower DNS propagation
+
+---
+
+# 5. DNS Caching Layers
+
+DNS caching occurs at multiple layers.
+
+1. Browser cache
+2. OS cache
+3. Recursive resolver
+4. ISP resolver
+
+This is why DNS changes may take time to propagate.
+
+---
+
+# 6. DNS Troubleshooting Commands
+
+Check resolver configuration.
+
+```bash
+cat /etc/resolv.conf
+```
+
+Query DNS record.
+
+```bash
+dig example.com
+```
+
+Query specific record type.
+
+```bash
+dig example.com A
+dig example.com MX
+```
+
+Query specific DNS server.
+
+```bash
+dig @8.8.8.8 example.com
+```
+
+---
+
+# 7. DNS Trace
+
+Shows the full resolution path.
+
+```bash
+dig +trace example.com
+```
+
+Useful for diagnosing:
+
+* delegation problems
+* broken authoritative servers
+
+---
+
+# 8. Reverse DNS
+
+Reverse DNS maps IP → hostname.
+
+Command:
+
+```bash
+dig -x 8.8.8.8
+```
+
+---
+
+# 9. DNS Failure Scenarios
+
+Common production incidents include:
+
+DNS misconfiguration
+expired domain
+incorrect records
+propagation delays
+resolver outages
+
+---
+
+## Example Troubleshooting
+
+Step 1 — Check resolution.
+
+```bash
+dig service.company.com
+```
+
+Step 2 — Check specific DNS server.
+
+```bash
+dig @8.8.8.8 service.company.com
+```
+
+Step 3 — Trace resolution.
+
+```bash
+dig +trace service.company.com
+```
+
+Step 4 — Verify authoritative server.
+
+---
+
+# 10. SRE Best Practices
+
+Use multiple authoritative DNS servers.
+
+Use low TTL during migrations.
+
+Monitor DNS availability.
+
+Implement DNS health checks.
+
+---
+
+# Conclusion
+
+DNS knowledge is critical for SREs because **many outages originate from DNS misconfigurations or resolver failures**.
