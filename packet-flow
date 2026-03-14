@@ -1,0 +1,176 @@
+# Packet Flow in Linux (Critical for SRE)
+
+Understanding packet flow is one of the most valuable skills for debugging networking issues in production systems.
+
+---
+
+# 1. Packet Flow Overview
+
+When a packet enters a Linux system:
+
+1. NIC receives packet
+2. Kernel processes packet
+3. Firewall rules applied
+4. Routing decision made
+5. Packet delivered to process
+
+---
+
+# 2. Network Interfaces
+
+View interfaces.
+
+```bash
+ip a
+```
+
+Example interfaces:
+
+eth0
+lo
+ens5
+
+---
+
+# 3. Routing Decision
+
+Kernel determines the route.
+
+```bash
+ip route
+```
+
+Example output:
+
+default via 192.168.1.1 dev eth0
+
+---
+
+# 4. Firewall Processing
+
+Packets pass through firewall rules.
+
+Common firewall tools:
+
+iptables
+nftables
+
+Check rules.
+
+```bash
+iptables -L -n
+```
+
+---
+
+# 5. Packet Capture
+
+Capture packets.
+
+```bash
+tcpdump -i eth0
+```
+
+Filter traffic.
+
+```bash
+tcpdump port 443
+```
+
+---
+
+# 6. Packet Path Example
+
+Client request → Server.
+
+1. Client sends TCP SYN
+2. Packet arrives at NIC
+3. Kernel checks firewall
+4. Routing decision
+5. Delivered to application
+
+Application responds with SYN-ACK.
+
+---
+
+# 7. Debugging Packet Flow
+
+When debugging connectivity issues:
+
+Step 1 — Verify interface.
+
+```bash
+ip a
+```
+
+Step 2 — Verify route.
+
+```bash
+ip route
+```
+
+Step 3 — Check firewall.
+
+```bash
+iptables -L
+```
+
+Step 4 — Capture traffic.
+
+```bash
+tcpdump port 80
+```
+
+---
+
+# 8. Advanced Tools
+
+ss → socket statistics
+
+```bash
+ss -s
+```
+
+mtr → network path diagnostics
+
+```bash
+mtr google.com
+```
+
+ethtool → NIC statistics
+
+```bash
+ethtool eth0
+```
+
+---
+
+# 9. Observability
+
+SRE teams monitor networking metrics.
+
+Examples:
+
+latency
+packet loss
+connection failures
+
+Monitoring tools include:
+
+Prometheus
+Grafana
+tcpdump
+Wireshark
+
+---
+
+# Conclusion
+
+Packet flow knowledge allows SREs to diagnose issues involving:
+
+firewalls
+routing
+load balancers
+network drops
+
+It is one of the most valuable troubleshooting skills for production systems.
