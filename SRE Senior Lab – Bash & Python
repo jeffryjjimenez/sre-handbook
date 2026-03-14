@@ -1,0 +1,194 @@
+sre-lab/
+├── README.md
+├── bash/
+│   ├── basics/
+│   │   ├── variables.sh
+│   │   ├── conditionals.sh
+│   │   └── loops.sh
+│   ├── intermediate/
+│   │   ├── service_monitor.sh
+│   │   ├── disk_alert.sh
+│   │   └── backup_etc.sh
+│   └── advanced/
+│       ├── auto_remediation.sh
+│       └── log_aggregator.sh
+└── python/
+    ├── basics/
+    │   ├── variables_loops.py
+    │   └── run_system_command.py
+    ├── intermediate/
+    │   ├── log_parser.py
+    │   └── slack_alert.py
+    └── advanced/
+        ├── service_monitor.py
+        ├── disk_monitor.py
+        └── full_automation_pipeline.py
+
+
+# SRE Senior Lab – Bash & Python
+
+## Objective
+This lab is designed to help you practice **Senior SRE skills** using Bash and Python.  
+Focus areas: system automation, monitoring, log parsing, alerting, and service remediation.
+
+## Instructions
+1. Navigate into each folder.
+2. Review script content and comments.
+3. Make scripts executable (Bash: `chmod +x script.sh`).
+4. Run scripts in a safe lab environment (VM or container).
+5. Modify parameters (thresholds, services, paths) to test behaviors.
+
+---
+
+## Lab Sections
+
+### Bash
+1. **Basics** → variables, conditionals, loops
+2. **Intermediate** → monitoring, disk alerts, backups
+3. **Advanced** → auto-remediation, log aggregation
+
+### Python
+1. **Basics** → variables, loops, system commands
+2. **Intermediate** → log parsing, alerting, API integration
+3. **Advanced** → full automation, monitoring multiple services, metrics
+
+
+
+Bash Scripts
+bash/basics/variables.sh
+#!/bin/bash
+# Variables example
+NAME="Jeffry"
+AGE=38
+echo "Hello $NAME, age $AGE"
+bash/basics/conditionals.sh
+#!/bin/bash
+# Conditional example: CPU alert
+CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+if (( ${CPU%.*} > 80 )); then
+    echo "High CPU detected: $CPU%"
+fi
+bash/basics/loops.sh
+#!/bin/bash
+# Loops example
+for i in {1..5}; do
+  echo "Iteration $i"
+done
+
+while [ $i -le 3 ]; do
+  echo "While loop iteration $i"
+  ((i++))
+done
+bash/intermediate/service_monitor.sh
+#!/bin/bash
+# Monitor multiple services and restart if down
+SERVICES=("nginx" "postgresql")
+for svc in "${SERVICES[@]}"; do
+  if ! systemctl is-active --quiet $svc; then
+    echo "$(date): $svc is down. Restarting..."
+    systemctl restart $svc
+  fi
+done
+bash/intermediate/disk_alert.sh
+#!/bin/bash
+# Disk usage alert
+THRESHOLD=80
+USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
+if [ "$USAGE" -gt "$THRESHOLD" ]; then
+    echo "Disk usage is above $THRESHOLD% ($USAGE%)"
+fi
+bash/intermediate/backup_etc.sh
+#!/bin/bash
+# Backup /etc folder
+BACKUP_DIR="/backups"
+mkdir -p $BACKUP_DIR
+tar czf $BACKUP_DIR/etc_backup_$(date +%F).tar.gz /etc
+bash/advanced/auto_remediation.sh
+#!/bin/bash
+# Auto-remediation example: restart apache2 if CPU > 90%
+CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+if (( ${CPU%.*} > 90 )); then
+    echo "$(date): High CPU detected. Restarting apache2." >> /var/log/remediation.log
+    systemctl restart apache2
+fi
+bash/advanced/log_aggregator.sh
+#!/bin/bash
+# Parse nginx logs and show top 10 IPs
+LOG_FILE="/var/log/nginx/access.log"
+awk '{print $1}' $LOG_FILE | sort | uniq -c | sort -nr | head -10
+Python Scripts
+python/basics/variables_loops.py
+# Variables, loops, conditionals
+cpu_usage = 85
+if cpu_usage > 80:
+    print(f"High CPU: {cpu_usage}%")
+
+for i in range(5):
+    print(f"Iteration {i}")
+python/basics/run_system_command.py
+import subprocess
+
+# Run system command
+result = subprocess.run(["uptime"], capture_output=True, text=True)
+print(result.stdout)
+python/intermediate/log_parser.py
+# Parse log files and count errors
+with open("/var/log/nginx/error.log") as f:
+    errors = [line for line in f if "ERROR" in line]
+
+if errors:
+    print(f"Found {len(errors)} errors")
+python/intermediate/slack_alert.py
+import requests
+
+# Send alert to Slack
+message = {"text": "Service down!"}
+requests.post("https://hooks.slack.com/services/XXX/XXX/XXX", json=message)
+python/advanced/service_monitor.py
+import subprocess
+
+services = ["nginx", "postgresql"]
+for svc in services:
+    result = subprocess.run(["systemctl", "is-active", svc], capture_output=True, text=True)
+    if result.stdout.strip() != "active":
+        subprocess.run(["systemctl", "restart", svc])
+        print(f"{svc} restarted")
+python/advanced/disk_monitor.py
+import shutil
+
+total, used, free = shutil.disk_usage("/")
+usage_percent = used / total * 100
+if usage_percent > 80:
+    print(f"Disk usage high: {usage_percent:.2f}%")
+python/advanced/full_automation_pipeline.py
+import subprocess
+import shutil
+
+# Services to monitor
+services = ["nginx", "postgresql"]
+
+# Check and restart services
+for svc in services:
+    result = subprocess.run(["systemctl", "is-active", svc], capture_output=True, text=True)
+    if result.stdout.strip() != "active":
+        subprocess.run(["systemctl", "restart", svc])
+        print(f"{svc} restarted")
+
+# Check disk usage
+total, used, free = shutil.disk_usage("/")
+usage_percent = used / total * 100
+if usage_percent > 80:
+    print(f"Disk usage high: {usage_percent:.2f}%")
+
+# Log aggregation example
+LOG_FILE = "/var/log/nginx/access.log"
+with open(LOG_FILE) as f:
+    top_ips = {}
+    for line in f:
+        ip = line.split()[0]
+        top_ips[ip] = top_ips.get(ip, 0) + 1
+
+sorted_ips = sorted(top_ips.items(), key=lambda x: x[1], reverse=True)[:10]
+print("Top 10 IPs by requests:")
+for ip, count in sorted_ips:
+    print(f"{ip}: {count}")
