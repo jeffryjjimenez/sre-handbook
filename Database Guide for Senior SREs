@@ -1,0 +1,285 @@
+1️⃣ Introduction to Databases for SREs
+
+Databases store and organize application data.
+
+A Senior SRE must understand databases to:
+
+Monitor performance and reliability.
+
+Troubleshoot incidents (slow queries, deadlocks, crashes).
+
+Automate backup, restore, and migration processes.
+
+Support high availability, failover, and scaling.
+
+Common DB types:
+
+SQL (Relational): PostgreSQL, MySQL/MariaDB.
+
+NoSQL (Non-relational): Redis, MongoDB, Cassandra.
+
+2️⃣ Installation & Setup
+PostgreSQL (Recommended for SQL)
+# Ubuntu / Debian
+sudo apt update
+sudo apt install postgresql postgresql-contrib -y
+
+# CentOS / RHEL
+sudo yum install postgresql-server postgresql-contrib -y
+
+# Initialize DB
+sudo postgresql-setup initdb   # RHEL/CentOS
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Switch to postgres user
+sudo -i -u postgres
+psql
+MySQL / MariaDB
+# Ubuntu / Debian
+sudo apt install mysql-server -y
+
+# CentOS / RHEL
+sudo yum install mariadb-server -y
+
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
+sudo mysql_secure_installation
+Redis (NoSQL / Cache)
+# Ubuntu / Debian
+sudo apt install redis-server -y
+
+# CentOS / RHEL
+sudo yum install redis -y
+
+sudo systemctl start redis
+sudo systemctl enable redis
+redis-cli ping   # Should respond PONG
+3️⃣ SQL Basics
+Connect to DB
+# PostgreSQL
+psql -U postgres -d mydb
+
+# MySQL
+mysql -u root -p
+CRUD Operations
+-- Create table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50),
+  email VARCHAR(50) UNIQUE
+);
+
+-- Insert data
+INSERT INTO users (name, email) VALUES ('Jeffry', 'jeffry@example.com');
+
+-- Read data
+SELECT * FROM users;
+
+-- Update data
+UPDATE users SET email='new@example.com' WHERE name='Jeffry';
+
+-- Delete data
+DELETE FROM users WHERE id=1;
+Indexes & Performance
+-- Create index to speed up queries
+CREATE INDEX idx_users_email ON users(email);
+
+-- View query execution plan
+EXPLAIN SELECT * FROM users WHERE email='new@example.com';
+4️⃣ Database Administration & Users
+PostgreSQL
+-- Create user
+CREATE USER devops WITH PASSWORD 'securepass';
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE mydb TO devops;
+
+-- Show users
+\du
+MySQL
+-- Create user
+CREATE USER 'devops'@'localhost' IDENTIFIED BY 'securepass';
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON mydb.* TO 'devops'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Show users
+SELECT User, Host FROM mysql.user;
+5️⃣ Backup & Restore
+PostgreSQL
+# Backup DB
+pg_dump mydb > mydb_backup.sql
+
+# Restore DB
+psql mydb < mydb_backup.sql
+
+# Backup entire cluster
+pg_dumpall > full_backup.sql
+MySQL / MariaDB
+# Backup DB
+mysqldump -u root -p mydb > mydb_backup.sql
+
+# Restore DB
+mysql -u root -p mydb < mydb_backup.sql
+6️⃣ Monitoring & Metrics (SRE Focus)
+
+Key metrics to monitor:
+
+Query throughput (QPS)
+
+Latency of queries
+
+Active connections
+
+Lock and deadlock count
+
+Disk usage
+
+Memory / Cache usage
+
+Replication lag
+
+PostgreSQL
+-- Active connections
+SELECT * FROM pg_stat_activity;
+
+-- Long running queries
+SELECT pid, age(clock_timestamp(), query_start), query
+FROM pg_stat_activity
+WHERE state != 'idle';
+
+-- Locks
+SELECT * FROM pg_locks;
+MySQL
+-- Show processlist
+SHOW PROCESSLIST;
+
+-- Check slow queries
+SHOW VARIABLES LIKE 'slow_query_log';
+SHOW VARIABLES LIKE 'slow_query_log_file';
+Redis
+# Check server info
+redis-cli INFO
+
+# Monitor commands in real-time
+redis-cli MONITOR
+7️⃣ High Availability & Replication
+PostgreSQL Streaming Replication
+
+One master, one or more replicas
+
+-- On master: edit postgresql.conf
+wal_level = replica
+max_wal_senders = 3
+
+Set up replica: use pg_basebackup to copy data, configure recovery.conf.
+
+Monitor replication lag:
+
+SELECT * FROM pg_stat_replication;
+MySQL Replication
+
+Configure master-slave
+
+-- On master
+SHOW MASTER STATUS;
+
+-- On slave
+CHANGE MASTER TO MASTER_HOST='master_host', MASTER_USER='replicator', MASTER_PASSWORD='pass', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=123;
+START SLAVE;
+SHOW SLAVE STATUS\G
+Redis Sentinel / Cluster
+
+Sentinel monitors Redis masters and promotes replicas if master fails.
+
+# Example
+redis-sentinel sentinel.conf
+8️⃣ Troubleshooting & Recovery
+
+Common SRE issues:
+
+Slow queries → use EXPLAIN, optimize indexes
+
+Deadlocks → detect, kill blocking queries
+
+Disk full → remove old logs/backups
+
+Replication lag → check network, redo logs
+
+PostgreSQL
+-- Kill long query
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid=1234;
+
+-- Check disk usage
+\! du -sh /var/lib/postgresql/data/*
+MySQL
+-- Kill process
+KILL 1234;
+
+-- Show database size
+SELECT table_schema "DB Name", SUM(data_length + index_length)/1024/1024 "Size (MB)" FROM information_schema.tables GROUP BY table_schema;
+9️⃣ Advanced SRE Topics
+Performance Tuning
+
+Adjust memory (shared_buffers, work_mem, innodb_buffer_pool_size)
+
+Adjust connection limits
+
+Monitor slow queries and optimize
+
+High Availability & Failover
+
+PostgreSQL: streaming replication + Patroni
+
+MySQL: Group Replication / Galera Cluster
+
+Redis: Sentinel + Cluster
+
+Automation & CI/CD
+
+Scripts for backup, restore, and maintenance
+
+DB migrations via Flyway or Liquibase
+
+Health checks for monitoring pipelines
+
+Advanced Commands
+# PostgreSQL: View recent queries
+SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
+
+# Git-like recovery
+psql -f db_recovery.sql
+
+# Check replication lag
+SELECT now() - replay_timestamp AS lag FROM pg_stat_replication;
+10️⃣ Recommended Labs (Practice)
+
+Install PostgreSQL + MySQL + Redis on a VM or Docker.
+
+Create users, databases, and tables.
+
+Insert and query data.
+
+Configure backups, restore from backup.
+
+Simulate high load and monitor queries.
+
+Configure replication and failover.
+
+Trigger incidents: long queries, deadlocks, disk full, and recover.
+
+11️⃣ Summary / Best Practices for SREs
+
+Know both SQL and NoSQL basics.
+
+Automate backup, restore, replication, and monitoring.
+
+Monitor key metrics: latency, throughput, replication lag, disk/memory usage.
+
+Understand high availability, failover, and scaling strategies.
+
+Document and script operations for reproducibility.
+
+Always test recovery procedures in a lab.
