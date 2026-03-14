@@ -1,0 +1,998 @@
+# Linux SRE Handbook
+
+This handbook contains essential Linux commands, system administration basics, and real-world troubleshooting runbooks used by Site Reliability Engineers.
+
+---
+
+# 1. System Information
+
+Check kernel version:
+
+```
+uname -r
+uname -a
+```
+
+Check OS information:
+
+```
+cat /etc/os-release
+```
+
+Check system uptime:
+
+```
+cat /proc/uptime
+```
+
+Check kernel messages:
+
+```
+dmesg
+```
+
+Check login history:
+
+```
+last
+```
+
+Check shell in use:
+
+```
+echo $SHELL
+```
+
+Change default shell:
+
+```
+chsh
+```
+
+You must open a new terminal session for the change to take effect.
+
+---
+
+# 2. Environment Variables
+
+Create environment variable:
+
+```
+export x=y
+```
+
+Check PATH:
+
+```
+echo $PATH
+```
+
+Find where a command is located:
+
+```
+which command_name
+```
+
+Add custom path:
+
+```
+export PATH=$PATH:/x/y/z
+```
+
+---
+
+# 3. Basic File and Directory Operations
+
+Create directories including parents:
+
+```
+mkdir -p x/y
+mkdir -p /opt/dev/test
+```
+
+Create files:
+
+```
+touch devopsfile{1..10}.txt
+```
+
+Create file with input:
+
+```
+cat > Africa/Egypt
+Cairo
+CTRL+D
+```
+
+Copy directories:
+
+```
+cp -r source destination
+```
+
+Remove directories:
+
+```
+rm -r directory
+```
+
+Check file type:
+
+```
+file filename
+```
+
+File types in Linux:
+
+* block file
+* character file
+* regular file
+* directory
+* link
+* pipe
+
+List by timestamp:
+
+```
+ls -lt
+ls -lrt
+```
+
+---
+
+# 4. File Size and Compression
+
+Check disk usage:
+
+```
+du -sh file
+```
+
+Check file size:
+
+```
+ls -lh file
+```
+
+---
+
+## TAR
+
+Create archive:
+
+```
+tar -cf archive.tar file1 file2 file3
+```
+
+List archive content:
+
+```
+tar -tf archive.tar
+```
+
+Extract archive:
+
+```
+tar -xf archive.tar
+```
+
+Extract into specific directory:
+
+```
+tar -xzvf archive.tar -C /opt/
+```
+
+Create compressed tar:
+
+```
+tar -zcf archive.tar file1 file2
+```
+
+Options explanation:
+
+* z → compression
+* c → create
+* f → file
+* v → verbose
+
+---
+
+## ZIP
+
+Compress directory:
+
+```
+zip -r archive_name directory
+```
+
+Uncompress:
+
+```
+unzip archive.zip
+```
+
+---
+
+## GZIP
+
+Compress:
+
+```
+gzip file.img
+```
+
+Check size:
+
+```
+du -sh file.img.gz
+```
+
+Uncompress:
+
+```
+gunzip file.img.gz
+```
+
+---
+
+## XZ Compression
+
+Compress:
+
+```
+xz file.img
+```
+
+Uncompress:
+
+```
+unxz file.img.xz
+```
+
+---
+
+# 5. Text Processing
+
+Search text:
+
+```
+grep word file.txt
+```
+
+Exclude matches:
+
+```
+grep -v word file.txt
+```
+
+Exact word search:
+
+```
+grep -w word file.txt
+```
+
+Recursive search:
+
+```
+grep -iR *
+```
+
+Exclude keyword:
+
+```
+grep -vi firewall file
+```
+
+---
+
+## CUT
+
+Display first column:
+
+```
+cut -d: -f1 /etc/passwd
+```
+
+---
+
+## AWK
+
+```
+awk -F':' '{print $1}' /etc/passwd
+```
+
+---
+
+## SED
+
+Replace text:
+
+```
+sed -i 's/corona/covid19/g' file
+```
+
+---
+
+# 6. VI Editor
+
+Copy line:
+
+```
+yy
+```
+
+Paste below cursor:
+
+```
+p
+```
+
+Paste above cursor:
+
+```
+P
+```
+
+Delete line:
+
+```
+dd
+```
+
+Undo change:
+
+```
+u
+```
+
+Search text:
+
+```
+/text
+```
+
+Next result:
+
+```
+n
+```
+
+Previous result:
+
+```
+N
+```
+
+Show line numbers:
+
+```
+:set nu
+```
+
+Go to top:
+
+```
+gg
+```
+
+Go to bottom:
+
+```
+G
+```
+
+Move cursor forward word by word:
+
+```
+w
+```
+
+Move backward:
+
+```
+b
+```
+
+Save and exit:
+
+```
+:wq!
+```
+
+---
+
+# 7. Hardware Information
+
+CPU details:
+
+```
+lscpu
+```
+
+Memory usage:
+
+```
+free -m
+lsmem --summary
+```
+
+Block devices:
+
+```
+lsblk
+```
+
+---
+
+# 8. Process Management
+
+List processes:
+
+```
+ps aux
+ps -ef
+```
+
+Kill process pipeline example:
+
+```
+ps -ef | grep https | grep -v grep | awk '{print $2}' | xargs kill -9
+```
+
+---
+
+# 9. User Management
+
+Check user:
+
+```
+id user
+```
+
+Create user:
+
+```
+useradd user
+```
+
+Delete user:
+
+```
+userdel -r user
+```
+
+Set password:
+
+```
+passwd user
+```
+
+Switch user:
+
+```
+su - user
+```
+
+Important system files:
+
+```
+/etc/passwd
+/etc/shadow
+/etc/group
+```
+
+Add user to group:
+
+```
+usermod -aG devops ansible
+```
+
+View groups:
+
+```
+id ansible
+```
+
+---
+
+# 10. Networking
+
+DNS configuration:
+
+```
+cat /etc/resolv.conf
+```
+
+Static host entries:
+
+```
+cat /etc/hosts
+```
+
+Name resolution order:
+
+```
+/etc/nsswitch.conf
+```
+
+Network interfaces:
+
+```
+ip link
+ip addr
+```
+
+Check listening ports:
+
+```
+netstat -an | grep 80 | grep LISTEN
+```
+
+---
+
+# 11. SSH
+
+Connect to host:
+
+```
+ssh -l user hostname
+```
+
+Generate key:
+
+```
+ssh-keygen -t rsa
+```
+
+Copy key to remote host:
+
+```
+ssh-copy-id user@remote_host
+```
+
+Copy directories:
+
+```
+scp -pr source destination
+```
+
+---
+
+# 12. Firewall (iptables)
+
+Install:
+
+```
+apt install iptables
+```
+
+List rules:
+
+```
+iptables -L
+```
+
+Insert rule:
+
+```
+iptables -I OUTPUT -p tcp -d 172.16.238.100 --dport 443 -j ACCEPT
+```
+
+Delete rule:
+
+```
+iptables -D OUTPUT 5
+```
+
+Rules are processed top to bottom.
+
+---
+
+# 13. Services (systemd)
+
+Start service:
+
+```
+systemctl start docker
+```
+
+Stop service:
+
+```
+systemctl stop docker
+```
+
+Restart service:
+
+```
+systemctl restart docker
+```
+
+Enable service:
+
+```
+systemctl enable docker
+```
+
+Reload service:
+
+```
+systemctl reload docker
+```
+
+Reload daemon configuration:
+
+```
+systemctl daemon-reload
+```
+
+View logs:
+
+```
+journalctl
+```
+
+---
+
+# 14. Cron Jobs
+
+Edit cron jobs:
+
+```
+crontab -e
+```
+
+Check execution logs:
+
+```
+/var/log/syslog
+```
+
+---
+
+# 15. Package Management
+
+## Debian / Ubuntu
+
+Install package:
+
+```
+apt install package
+```
+
+Update repositories:
+
+```
+apt update
+```
+
+Upgrade packages:
+
+```
+apt upgrade
+```
+
+Search package:
+
+```
+apt search package
+```
+
+Remove package:
+
+```
+apt remove package
+```
+
+Remove including configs:
+
+```
+apt purge package
+```
+
+DPKG commands:
+
+```
+dpkg -i package.deb
+dpkg -r package
+dpkg -l
+dpkg -s package
+```
+
+Repository configuration:
+
+```
+/etc/apt/sources.list
+```
+
+---
+
+## RedHat / CentOS
+
+Install RPM:
+
+```
+rpm -ivh package.rpm
+```
+
+Update RPM:
+
+```
+rpm -Uvh package.rpm
+```
+
+Remove RPM:
+
+```
+rpm -e package
+```
+
+List packages:
+
+```
+rpm -qa
+```
+
+YUM examples:
+
+```
+yum install httpd
+yum remove package
+yum search package
+yum update
+yum repolist
+```
+
+Repository directory:
+
+```
+/etc/yum.repos.d
+```
+
+---
+
+# 16. Disk and Partition Management
+
+List partition table:
+
+```
+fdisk -l
+```
+
+Check specific disk:
+
+```
+fdisk -l /dev/sda
+```
+
+GPT disk management:
+
+```
+gdisk /dev/sdb
+```
+
+Partition types:
+
+* Primary
+* Extended
+* Logical
+
+---
+
+# 17. File Systems
+
+Create filesystem:
+
+```
+mkfs.ext4 /dev/sdb1
+```
+
+Mount filesystem:
+
+```
+mkdir /mnt/ext4
+mount /dev/sdb1 /mnt/ext4
+```
+
+Verify mount:
+
+```
+mount | grep /dev/sdb1
+```
+
+Persistent mounts:
+
+```
+/etc/fstab
+```
+
+---
+
+# 18. LVM
+
+Install tool:
+
+```
+apt-get install lvm2
+```
+
+List logical volumes:
+
+```
+lvs
+```
+
+---
+
+# 19. Utilities
+
+Download file:
+
+```
+curl http_link -o filename
+```
+
+Run local Ansible test:
+
+```
+ansible localhost -m ping
+```
+
+---
+
+# 20. Troubleshooting Runbooks (SRE)
+
+## High CPU Usage
+
+Symptoms:
+
+* system slow
+* high load average
+
+Check load:
+
+```
+uptime
+```
+
+Identify processes consuming CPU:
+
+```
+top
+```
+
+or
+
+```
+ps aux --sort=-%cpu | head
+```
+
+Kill problematic process:
+
+```
+kill -15 PID
+kill -9 PID
+```
+
+---
+
+## Disk Full
+
+Check disk usage:
+
+```
+df -h
+```
+
+Find large directories:
+
+```
+du -sh /*
+```
+
+Check deleted files still open:
+
+```
+lsof | grep deleted
+```
+
+Restart service using deleted file.
+
+---
+
+## Memory Leak
+
+Check memory usage:
+
+```
+free -m
+```
+
+Find top memory consumers:
+
+```
+ps aux --sort=-%mem | head
+```
+
+Check OOM killer logs:
+
+```
+dmesg | grep -i kill
+```
+
+---
+
+## Process Hanging
+
+Check processes:
+
+```
+ps -ef
+```
+
+Check process status:
+
+```
+ps aux
+```
+
+Kill stuck process:
+
+```
+kill PID
+kill -9 PID
+```
+
+---
+
+## Service Not Starting
+
+Check service status:
+
+```
+systemctl status service_name
+```
+
+View logs:
+
+```
+journalctl -u service_name
+```
+
+Restart service:
+
+```
+systemctl restart service_name
+```
+
+---
+
+## Port Already in Use
+
+Find process using port:
+
+```
+lsof -i :80
+```
+
+or
+
+```
+netstat -tulpn
+```
+
+Kill process if needed.
+
+---
+
+# 21. Incident Response (SRE Practice)
+
+Example incident structure:
+
+Incident: High CPU on production node
+
+Root Cause: runaway process
+
+Resolution: restart service
+
+Prevention: add monitoring alerts
