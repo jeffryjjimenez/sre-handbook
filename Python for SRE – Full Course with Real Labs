@@ -1,0 +1,371 @@
+Module 1: Introduction to Python for SRE
+
+Overview:
+Python is widely used in SRE for scripting, automation, monitoring, and building operational tools. The goal of this module is to give a clear understanding of Python basics and how they apply to SRE tasks.
+
+Key Concepts:
+
+Interpreted, high-level language
+
+Dynamic typing
+
+Extensive standard library
+
+Great for scripting, APIs, and system automation
+
+Example: Print uptime of a server
+
+import datetime
+
+now = datetime.datetime.now()
+print(f"Script run at: {now}")
+Module 2: Python Basics
+
+Topics:
+
+Variables and data types (str, int, float, bool, list, dict, tuple)
+
+Basic operators (+, -, *, /, %, //, **)
+
+Conditionals (if, elif, else)
+
+Loops (for, while)
+
+Example: Check CPU usage threshold
+
+cpu_usage = 75
+
+if cpu_usage > 80:
+    print("Warning: High CPU usage!")
+else:
+    print("CPU usage is normal.")
+
+Lab 1: Disk Space Checker
+
+import shutil
+
+total, used, free = shutil.disk_usage("/")
+percent_free = free / total * 100
+
+if percent_free < 20:
+    print("ALERT: Less than 20% disk space remaining!")
+else:
+    print(f"Disk space is sufficient: {percent_free:.2f}% free")
+
+Explanation:
+This script uses shutil.disk_usage to check total, used, and free disk space. It calculates percentage free and alerts if below 20%.
+
+Module 3: Functions and Modules
+
+Overview:
+Functions organize code into reusable blocks. Modules allow separating code into multiple files for maintainability.
+
+Example: Create a reusable alert function
+
+def check_cpu(cpu_percent, threshold=80):
+    if cpu_percent > threshold:
+        print(f"ALERT: CPU usage {cpu_percent}% exceeds threshold {threshold}%")
+    else:
+        print(f"CPU usage is normal: {cpu_percent}%")
+
+check_cpu(85)
+check_cpu(55)
+
+Lab 2: Log File Parser
+
+def parse_log(file_path, keyword="ERROR"):
+    with open(file_path, "r") as f:
+        lines = [line.strip() for line in f if keyword in line]
+    return lines
+
+errors = parse_log("/var/log/myapp/app.log")
+print(f"Found {len(errors)} errors in the log")
+
+Explanation:
+This function reads a log file line by line, filters lines containing ERROR, and counts them. Useful for monitoring and alerting.
+
+Module 4: Working with Files and Directories
+
+Topics:
+
+Reading/writing files (open, read, write)
+
+File paths (os.path, pathlib)
+
+Directory operations (os.listdir, os.mkdir, os.remove)
+
+Example: Monitor folder size
+
+import os
+
+def folder_size(path="."):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+    return total_size
+
+print(f"Total folder size: {folder_size('/var/log') / (1024*1024):.2f} MB")
+
+Lab 3: Cleanup Old Log Files
+
+import os
+import time
+
+def cleanup_logs(path="/var/log/myapp", days=7):
+    now = time.time()
+    for filename in os.listdir(path):
+        filepath = os.path.join(path, filename)
+        if os.path.isfile(filepath):
+            file_age = (now - os.path.getmtime(filepath)) / (24*3600)
+            if file_age > days:
+                os.remove(filepath)
+                print(f"Deleted: {filepath}")
+
+cleanup_logs()
+
+Explanation:
+This lab teaches automation of log cleanup by deleting files older than 7 days.
+
+Module 5: Exception Handling and Robust Scripts
+
+Overview:
+Handling exceptions ensures scripts run reliably in production.
+
+Example: Monitor a web service
+
+import requests
+
+def check_service(url):
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            print(f"Service at {url} is up!")
+        else:
+            print(f"Service at {url} returned status {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Service at {url} is down! Error: {e}")
+
+check_service("http://localhost:8080/health")
+
+Lab 4: Safe Metrics Collector
+
+import psutil
+
+def get_cpu_percent():
+    try:
+        return psutil.cpu_percent(interval=1)
+    except Exception as e:
+        print(f"Failed to get CPU percent: {e}")
+        return None
+
+cpu = get_cpu_percent()
+if cpu is not None and cpu > 90:
+    print("ALERT: CPU usage above 90%")
+
+Explanation:
+Using try/except prevents crashes when metrics are temporarily unavailable.
+
+Module 6: Working with APIs
+
+Overview:
+SREs often interact with cloud or internal APIs for monitoring, automation, and configuration.
+
+Example: Fetch service status
+
+import requests
+
+def get_service_status(api_url):
+    try:
+        resp = requests.get(api_url)
+        data = resp.json()
+        print(f"Service status: {data['status']}")
+    except Exception as e:
+        print(f"Failed to reach {api_url}: {e}")
+
+get_service_status("http://backend-service:5000/api/health")
+
+Lab 5: Multi-Service Health Check
+
+services = ["http://service1:5000/health", "http://service2:5000/health"]
+
+for svc in services:
+    get_service_status(svc)
+
+Explanation:
+Automates monitoring of multiple services for uptime and reliability.
+
+Module 7: Scheduling and Automation
+
+Overview:
+Automate recurring SRE tasks using Python scripts and schedulers.
+
+Example: Run periodic health checks
+
+import time
+
+def monitor_loop(interval=60):
+    while True:
+        get_service_status("http://backend-service:5000/health")
+        time.sleep(interval)
+
+# Run every 60 seconds
+# monitor_loop(60)
+
+Lab 6: Alerting on Resource Threshold
+
+import psutil
+import smtplib
+from email.message import EmailMessage
+
+def send_email_alert(subject, body):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg['Subject'] = subject
+    msg['From'] = 'sre@example.com'
+    msg['To'] = 'admin@example.com'
+    
+    with smtplib.SMTP('localhost') as server:
+        server.send_message(msg)
+
+if psutil.cpu_percent() > 90:
+    send_email_alert("CPU Alert", "CPU usage exceeded 90%")
+
+Explanation:
+Python can send automated alerts via email when thresholds are exceeded.
+
+Module 8: Logging, Metrics, and Observability
+
+Overview:
+Reliable SRE scripts generate logs and metrics for observability.
+
+Python Logging Example:
+
+import logging
+
+logging.basicConfig(filename='sre.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.info("Script started")
+logging.warning("CPU usage high")
+logging.error("Service unreachable")
+
+Lab 7: Prometheus Metrics Exporter
+
+from prometheus_client import start_http_server, Gauge
+import random
+import time
+
+cpu_gauge = Gauge('cpu_usage_percent', 'CPU Usage Percent')
+start_http_server(8000)
+
+while True:
+    cpu_gauge.set(random.randint(0, 100))
+    time.sleep(2)
+
+Explanation:
+Metrics are exposed to Prometheus for monitoring dashboards.
+
+Module 9: Advanced Python Concepts for SRE
+
+Topics:
+
+Multithreading & multiprocessing
+
+Asyncio for asynchronous operations
+
+YAML/JSON configuration management
+
+Environment variables for dynamic configuration
+
+Example: Async Service Checker
+
+import asyncio
+import aiohttp
+
+async def fetch_status(session, url):
+    async with session.get(url) as resp:
+        print(f"{url}: {resp.status}")
+
+async def main():
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_status(session, f"http://service{i}:5000/health") for i in range(1, 4)]
+        await asyncio.gather(*tasks)
+
+# asyncio.run(main())
+
+Lab 8: Configurable Monitoring
+
+import yaml
+import psutil
+
+with open("config.yaml") as f:
+    config = yaml.safe_load(f)
+
+for metric in config['metrics']:
+    if metric['type'] == 'cpu' and psutil.cpu_percent() > metric['threshold']:
+        print(f"ALERT: CPU usage above {metric['threshold']}%")
+
+Explanation:
+Use YAML to define monitoring thresholds dynamically.
+
+Module 10: Real-World SRE Python Labs
+
+Lab 9: Automated Health Dashboard
+
+Fetch metrics from multiple services
+
+Log results with timestamps
+
+Send alerts if thresholds exceeded
+
+Expose metrics for Prometheus
+
+Lab 10: Log Aggregator
+
+Read logs from multiple applications
+
+Parse error/warning messages
+
+Summarize statistics daily
+
+Export JSON report for dashboards
+
+Lab 11: Self-Healing Script
+
+Monitor CPU/memory usage
+
+Restart service if unresponsive
+
+Log and alert actions taken
+
+Lab 12: Canary Deployment Script (Python)
+
+Interact with API of orchestration tool (Kubernetes/Swarm)
+
+Deploy new version to a subset of instances
+
+Monitor errors/latency
+
+Rollback automatically if issues detected
+
+✅ Summary
+
+This course covers:
+
+Python basics for SRE: variables, loops, functions, exception handling.
+
+File operations, log parsing, and system automation.
+
+APIs, HTTP requests, and asynchronous operations.
+
+Automation, scheduling, and alerting.
+
+Logging, metrics, and observability practices.
+
+Advanced topics: multithreading, async, YAML configs.
+
+Real-world labs simulating monitoring, alerting, self-healing, and canary deployments.
+
+By completing this course, you gain practical Python skills tailored for SRE, ready to automate infrastructure tasks, monitor systems, and improve reliability and observability.
