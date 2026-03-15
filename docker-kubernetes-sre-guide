@@ -1,0 +1,704 @@
+Docker & Kubernetes Senior SRE Guide
+Practical Study and Lab Reference (Basic → Advanced)
+
+This document provides a complete learning path for Docker and Kubernetes from the perspective of a Senior Site Reliability Engineer (SRE).
+
+It is designed to:
+
+prepare for Senior SRE interviews
+
+serve as a hands-on lab guide
+
+understand real production infrastructure
+
+Topics progress from foundations → advanced reliability engineering concepts.
+
+1. What a Senior SRE Must Know About Containers
+
+A Senior Site Reliability Engineer must understand:
+
+containerization
+
+orchestration
+
+scaling
+
+observability
+
+production reliability
+
+Modern infrastructure typically looks like this:
+
+Application Code
+        ↓
+Docker Containers
+        ↓
+Container Registry
+        ↓
+Kubernetes Cluster
+        ↓
+Services / Ingress
+        ↓
+Cloud Load Balancer
+        ↓
+Users
+
+Responsibilities of an SRE include:
+
+ensuring reliability
+
+automating operations
+
+scaling infrastructure
+
+handling incidents
+
+improving system performance
+
+2. Docker Fundamentals
+What is Docker
+
+Docker is a containerization platform used to package applications and their dependencies into lightweight isolated containers.
+
+Benefits:
+
+consistent environments
+
+fast deployment
+
+efficient resource usage
+
+portability across environments
+
+3. Docker Architecture
+
+Docker has several components.
+
+Docker Engine
+
+The core service responsible for:
+
+building images
+
+running containers
+
+managing networking
+
+Check Docker version:
+
+docker version
+Docker CLI
+
+Command-line interface used to interact with Docker.
+
+View available commands:
+
+docker help
+Docker Images
+
+A Docker Image is a template used to create containers.
+
+Search images in Docker Hub:
+
+docker search ubuntu
+
+This command shows:
+
+image name
+
+description
+
+official image status
+
+Docker Containers
+
+A container is a running instance of an image.
+
+Run Ubuntu container interactively:
+
+docker run -it ubuntu
+
+Explanation:
+
+-it
+interactive terminal
+
+Docker assigns a random container name unless specified.
+
+4. Running Containers
+
+Run container in background:
+
+docker run -itd ubuntu:latest
+
+Explanation:
+
+-d
+detached mode
+
+List running containers:
+
+docker ps
+
+List all containers:
+
+docker ps -a
+
+Attach to running container:
+
+docker attach <container_id>
+
+Exit container without stopping it:
+
+CTRL + P + Q
+5. Managing Containers
+
+Stop container:
+
+docker stop <container_id>
+
+Start container:
+
+docker start <container_id>
+
+Pause processes inside container:
+
+docker pause <container_id>
+
+Resume container:
+
+docker unpause <container_id>
+6. Removing Containers Automatically
+
+To automatically delete container when it stops:
+
+docker run --rm ubuntu
+
+This is useful for:
+
+temporary containers
+
+testing workloads
+
+7. Naming Containers
+
+Assign a container name:
+
+docker run -it --name=mycontainer ubuntu
+
+Benefits:
+
+easier management
+
+readable commands
+
+8. Copy Files Between Host and Container
+
+Copy files from container to host:
+
+docker cp <container_id>:/path/file .
+
+Example use cases:
+
+debugging
+
+retrieving logs
+
+extracting artifacts
+
+9. Docker Images and Collaboration
+
+Create image from container:
+
+docker commit <container_id> myimage
+
+Export container as archive:
+
+docker export <container_id> > container.tar
+
+Used for:
+
+collaboration
+
+backup
+
+migration
+
+10. Tagging Images
+
+Rename image:
+
+docker tag ubuntu myubuntu
+
+Tag images before pushing to registry.
+
+11. Docker Registry
+
+Log into Docker Hub:
+
+docker login
+
+Push image:
+
+docker push username/image
+
+Registries store container images.
+
+Examples:
+
+Docker Hub
+
+AWS ECR
+
+Google Container Registry
+
+Azure Container Registry
+
+12. Docker Daemon
+
+Docker runs as a background service called the Docker daemon.
+
+Check status:
+
+service docker status
+
+Start service:
+
+service docker start
+
+Stop service:
+
+service docker stop
+13. Docker Networking
+
+Docker containers communicate through network drivers.
+
+View networks:
+
+docker network ls
+
+Docker creates default networks.
+
+Bridge Network
+
+Default Docker network.
+
+Allows communication between containers.
+
+Uses the docker0 bridge interface.
+
+Host Network
+
+Container uses host networking stack.
+
+Example:
+
+docker run -it --network=host ubuntu
+
+Characteristics:
+
+no network isolation
+
+container shares host IP
+
+None Network
+
+Container has no networking.
+
+docker run -it --network=none ubuntu
+
+Used for security or specialized workloads.
+
+14. Network Namespace
+
+Each container has its own network namespace.
+
+This isolates:
+
+IP address
+
+routing table
+
+network interfaces
+
+View namespaces:
+
+ip netns
+
+Run command inside namespace:
+
+ip netns exec <namespace> command
+15. Virtual Ethernet Pair (veth)
+
+Containers connect to the bridge using veth pairs.
+
+A veth pair acts like a virtual cable:
+
+container interface ↔ host interface
+
+This allows communication between container and host network.
+
+16. Port Mapping
+
+Expose container ports to host.
+
+Example:
+
+docker run -d -p 8080:80 nginx
+
+Explanation:
+
+8080 = host port
+80 = container port
+
+Check mapped ports:
+
+docker port <container_id>
+17. Docker Storage Overview
+
+Containers are ephemeral.
+
+Persistent data requires volumes.
+
+Types:
+
+bind mounts
+
+docker volumes
+
+tmpfs
+
+Example volume:
+
+docker volume create myvolume
+
+Run container with volume:
+
+docker run -v myvolume:/data ubuntu
+18. Docker System Monitoring
+
+Check disk usage:
+
+docker system df
+
+Verbose mode:
+
+docker system df -v
+
+Shows:
+
+images
+
+containers
+
+volumes
+
+reclaimable space
+
+19. Docker Best Practices for SRE
+
+Senior SREs should follow:
+
+minimal base images
+
+non-root containers
+
+immutable infrastructure
+
+container health checks
+
+resource limits
+
+Example production practices:
+
+multi-stage builds
+
+vulnerability scanning
+
+signed images
+
+CI/CD image builds
+
+20. Docker in Production Architecture
+
+Real-world architecture:
+
+Developers
+     ↓
+CI/CD Pipeline
+     ↓
+Docker Build
+     ↓
+Container Registry
+     ↓
+Kubernetes Cluster
+     ↓
+Services
+     ↓
+Load Balancer
+     ↓
+Users
+
+Containers rarely run standalone in production.
+
+They are usually orchestrated by Kubernetes.
+
+21. Introduction to Kubernetes
+
+Kubernetes is a container orchestration platform used to manage containerized applications.
+
+It provides:
+
+automatic scaling
+
+self-healing
+
+service discovery
+
+rolling deployments
+
+22. Kubernetes Core Components
+
+Cluster consists of:
+
+Control Plane
+
+Manages cluster state.
+
+Components:
+
+API Server
+
+Scheduler
+
+Controller Manager
+
+etcd database
+
+Worker Nodes
+
+Nodes run application containers.
+
+Components:
+
+kubelet
+
+kube-proxy
+
+container runtime
+
+23. Kubernetes Pods
+
+A Pod is the smallest deployable unit.
+
+Create pod:
+
+kubectl run nginx --image=nginx
+
+List pods:
+
+kubectl get pods
+
+View logs:
+
+kubectl logs <podname>
+24. Kubernetes Deployments
+
+Deployments manage pods and replicas.
+
+View deployments:
+
+kubectl get deploy
+
+Apply deployment:
+
+kubectl apply -f deployment.yaml
+
+View deployment manifest:
+
+kubectl get deploy mydeploy -o yaml
+25. Kubernetes Services
+
+Services expose pods.
+
+Types:
+
+ClusterIP
+
+NodePort
+
+LoadBalancer
+
+Example service creation:
+
+kubectl apply -f service.yaml
+
+Delete service:
+
+kubectl delete svc <service-name>
+26. Kubernetes Ingress
+
+Ingress routes external traffic to services.
+
+List ingress:
+
+kubectl get ing
+
+View details:
+
+kubectl describe ing <name>
+
+Ingress typically uses:
+
+NGINX Ingress Controller
+
+cloud load balancer
+
+27. Kubernetes Namespaces
+
+Namespaces group cluster resources.
+
+List all namespaces:
+
+kubectl get ns
+
+View resources across namespaces:
+
+kubectl get deploy -A
+
+Important namespace:
+
+kube-system
+
+Contains Kubernetes core services.
+
+28. Kubernetes Horizontal Scaling
+
+Horizontal scaling increases number of pods.
+
+Example:
+
+3 pods → 10 pods
+
+This improves:
+
+throughput
+
+availability
+
+29. Horizontal Pod Autoscaler (HPA)
+
+HPA scales pods automatically.
+
+Example:
+
+kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
+
+Meaning:
+
+scale pods when CPU > 50%
+minimum pods = 1
+maximum pods = 10
+
+List autoscalers:
+
+kubectl get hpa
+30. Metrics Server
+
+HPA requires metrics server.
+
+Check deployment:
+
+kubectl get deploy metrics-server -n kube-system
+
+Metrics server provides:
+
+CPU metrics
+
+memory metrics
+
+31. Load Testing Autoscaling
+
+Generate load:
+
+kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+
+This continuously sends requests to the service.
+
+Monitor scaling:
+
+kubectl get hpa
+32. Resource Requests and Limits
+
+Define container resources.
+
+Example:
+
+requests:
+  cpu: 200m
+  memory: 256Mi
+
+limits:
+  cpu: 500m
+  memory: 512Mi
+
+Requests = guaranteed resources
+Limits = maximum allowed usage
+
+33. Cluster Autoscaler
+
+Cluster autoscaler adds new nodes when cluster resources are insufficient.
+
+Example situation:
+
+Pods require more CPU than cluster can provide
+→ new nodes are added
+
+Deploy autoscaler:
+
+kubectl apply -f cluster-autoscaler.yaml
+34. Checking Cluster Nodes
+
+List nodes:
+
+kubectl get nodes
+
+Nodes provide infrastructure capacity for pods.
+
+35. Debugging Kubernetes
+
+Describe pod:
+
+kubectl describe pod <podname>
+
+Common errors:
+
+CrashLoopBackOff
+ImagePullBackOff
+Insufficient CPU
+
+View logs:
+
+kubectl logs <podname>
+36. Kubernetes Contexts
+
+Check current cluster:
+
+kubectl config current-context
+
+List contexts:
+
+kubectl config view
+
+Contexts define which cluster kubectl communicates with.
+
+37. Scaling Strategy for Senior SRE
+
+Best practice is to combine:
+
+Horizontal scaling → more pods
+Vertical scaling → more nodes
+
+Horizontal scaling improves performance.
+
+Vertical scaling increases infrastructure capacity.
