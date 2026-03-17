@@ -1,525 +1,305 @@
-Docker & Kubernetes Senior SRE Guide
-Practical Study and Lab Reference (Basic → Advanced)
-
-This document provides a complete learning path for Docker and Kubernetes from the perspective of a Senior Site Reliability Engineer (SRE).
-
-It is designed to:
-
-prepare for Senior SRE interviews
-
-serve as a hands-on lab guide
-
-understand real production infrastructure
-
-Topics progress from foundations → advanced reliability engineering concepts.
-
-1. What a Senior SRE Must Know About Containers
-
-A Senior Site Reliability Engineer must understand:
-
-containerization
-
-orchestration
-
-scaling
-
-observability
-
-production reliability
-
-Modern infrastructure typically looks like this:
+1. Modern Architecture (SRE Context)
 
 Application Code
-        ↓
-Docker Containers
-        ↓
+↓
+Docker Image
+↓
 Container Registry
-        ↓
+↓
 Kubernetes Cluster
-        ↓
+↓
 Services / Ingress
-        ↓
-Cloud Load Balancer
-        ↓
+↓
+Load Balancer
+↓
 Users
 
-Responsibilities of an SRE include:
+A Senior SRE does not just run containers — they:
 
-ensuring reliability
+Understand failures
 
-automating operations
+Optimize performance
 
-scaling infrastructure
+Automate processes
 
-handling incidents
-
-improving system performance
+Design resilient systems
 
 2. Docker Fundamentals
-What is Docker
 
-Docker is a containerization platform used to package applications and their dependencies into lightweight isolated containers.
+Docker is a platform that packages:
 
-Benefits:
+Application code
 
-consistent environments
+Dependencies
 
-fast deployment
+Runtime
 
-efficient resource usage
+into a portable unit called a container.
 
-portability across environments
+Why Docker matters
 
-3. Docker Architecture
+Consistent environments across systems
 
-Docker has several components.
+Fast deployments
 
-Docker Engine
+Lightweight compared to VMs
 
-The core service responsible for:
+Ideal for microservices architecture
 
-building images
-
-running containers
-
-managing networking
-
-Check Docker version:
-
+3. Docker CLI Basics
 docker version
-Docker CLI
 
-Command-line interface used to interact with Docker.
-
-View available commands:
+Displays Docker client and server versions.
 
 docker help
-Docker Images
 
-A Docker Image is a template used to create containers.
-
-Search images in Docker Hub:
-
-docker search ubuntu
-
-This command shows:
-
-image name
-
-description
-
-official image status
-
-Docker Containers
-
-A container is a running instance of an image.
-
-Run Ubuntu container interactively:
-
-docker run -it ubuntu
-
-Explanation:
-
--it
-interactive terminal
-
-Docker assigns a random container name unless specified.
-
-4. Running Containers
-
-Run container in background:
-
-docker run -itd ubuntu:latest
-
-Explanation:
-
--d
-detached mode
-
-List running containers:
+Lists all available Docker commands.
 
 docker ps
 
-List all containers:
+Shows running containers.
 
 docker ps -a
 
-Attach to running container:
+Shows all containers (including stopped ones).
+
+docker search <image>
+
+Searches images in Docker Hub. Prefer official images.
+
+4. Running Containers
+docker run -it ubuntu
+
+Runs an interactive Ubuntu container.
+
+-i → interactive
+
+-t → terminal
+
+Detach from container without stopping it:
+
+CTRL + P + Q
+docker run -itd ubuntu:latest
+
+Runs container in detached mode.
+
+⚠️ Avoid using latest in production environments.
 
 docker attach <container_id>
 
-Exit container without stopping it:
+Attach to a running container.
 
-CTRL + P + Q
-5. Managing Containers
+Preferred method:
 
-Stop container:
+docker exec -it <container_id> bash
+5. Container Lifecycle Management
+docker start <id>
+docker stop <id>
 
-docker stop <container_id>
+stop → graceful shutdown
 
-Start container:
+kill → immediate termination
 
-docker start <container_id>
+docker pause <id>
 
-Pause processes inside container:
+Pauses all processes inside the container.
 
-docker pause <container_id>
+docker unpause <id>
 
-Resume container:
-
-docker unpause <container_id>
-6. Removing Containers Automatically
-
-To automatically delete container when it stops:
+Resumes paused container.
 
 docker run --rm ubuntu
 
-This is useful for:
+Automatically removes container after it exits.
 
-temporary containers
+6. Naming and File Operations
+docker run --name=mycontainer ubuntu
 
-testing workloads
-
-7. Naming Containers
-
-Assign a container name:
-
-docker run -it --name=mycontainer ubuntu
-
-Benefits:
-
-easier management
-
-readable commands
-
-8. Copy Files Between Host and Container
-
-Copy files from container to host:
+Assigns a name to a container.
 
 docker cp <container_id>:/path/file .
 
-Example use cases:
+Copies files between container and host.
 
-debugging
+7. Port Mapping
+docker run -d -p 8080:80 nginx
 
-retrieving logs
+8080 → host port
 
-extracting artifacts
+80 → container port
 
-9. Docker Images and Collaboration
+This maps external traffic to the container.
 
-Create image from container:
-
+8. Images and Registry Operations
 docker commit <container_id> myimage
 
-Export container as archive:
+Creates an image from a container (not recommended for production).
 
 docker export <container_id> > container.tar
 
-Used for:
+Exports container filesystem.
 
-collaboration
+docker tag ubuntu myrepo/ubuntu:v1
 
-backup
-
-migration
-
-10. Tagging Images
-
-Rename image:
-
-docker tag ubuntu myubuntu
-
-Tag images before pushing to registry.
-
-11. Docker Registry
-
-Log into Docker Hub:
+Tags an image.
 
 docker login
 
-Push image:
+Authenticates with a container registry.
 
-docker push username/image
-
-Registries store container images.
-
-Examples:
-
-Docker Hub
-
-AWS ECR
-
-Google Container Registry
-
-Azure Container Registry
-
-12. Docker Daemon
-
-Docker runs as a background service called the Docker daemon.
-
-Check status:
-
+9. Docker Daemon
 service docker status
-
-Start service:
-
+service docker stop
 service docker start
 
-Stop service:
+Modern systems:
 
-service docker stop
-13. Docker Networking
-
-Docker containers communicate through network drivers.
-
-View networks:
-
+systemctl status docker
+10. Docker Networking
 docker network ls
 
-Docker creates default networks.
+Lists networks.
 
-Bridge Network
-
-Default Docker network.
-
-Allows communication between containers.
-
-Uses the docker0 bridge interface.
-
-Host Network
-
-Container uses host networking stack.
-
-Example:
-
+docker run -it --network=bridge ubuntu
 docker run -it --network=host ubuntu
-
-Characteristics:
-
-no network isolation
-
-container shares host IP
-
-None Network
-
-Container has no networking.
-
 docker run -it --network=none ubuntu
+Network Types
 
-Used for security or specialized workloads.
+Bridge
 
-14. Network Namespace
+Default network (docker0)
 
-Each container has its own network namespace.
+Isolated container communication
 
-This isolates:
+Host
 
-IP address
+Uses host IP and ports
 
-routing table
+No isolation
 
-network interfaces
+None
 
-View namespaces:
+No network interface
+
+Key Concepts
+
+Network Namespace → isolates network per container
+
+Veth Pair → virtual link between container and host
+
+Port Mapping → exposes container services
+
+Low-level inspection:
 
 ip netns
+ip netns exec <ns> <command>
+11. Docker Storage
+/var/lib/docker
 
-Run command inside namespace:
+Stores:
 
-ip netns exec <namespace> command
-15. Virtual Ethernet Pair (veth)
+Images
 
-Containers connect to the bridge using veth pairs.
+Containers
 
-A veth pair acts like a virtual cable:
+Volumes
 
-container interface ↔ host interface
+Used for debugging disk and storage issues.
 
-This allows communication between container and host network.
-
-16. Port Mapping
-
-Expose container ports to host.
-
-Example:
-
-docker run -d -p 8080:80 nginx
-
-Explanation:
-
-8080 = host port
-80 = container port
-
-Check mapped ports:
-
-docker port <container_id>
-17. Docker Storage Overview
-
-Containers are ephemeral.
-
-Persistent data requires volumes.
-
-Types:
-
-bind mounts
-
-docker volumes
-
-tmpfs
-
-Example volume:
-
-docker volume create myvolume
-
-Run container with volume:
-
-docker run -v myvolume:/data ubuntu
-18. Docker System Monitoring
-
-Check disk usage:
-
+12. Docker Disk Usage
 docker system df
-
-Verbose mode:
-
 docker system df -v
 
-Shows:
+Displays disk usage details.
 
-images
+13. Docker Cleanup
+docker system prune
 
-containers
+Removes unused resources.
 
-volumes
+docker system prune -a
 
-reclaimable space
+Removes:
 
-19. Docker Best Practices for SRE
+Stopped containers
 
-Senior SREs should follow:
+Unused images
 
-minimal base images
+Unused networks
 
-non-root containers
+⚠️ Use carefully in production.
 
-immutable infrastructure
+14. Dockerfile (Production Standard)
+FROM python:3.11-slim
 
-container health checks
+WORKDIR /app
 
-resource limits
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-Example production practices:
+COPY . .
 
-multi-stage builds
+CMD ["python", "app.py"]
+Best Practices
 
-vulnerability scanning
+Use minimal base images
 
-signed images
+Reduce layers
 
-CI/CD image builds
+Use caching effectively
 
-20. Docker in Production Architecture
+Avoid unnecessary dependencies
 
-Real-world architecture:
+15. Resource Management
+docker run -m 512m --cpus=1 nginx
 
-Developers
-     ↓
-CI/CD Pipeline
-     ↓
-Docker Build
-     ↓
-Container Registry
-     ↓
-Kubernetes Cluster
-     ↓
-Services
-     ↓
-Load Balancer
-     ↓
-Users
+Prevents:
 
-Containers rarely run standalone in production.
+Memory overuse (OOMKilled)
 
-They are usually orchestrated by Kubernetes.
+CPU starvation
 
-21. Introduction to Kubernetes
+16. Logging
+docker logs <container_id>
 
-Kubernetes is a container orchestration platform used to manage containerized applications.
+Best practices:
 
-It provides:
+Use stdout/stderr
 
-automatic scaling
+Do not store logs inside containers
 
-self-healing
+Integrate with centralized logging systems
 
-service discovery
+17. Security
+docker run --user 1000 nginx
 
-rolling deployments
+Best practices:
 
-22. Kubernetes Core Components
+Avoid running as root
 
-Cluster consists of:
+Use minimal images
 
-Control Plane
+Scan for vulnerabilities
 
-Manages cluster state.
+Apply security profiles (seccomp, capabilities)
 
-Components:
+☸️ 18. Kubernetes Fundamentals
 
-API Server
+Kubernetes manages containers at scale and provides:
 
-Scheduler
+Auto-scaling
 
-Controller Manager
+Self-healing
 
-etcd database
+Service discovery
 
-Worker Nodes
-
-Nodes run application containers.
-
-Components:
-
-kubelet
-
-kube-proxy
-
-container runtime
-
-23. Kubernetes Pods
-
-A Pod is the smallest deployable unit.
-
-Create pod:
-
-kubectl run nginx --image=nginx
-
-List pods:
-
+19. Core Kubernetes Commands
 kubectl get pods
-
-View logs:
-
-kubectl logs <podname>
-24. Kubernetes Deployments
-
-Deployments manage pods and replicas.
-
-View deployments:
-
+kubectl logs <pod>
+20. Deployments
+kubectl apply -f deploy.yaml
 kubectl get deploy
-
-Apply deployment:
-
-kubectl apply -f deployment.yaml
-
-View deployment manifest:
-
-kubectl get deploy mydeploy -o yaml
-25. Kubernetes Services
-
-Services expose pods.
+21. Services
 
 Types:
 
@@ -529,176 +309,108 @@ NodePort
 
 LoadBalancer
 
-Example service creation:
-
-kubectl apply -f service.yaml
-
-Delete service:
-
-kubectl delete svc <service-name>
-26. Kubernetes Ingress
-
-Ingress routes external traffic to services.
-
-List ingress:
-
+22. Ingress
 kubectl get ing
-
-View details:
-
 kubectl describe ing <name>
 
-Ingress typically uses:
+Routes external traffic into the cluster.
 
-NGINX Ingress Controller
-
-cloud load balancer
-
-27. Kubernetes Namespaces
-
-Namespaces group cluster resources.
-
-List all namespaces:
-
+23. Namespaces
 kubectl get ns
-
-View resources across namespaces:
-
-kubectl get deploy -A
 
 Important namespace:
 
 kube-system
 
-Contains Kubernetes core services.
-
-28. Kubernetes Horizontal Scaling
-
-Horizontal scaling increases number of pods.
-
-Example:
-
-3 pods → 10 pods
-
-This improves:
-
-throughput
-
-availability
-
-29. Horizontal Pod Autoscaler (HPA)
-
-HPA scales pods automatically.
-
-Example:
-
+24. Autoscaling
 kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
-
-Meaning:
-
-scale pods when CPU > 50%
-minimum pods = 1
-maximum pods = 10
-
-List autoscalers:
-
 kubectl get hpa
-30. Metrics Server
-
-HPA requires metrics server.
-
-Check deployment:
-
+25. Metrics Server
 kubectl get deploy metrics-server -n kube-system
 
-Metrics server provides:
+Required for autoscaling.
 
-CPU metrics
-
-memory metrics
-
-31. Load Testing Autoscaling
-
-Generate load:
-
+26. Load Testing
 kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
-
-This continuously sends requests to the service.
-
-Monitor scaling:
-
-kubectl get hpa
-32. Resource Requests and Limits
-
-Define container resources.
-
-Example:
-
+27. Resource Configuration
 requests:
   cpu: 200m
-  memory: 256Mi
-
 limits:
   cpu: 500m
-  memory: 512Mi
+28. Debugging
+kubectl describe pod <pod>
+kubectl logs <pod>
 
-Requests = guaranteed resources
-Limits = maximum allowed usage
-
-33. Cluster Autoscaler
-
-Cluster autoscaler adds new nodes when cluster resources are insufficient.
-
-Example situation:
-
-Pods require more CPU than cluster can provide
-→ new nodes are added
-
-Deploy autoscaler:
-
-kubectl apply -f cluster-autoscaler.yaml
-34. Checking Cluster Nodes
-
-List nodes:
-
-kubectl get nodes
-
-Nodes provide infrastructure capacity for pods.
-
-35. Debugging Kubernetes
-
-Describe pod:
-
-kubectl describe pod <podname>
-
-Common errors:
+Common issues:
 
 CrashLoopBackOff
+
 ImagePullBackOff
-Insufficient CPU
 
-View logs:
+OOMKilled
 
-kubectl logs <podname>
-36. Kubernetes Contexts
+29. Observability
 
-Check current cluster:
+Core tools:
 
-kubectl config current-context
+Prometheus (metrics)
 
-List contexts:
+Grafana (dashboards)
 
-kubectl config view
+ELK / Loki (logs)
 
-Contexts define which cluster kubectl communicates with.
+Golden Signals
 
-37. Scaling Strategy for Senior SRE
+Latency
 
-Best practice is to combine:
+Traffic
 
-Horizontal scaling → more pods
-Vertical scaling → more nodes
+Errors
 
-Horizontal scaling improves performance.
+Saturation
 
-Vertical scaling increases infrastructure capacity.
+30. CI/CD Integration
+
+Flow:
+
+Git → Build → Docker → Registry → Kubernetes
+
+31. Real Failure Scenarios
+
+Pod not starting → check logs and describe
+
+High CPU → autoscaling triggered
+
+Node full → pods pending
+
+32. Practice Labs
+Lab 1: Run a container
+docker run -d -p 8080:80 nginx
+Lab 2: Pause and resume
+docker pause <id>
+docker unpause <id>
+Lab 3: Cleanup
+docker system prune
+Lab 4: Deploy to Kubernetes
+
+Create deployment
+
+Expose service
+
+Verify access
+
+Lab 5: Autoscaling
+
+Deploy app
+
+Configure HPA
+
+Generate load
+
+Lab 6: Failure Simulation
+
+Stop container manually
+
+Break networking
+
+Debug using logs
