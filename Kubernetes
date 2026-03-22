@@ -1,0 +1,618 @@
+Kubernetes is a container orchestration platform used to deploy, scale, and operate containerized applications in production environments.
+
+It automates:
+
+Scheduling
+Scaling
+Load balancing
+Self-healing
+Rollouts and rollbacks
+Service discovery
+
+Kubernetes is designed for distributed systems reliability.
+
+Kubernetes Cluster Architecture
+
+A Kubernetes cluster consists of two main parts:
+
+Control Plane (Master)
+Worker Nodes
+
+Control Plane
+
+The control plane manages the entire cluster and makes global decisions.
+
+Components:
+
+API Server
+etcd
+Scheduler
+Controller Manager
+
+API Server
+
+The API Server is the entry point to the cluster.
+
+All operations go through it:
+
+kubectl
+CI/CD pipelines
+Controllers
+Internal cluster components
+
+The API server:
+
+Validates requests
+Updates cluster state
+Stores data in etcd
+
+Kubernetes follows a declarative model.
+
+You declare desired state, Kubernetes reconciles it.
+
+etcd
+
+etcd is the key-value distributed database used by Kubernetes.
+
+It stores:
+
+Cluster state
+Configuration
+Secrets
+Metadata
+
+Important production concept:
+
+etcd uses quorum consensus.
+
+If quorum is lost, the cluster cannot update state.
+
+This is why production clusters use:
+
+3 or 5 etcd nodes.
+
+Scheduler
+
+The scheduler decides which node runs a pod.
+
+It evaluates:
+
+Resource availability
+Scheduling rules
+Constraints
+Affinity rules
+Taints and tolerations
+
+Scheduling happens in two phases:
+
+Filtering
+Ranking
+
+Filtering removes nodes that cannot run the pod.
+
+Ranking chooses the best node.
+
+Controller Manager
+
+Controllers constantly compare:
+
+Current State vs Desired State.
+
+Examples of controllers:
+
+Deployment Controller
+Node Controller
+Replication Controller
+Endpoint Controller
+
+This is called a control loop.
+
+Worker Nodes
+
+Worker nodes run the workloads.
+
+Components:
+
+Kubelet
+Kube Proxy
+Container Runtime
+
+Kubelet
+
+The kubelet is the node agent.
+
+It:
+
+Communicates with the API server
+Ensures containers are running
+Reports node health
+
+If a container crashes, kubelet restarts it.
+
+Container Runtime
+
+The container runtime runs containers.
+
+Examples:
+
+containerd
+CRI-O
+Docker (legacy support)
+
+Kube Proxy
+
+Kube Proxy manages networking rules.
+
+It enables:
+
+Pod communication
+Service load balancing
+
+Kube Proxy modes:
+
+iptables
+IPVS
+
+IPVS is more scalable in large clusters.
+
+Kubernetes Core Concepts
+Pods
+
+The smallest deployable unit in Kubernetes is a Pod.
+
+A Pod can contain:
+
+One container (most common)
+Multiple containers (sidecar pattern)
+
+Example Pod:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+Pod characteristics:
+
+Ephemeral
+Scheduled once
+Recreated when deleted
+
+Pod Lifecycle
+
+Understanding this is critical for SRE troubleshooting.
+
+Pod states:
+
+Pending
+ContainerCreating
+Running
+Succeeded
+Failed
+CrashLoopBackOff
+Terminating
+
+Common production issue:
+
+CrashLoopBackOff happens when:
+
+Application crashes repeatedly.
+
+Typical causes:
+
+Bad configuration
+Missing secrets
+Application errors
+Resource limits exceeded
+
+ReplicaSets
+
+ReplicaSets ensure a fixed number of pods are running.
+
+Example:
+
+replicas: 3
+
+If one pod fails:
+
+Kubernetes automatically creates a new one.
+
+This provides self-healing.
+
+Deployments
+
+Deployments manage ReplicaSets and allow safe updates.
+
+Key features:
+
+Rolling updates
+Rollbacks
+Version control
+
+Example:
+
+strategy:
+  type: RollingUpdate
+
+Production deployment strategies:
+
+Rolling Update
+Blue/Green Deployment
+Canary Deployment
+
+Rolling update is the default.
+
+Kubernetes Services
+
+Pods are ephemeral, so we need stable networking.
+
+Services provide a stable endpoint.
+
+Service types:
+
+ClusterIP
+NodePort
+LoadBalancer
+
+ClusterIP
+
+Default service type.
+
+Accessible only inside the cluster.
+
+Used for:
+
+Internal microservices communication.
+
+NodePort
+
+Exposes service on node IP.
+
+Port range:
+
+30000–32767
+
+Example:
+
+nodeIP:30007
+
+Used mainly for testing.
+
+LoadBalancer
+
+Used in cloud environments.
+
+Cloud provider creates an external load balancer.
+
+Example:
+
+AWS ELB
+GCP Load Balancer
+Azure Load Balancer
+
+Kubernetes Networking Model
+
+Kubernetes networking is based on these principles:
+
+Every Pod gets an IP address.
+Pods communicate directly.
+No NAT required between pods.
+
+This is implemented through CNI plugins.
+
+Common CNIs:
+
+Calico
+Flannel
+Cilium
+Weave
+
+Advanced clusters use:
+
+Cilium (eBPF-based networking).
+
+Labels and Selectors
+
+Labels organize Kubernetes objects.
+
+Example:
+
+env=production
+app=frontend
+tier=backend
+
+Selectors allow grouping.
+
+Example usage:
+
+Services
+Deployments
+Network policies
+
+Annotations
+
+Annotations store metadata not used for scheduling.
+
+Examples:
+
+Build information
+Monitoring metadata
+Deployment notes
+
+Taints and Tolerations
+
+Taints prevent pods from being scheduled on nodes.
+
+Example:
+
+kubectl taint nodes node1 key=value:NoSchedule
+
+Pods must define tolerations to run there.
+
+This is used for:
+
+Dedicated nodes
+GPU workloads
+Specialized hardware
+
+Node Selectors and Node Affinity
+
+Used to control pod placement.
+
+Node Selector:
+
+Simplest method.
+
+Example:
+
+run pods only on nodes labeled:
+
+ssd=true
+
+Node Affinity:
+
+More advanced scheduling rules.
+
+Types:
+
+RequiredDuringScheduling
+PreferredDuringScheduling
+
+Namespaces
+
+Namespaces isolate resources in the cluster.
+
+Default namespaces:
+
+default
+kube-system
+kube-public
+
+Used for:
+
+Multi-team environments
+Resource isolation
+Access control
+
+Create namespace:
+
+kubectl create namespace dev
+
+Resource Quotas
+
+Used to prevent one namespace from consuming all resources.
+
+Example limits:
+
+CPU
+Memory
+Pods
+Services
+
+Example configuration:
+
+cpu: 10
+memory: 20Gi
+pods: 10
+
+This is critical in multi-tenant clusters.
+
+Resource Management
+
+Pods define:
+
+Requests
+Limits
+
+Requests = guaranteed resources
+Limits = maximum resources allowed
+
+Example:
+
+resources:
+  requests:
+    cpu: "500m"
+  limits:
+    cpu: "1"
+QoS Classes (Very Important for SRE)
+
+Kubernetes assigns QoS classes.
+
+Guaranteed
+Burstable
+BestEffort
+
+If a node runs out of resources:
+
+BestEffort pods are evicted first.
+
+Probes (Health Checks)
+
+Health checks are critical in production.
+
+Types:
+
+Liveness Probe
+Readiness Probe
+Startup Probe
+
+Liveness Probe
+
+Checks if the container is alive.
+
+If it fails:
+
+Container is restarted.
+
+Readiness Probe
+
+Checks if the application is ready to receive traffic.
+
+If it fails:
+
+Traffic is stopped.
+
+Startup Probe
+
+Used for slow-starting applications.
+
+Prevents false failures during startup.
+
+Example:
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+Scheduling Deep Dive (Senior SRE Knowledge)
+
+The scheduler considers:
+
+Node capacity
+Pod requirements
+Affinity rules
+Taints
+Resource pressure
+
+Advanced scheduling features:
+
+Priority Classes
+Preemption
+
+Preemption allows high priority pods to evict lower priority ones.
+
+Cluster Reliability Concepts
+
+Production clusters must consider:
+
+Failure domains
+Node failure
+Network partition
+Control plane redundancy
+
+High availability control plane includes:
+
+Multiple API servers
+Multiple etcd nodes
+Load balanced API access
+
+Troubleshooting Kubernetes (Real SRE Workflow)
+
+Check cluster health:
+
+kubectl get nodes
+
+Check pods:
+
+kubectl get pods -A
+
+Describe pod:
+
+kubectl describe pod podname
+
+Check logs:
+
+kubectl logs podname
+
+Check events:
+
+kubectl get events
+
+Check scheduling problems:
+
+kubectl describe pod
+
+Look for:
+
+FailedScheduling
+ImagePullBackOff
+OOMKilled
+
+Real SRE Debugging Flow
+
+Pod not starting:
+
+1 Check pod state
+2 Check events
+3 Check node resources
+4 Check scheduling constraints
+5 Check image registry
+6 Check secrets/configmaps
+7 Check probes
+
+Node problems:
+
+1 Check node conditions
+2 Check disk pressure
+3 Check memory pressure
+4 Check kubelet logs
+
+Production Best Practices
+
+Use readiness probes
+Define resource limits
+Avoid running everything in default namespace
+Use autoscaling
+Implement monitoring
+Design stateless applications when possible
+
+Observability (Essential for SRE)
+
+Production clusters require observability.
+
+Three pillars:
+
+Metrics
+Logs
+Tracing
+
+Typical stack:
+
+Prometheus
+Grafana
+ELK stack
+OpenTelemetry
+
+Key SRE metrics:
+
+Latency
+Error rate
+Traffic
+Saturation
+
+Also known as:
+
+Golden Signals.
+
+Future Advanced Topics for This Repo
+
+Ingress Controllers
+Helm
+Service Mesh
+Advanced networking
+Security policies
+Platform engineering patterns
