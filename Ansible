@@ -1,0 +1,646 @@
+Ansible for Site Reliability Engineering (SRE)
+
+This section explains Ansible from beginner to advanced level, aligned with how a Senior SRE actually uses it in production environments.
+
+Ansible is one of the most important tools for:
+
+Infrastructure automation
+Configuration management
+Server provisioning
+Incident response automation
+Platform standardization
+Large-scale fleet management
+
+A Senior SRE uses Ansible to ensure:
+
+Systems are reproducible
+Deployments are consistent
+Configuration drift is eliminated
+Infrastructure is recoverable
+1. What Ansible Is
+
+Ansible is an agentless automation tool that uses SSH to manage remote systems.
+
+Architecture:
+
+Control Node (Ansible installed)
+        |
+        | SSH
+        v
+Managed Nodes (Servers)
+
+Ansible executes tasks using:
+
+Modules
+Playbooks
+Inventory files
+2. Ansible Core Concepts
+Inventory
+
+Defines the systems Ansible will manage.
+
+Default location:
+
+/etc/ansible/hosts
+
+Example:
+
+[webservers]
+10.0.0.10
+10.0.0.11
+
+[dbservers]
+10.0.0.20
+10.0.0.21
+
+You can also define ranges:
+
+10.0.0.[10:20]
+
+Check inventory:
+
+ansible-inventory --list
+3. Ansible Playbooks
+
+A playbook is a YAML file that defines automation tasks.
+
+Example structure:
+
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start Apache
+      service:
+        name: httpd
+        state: started
+
+Key components:
+
+Field	Description
+hosts	Target machines
+become	Run as elevated user
+tasks	Actions to execute
+modules	Tools like yum, service, copy
+4. First Playbook (Connectivity Test)
+
+Create directory:
+
+mkdir -p /etc/ansible/playbooks
+cd /etc/ansible/playbooks
+
+Create file:
+
+vi first.yml
+
+Playbook:
+
+---
+- name: My first playbook
+  hosts: localhost
+
+  tasks:
+    - name: Test connectivity
+      ping:
+
+Validate syntax:
+
+ansible-playbook --syntax-check first.yml
+
+Dry run:
+
+ansible-playbook --check first.yml
+
+Run:
+
+ansible-playbook first.yml
+5. Multiple Tasks in Playbooks
+
+Example:
+
+---
+- name: Run multiple tasks
+  hosts: localhost
+
+  tasks:
+    - name: Test connectivity
+      ping:
+
+    - name: Print Hello World
+      debug:
+        msg: "Hello World"
+6. Installing and Managing Services
+
+Example Apache setup:
+
+---
+- name: Install and start Apache
+  hosts: localhost
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start httpd
+      service:
+        name: httpd
+        state: started
+
+Check installation:
+
+rpm -qa | grep httpd
+7. Managing Remote Clients
+
+Add servers to inventory:
+
+/etc/ansible/hosts
+
+Example:
+
+[servers]
+192.168.1.10
+192.168.1.11
+
+Enable passwordless authentication:
+
+ssh-keygen
+ssh-copy-id 192.168.1.10
+
+Test connection:
+
+ansible all -m ping
+8. Copy Files to Remote Servers
+---
+- name: Copy file to remote hosts
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Copy configuration file
+      copy:
+        src: /home/jeff/cc.cfg
+        dest: /tmp/cc.cfg
+        owner: jeff
+        group: jeff
+        mode: 0644
+9. Changing File Permissions
+---
+- name: Change permissions
+  hosts: all
+
+  tasks:
+    - name: Update file permissions
+      file:
+        path: /home/jeff/file
+        mode: a+w
+10. Managing Firewall and Services
+
+Example production scenario:
+
+Install Apache + open firewall.
+
+---
+- name: Setup Apache and firewall
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start Apache
+      service:
+        name: httpd
+        state: started
+
+    - name: Allow HTTP in firewall
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+
+    - name: Reload firewalld
+      service:
+        name: firewalld
+        state: reloaded
+
+Check firewall:
+
+firewall-cmd --list-all
+11. Running Shell Commands
+---
+- name: Run shell script
+  hosts: all
+
+  tasks:
+    - name: Execute script
+      shell: /home/jeff/script.sh
+12. Scheduling Jobs with Cron
+---
+- name: Schedule cron job
+  hosts: all
+
+  tasks:
+    - name: Create cron job
+      cron:
+        name: "Scheduled by Ansible"
+        minute: "0"
+        hour: "10"
+        weekday: "4"
+        user: root
+        job: "/home/jeff/cfile.sh"
+
+Check:
+
+crontab -l
+13. User Management
+
+Create a user:
+
+---
+- name: Create user
+  hosts: all
+
+  tasks:
+    - name: Create george user
+      user:
+        name: george
+        home: /home/george
+        shell: /bin/bash
+
+Verify:
+
+id george
+cat /etc/passwd | grep george
+14. Updating User Passwords
+---
+- name: Update password
+  hosts: all
+
+  tasks:
+    - name: Change password
+      user:
+        name: george
+        update_password: always
+        password: "{{ newpassword | password_hash('sha512') }}"
+
+Run:
+
+ansible-playbook playbook.yml --extra-vars "newpassword=abc123"
+15. Download Files from Internet
+
+Example: Download Tomcat
+
+---
+- name: Download Tomcat
+  hosts: localhost
+
+  tasks:
+    - name: Create directory
+      file:
+        path: /opt/tomcat
+        state: directory
+        mode: 0755
+
+    - name: Download package
+      get_url:
+        url: https://downloads.apache.org/tomcat/
+        dest: /opt/tomcat
+16. Killing Processes
+
+Example troubleshooting automation.
+
+---
+- name: Kill process
+  hosts: all
+
+  tasks:
+    - name: Find process
+      shell: "ps -ef | grep top | grep -v grep | awk '{print $2}'"
+      register: running_process
+
+    - name: Kill process
+      shell: "kill {{ item }}"
+      loop: "{{ running_process.stdout_lines }}"
+      ignore_errors: yes
+17. Running Specific Tasks in Playbooks
+
+Run from a specific task:
+
+ansible-playbook playbook.yml --start-at-task "Start httpd"
+18. Ad-Hoc Commands (Important for SRE)
+
+Used for quick operations during incidents.
+
+General syntax:
+
+ansible [target] -m [module] -a "options"
+
+Examples:
+
+Ping all servers:
+
+ansible all -m ping
+
+Create file:
+
+ansible all -m file -a "path=/home/jeff/file state=touch mode=700"
+
+Install package:
+
+ansible all -m yum -a "name=telnet state=present"
+
+Start service:
+
+ansible all -m service -a "name=httpd state=started"
+
+Reboot server:
+
+ansible all -a "/sbin/reboot"
+
+Gather system information:
+
+ansible all -m setup
+
+Senior SRE use cases:
+
+Emergency fixes
+Fleet diagnostics
+Bulk operations
+Rapid incident mitigation
+19. Roles (Production-Grade Automation)
+
+Roles make playbooks modular and reusable.
+
+Directory structure:
+
+roles/
+   apache/
+      tasks/
+         main.yml
+   ntpd/
+      tasks/
+         main.yml
+   named/
+      tasks/
+         main.yml
+
+Example role task:
+
+roles/apache/tasks/main.yml
+---
+- name: Install Apache
+  yum:
+    name: httpd
+    state: present
+
+- name: Start Apache
+  service:
+    name: httpd
+    state: started
+
+Main playbook:
+
+---
+- name: Install infrastructure packages
+  hosts: all
+
+  roles:
+    - apache
+    - ntpd
+    - named
+
+This is how production environments structure Ansible repos.
+
+20. Ansible Galaxy
+
+Download community roles:
+
+ansible-galaxy search nginx
+ansible-galaxy install geerlingguy.nginx
+
+Galaxy is used to:
+
+Reuse automation
+Standardize deployments
+Speed up infrastructure builds
+21. Tags
+
+Tags allow running specific tasks only.
+
+Example:
+
+- name: Setup Apache
+  hosts: localhost
+
+  tasks:
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+      tags: install
+
+    - name: Start httpd
+      service:
+        name: httpd
+        state: started
+      tags: start
+
+Run only install task:
+
+ansible-playbook playbook.yml -t install
+
+Skip task:
+
+ansible-playbook playbook.yml --skip-tags install
+
+List tags:
+
+ansible-playbook playbook.yml --list-tags
+22. Variables
+
+Variables improve reusability.
+
+Example:
+
+---
+- name: Install package
+  hosts: all
+  vars:
+    package: httpd
+
+  tasks:
+    - name: Install package
+      yum:
+        name: "{{ package }}"
+        state: present
+
+    - name: Start service
+      service:
+        name: "{{ package }}"
+        state: started
+23. Handlers
+
+Handlers run only when notified.
+
+Used for:
+
+Restart services
+Reload configuration
+
+Example:
+
+---
+- name: Apache configuration
+  hosts: localhost
+
+  tasks:
+    - name: Copy config
+      copy:
+        src: httpd.conf
+        dest: /etc/httpd/conf/httpd.conf
+      notify:
+        - Restart apache
+
+  handlers:
+    - name: Restart apache
+      service:
+        name: httpd
+        state: restarted
+24. Conditions
+
+Execute tasks based on system facts.
+
+Example:
+
+---
+- name: Install Apache
+  hosts: all
+
+  tasks:
+    - name: Install on Ubuntu
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install on RedHat
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+Check system facts:
+
+ansible all -m setup
+25. Loops
+
+Loops simplify repetitive tasks.
+
+Create multiple users:
+
+---
+- name: Create users
+  hosts: localhost
+  vars:
+    users:
+      - jerry
+      - kramer
+      - elaine
+
+  tasks:
+    - name: Create users
+      user:
+        name: "{{ item }}"
+      loop: "{{ users }}"
+
+Install multiple packages:
+
+---
+- name: Install packages
+  hosts: localhost
+  vars:
+    packages:
+      - ftp
+      - telnet
+      - htop
+
+  tasks:
+    - name: Install packages
+      yum:
+        name: "{{ packages }}"
+        state: present
+26. Tools Every SRE Should Know
+
+List modules:
+
+ansible-doc -l
+
+Inventory debugging:
+
+ansible-inventory --list
+
+Galaxy:
+
+ansible-galaxy
+
+Facts collection:
+
+ansible all -m setup
+27. How Senior SREs Use Ansible in Real Environments
+
+A Senior SRE typically uses Ansible for:
+
+Infrastructure provisioning
+Server baseline configuration
+Cluster bootstrapping
+Security hardening
+Incident remediation
+Fleet patching
+Disaster recovery
+Immutable infrastructure preparation
+
+Example real workflow:
+
+Infrastructure Creation → Terraform
+Configuration → Ansible
+Deployment → CI/CD
+Monitoring → Prometheus
+Incident Response → Ansible Automation
+28. Recommended Ansible Repository Structure (For Your SRE Repo)
+
+This is what your repo could look like:
+
+ansible/
+ ├── inventories/
+ │    ├── prod
+ │    └── staging
+ │
+ ├── playbooks/
+ │    ├── webserver.yml
+ │    ├── database.yml
+ │    └── baseline.yml
+ │
+ ├── roles/
+ │    ├── apache
+ │    ├── monitoring
+ │    ├── security
+ │    └── users
+ │
+ ├── group_vars/
+ ├── host_vars/
+ │
+ └── ansible.cfg
+
+This structure is used in real production SRE teams.
