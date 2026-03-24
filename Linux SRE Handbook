@@ -4,995 +4,732 @@ This handbook contains essential Linux commands, system administration basics, a
 
 ---
 
-# 1. System Information
+1. System Information
 
 Check kernel version:
 
-```
 uname -r
 uname -a
-```
 
 Check OS information:
 
-```
 cat /etc/os-release
-```
 
 Check system uptime:
 
-```
 cat /proc/uptime
-```
+uptime
 
 Check kernel messages:
 
-```
 dmesg
-```
 
 Check login history:
 
-```
 last
-```
 
 Check shell in use:
 
-```
 echo $SHELL
-```
 
 Change default shell:
 
-```
 chsh
-```
 
 You must open a new terminal session for the change to take effect.
 
----
-
-# 2. Environment Variables
+2. Environment Variables
 
 Create environment variable:
 
-```
 export x=y
-```
 
 Check PATH:
 
-```
 echo $PATH
-```
 
 Find where a command is located:
 
-```
 which command_name
-```
 
 Add custom path:
 
-```
 export PATH=$PATH:/x/y/z
-```
 
----
+Example used in real environments:
 
-# 3. Basic File and Directory Operations
+export PATH=$PATH:/usr/local/bin
+3. Basic File and Directory Operations
 
 Create directories including parents:
 
-```
 mkdir -p x/y
 mkdir -p /opt/dev/test
-```
 
 Create files:
 
-```
 touch devopsfile{1..10}.txt
-```
 
 Create file with input:
 
-```
 cat > Africa/Egypt
 Cairo
 CTRL+D
-```
 
 Copy directories:
 
-```
 cp -r source destination
-```
 
 Remove directories:
 
-```
 rm -r directory
-```
 
 Check file type:
 
-```
 file filename
-```
 
 File types in Linux:
 
-* block file
-* character file
-* regular file
-* directory
-* link
-* pipe
+block file
+character file
+regular file
+directory
+link
+pipe
 
 List by timestamp:
 
-```
 ls -lt
 ls -lrt
-```
-
----
-
-# 4. File Size and Compression
+4. File Size and Compression
 
 Check disk usage:
 
-```
 du -sh file
-```
 
 Check file size:
 
-```
 ls -lh file
-```
-
----
-
-## TAR
+TAR
 
 Create archive:
 
-```
 tar -cf archive.tar file1 file2 file3
-```
 
 List archive content:
 
-```
 tar -tf archive.tar
-```
 
 Extract archive:
 
-```
 tar -xf archive.tar
-```
 
 Extract into specific directory:
 
-```
 tar -xzvf archive.tar -C /opt/
-```
 
 Create compressed tar:
 
-```
 tar -zcf archive.tar file1 file2
-```
 
 Options explanation:
 
-* z → compression
-* c → create
-* f → file
-* v → verbose
+z → compression
+c → create
+f → file
+v → verbose
 
----
-
-## ZIP
+ZIP
 
 Compress directory:
 
-```
 zip -r archive_name directory
-```
 
 Uncompress:
 
-```
 unzip archive.zip
-```
-
----
-
-## GZIP
+GZIP
 
 Compress:
 
-```
 gzip file.img
-```
 
 Check size:
 
-```
 du -sh file.img.gz
-```
 
 Uncompress:
 
-```
 gunzip file.img.gz
-```
-
----
-
-## XZ Compression
+XZ Compression
 
 Compress:
 
-```
 xz file.img
-```
 
 Uncompress:
 
-```
 unxz file.img.xz
-```
-
----
-
-# 5. Text Processing
+5. Text Processing
 
 Search text:
 
-```
 grep word file.txt
-```
 
 Exclude matches:
 
-```
 grep -v word file.txt
-```
 
 Exact word search:
 
-```
 grep -w word file.txt
-```
 
 Recursive search:
 
-```
 grep -iR *
-```
 
 Exclude keyword:
 
-```
 grep -vi firewall file
-```
-
----
-
-## CUT
+CUT
 
 Display first column:
 
-```
 cut -d: -f1 /etc/passwd
-```
 
----
+Display first 8 characters per line:
 
-## AWK
+cut -c1-8 /etc/passwd
 
-```
+Extract multiple columns:
+
+cut -d":" -f1,6 /etc/passwd
+AWK
 awk -F':' '{print $1}' /etc/passwd
-```
-
----
-
-## SED
+SED
 
 Replace text:
 
-```
 sed -i 's/corona/covid19/g' file
-```
+NL (Line Numbers)
 
----
+Show file with line numbers:
 
-# 6. VI Editor
+nl /etc/passwd
+
+Useful when debugging configuration files.
+
+6. Sorting and Filtering Data
+
+Sort file:
+
+sort file.txt
+
+Reverse sort:
+
+sort -r file.txt
+
+Numeric sort:
+
+sort -n numbers.txt
+Remove Duplicate Lines
+uniq file.txt
+
+Count duplicates:
+
+uniq -c file.txt
+
+Real-world log analysis:
+
+sort access.log | uniq -c | sort -nr
+
+Used to detect repeated errors or attacks.
+
+7. VI Editor
 
 Copy line:
 
-```
 yy
-```
 
 Paste below cursor:
 
-```
 p
-```
 
 Paste above cursor:
 
-```
 P
-```
 
 Delete line:
 
-```
 dd
-```
 
 Undo change:
 
-```
 u
-```
 
 Search text:
 
-```
 /text
-```
 
 Next result:
 
-```
 n
-```
 
 Previous result:
 
-```
 N
-```
 
 Show line numbers:
 
-```
 :set nu
-```
 
 Go to top:
 
-```
 gg
-```
 
 Go to bottom:
 
-```
 G
-```
 
 Move cursor forward word by word:
 
-```
 w
-```
 
 Move backward:
 
-```
 b
-```
 
 Save and exit:
 
-```
 :wq!
-```
-
----
-
-# 7. Hardware Information
+8. Hardware Information
 
 CPU details:
 
-```
 lscpu
-```
 
 Memory usage:
 
-```
 free -m
 lsmem --summary
-```
 
 Block devices:
 
-```
 lsblk
-```
-
----
-
-# 8. Process Management
+9. Process Management
 
 List processes:
 
-```
 ps aux
 ps -ef
-```
+
+Find process:
+
+pgrep process_name
+
+Kill process:
+
+pkill process_name
+
+Kill all processes of a user:
+
+pkill -u username
 
 Kill process pipeline example:
 
-```
 ps -ef | grep https | grep -v grep | awk '{print $2}' | xargs kill -9
-```
+Process Priority
 
----
+Change priority:
 
-# 9. User Management
+renice -n 10 -p PID
+
+Higher nice value = lower priority.
+
+10. System Monitoring
+
+Real-time monitoring:
+
+top
+
+Exit top:
+
+q
+
+Used to monitor:
+
+CPU
+memory
+load
+processes
+11. User Management
 
 Check user:
 
-```
 id user
-```
 
 Create user:
 
-```
 useradd user
-```
 
 Delete user:
 
-```
 userdel -r user
-```
 
 Set password:
 
-```
 passwd user
-```
 
 Switch user:
 
-```
 su - user
-```
 
 Important system files:
 
-```
 /etc/passwd
 /etc/shadow
 /etc/group
-```
 
 Add user to group:
 
-```
 usermod -aG devops ansible
-```
 
 View groups:
 
-```
 id ansible
-```
-
----
-
-# 10. Networking
+12. Networking
 
 DNS configuration:
 
-```
 cat /etc/resolv.conf
-```
 
 Static host entries:
 
-```
 cat /etc/hosts
-```
 
 Name resolution order:
 
-```
 /etc/nsswitch.conf
-```
 
 Network interfaces:
 
-```
 ip link
 ip addr
-```
 
 Check listening ports:
 
-```
 netstat -an | grep 80 | grep LISTEN
-```
-
----
-
-# 11. SSH
+13. SSH
 
 Connect to host:
 
-```
 ssh -l user hostname
-```
 
 Generate key:
 
-```
 ssh-keygen -t rsa
-```
 
 Copy key to remote host:
 
-```
 ssh-copy-id user@remote_host
-```
 
 Copy directories:
 
-```
 scp -pr source destination
-```
-
----
-
-# 12. Firewall (iptables)
+14. Firewall (iptables)
 
 Install:
 
-```
 apt install iptables
-```
 
 List rules:
 
-```
 iptables -L
-```
 
 Insert rule:
 
-```
 iptables -I OUTPUT -p tcp -d 172.16.238.100 --dport 443 -j ACCEPT
-```
 
 Delete rule:
 
-```
 iptables -D OUTPUT 5
-```
 
-Rules are processed top to bottom.
+Rules are processed from top to bottom.
 
----
+15. Services (systemd)
 
-# 13. Services (systemd)
+Systemd manages services and system startup.
 
 Start service:
 
-```
 systemctl start docker
-```
 
 Stop service:
 
-```
 systemctl stop docker
-```
 
 Restart service:
 
-```
 systemctl restart docker
-```
 
-Enable service:
+Enable service at boot:
 
-```
 systemctl enable docker
-```
 
 Reload service:
 
-```
 systemctl reload docker
-```
 
 Reload daemon configuration:
 
-```
 systemctl daemon-reload
-```
 
 View logs:
 
-```
 journalctl
-```
-
----
-
-# 14. Cron Jobs
+16. Cron Jobs
 
 Edit cron jobs:
 
-```
 crontab -e
-```
 
-Check execution logs:
+List cron jobs:
 
-```
-/var/log/syslog
-```
+crontab -l
 
----
+Remove cron jobs:
 
-# 15. Package Management
+crontab -r
 
-## Debian / Ubuntu
+Example job:
+
+0 2 * * * backup.sh
+
+Runs every day at 2 AM.
+
+17. at Command (One-time Jobs)
+
+Schedule one-time job:
+
+at 22:00
+
+Example:
+
+echo "maintenance task" | at 23:00
+18. Package Management
 
 Install package:
 
-```
 apt install package
-```
 
 Update repositories:
 
-```
 apt update
-```
 
 Upgrade packages:
 
-```
 apt upgrade
-```
 
 Search package:
 
-```
 apt search package
-```
 
 Remove package:
 
-```
 apt remove package
-```
 
 Remove including configs:
 
-```
 apt purge package
-```
 
-DPKG commands:
+DPKG:
 
-```
 dpkg -i package.deb
 dpkg -r package
 dpkg -l
 dpkg -s package
-```
 
 Repository configuration:
 
-```
 /etc/apt/sources.list
-```
+19. Disk and Partition Management
 
----
+List partitions:
 
-## RedHat / CentOS
-
-Install RPM:
-
-```
-rpm -ivh package.rpm
-```
-
-Update RPM:
-
-```
-rpm -Uvh package.rpm
-```
-
-Remove RPM:
-
-```
-rpm -e package
-```
-
-List packages:
-
-```
-rpm -qa
-```
-
-YUM examples:
-
-```
-yum install httpd
-yum remove package
-yum search package
-yum update
-yum repolist
-```
-
-Repository directory:
-
-```
-/etc/yum.repos.d
-```
-
----
-
-# 16. Disk and Partition Management
-
-List partition table:
-
-```
 fdisk -l
-```
 
-Check specific disk:
+Inspect disk:
 
-```
 fdisk -l /dev/sda
-```
 
-GPT disk management:
+Partition tools:
 
-```
-gdisk /dev/sdb
-```
+fdisk
+parted
 
 Partition types:
 
-* Primary
-* Extended
-* Logical
+Primary
+Extended
+Logical
+20. Filesystems
 
----
+What is a filesystem?
 
-# 17. File Systems
+A filesystem is the structure used by the operating system to organize and manage files on a storage device.
+
+Examples:
+
+ext4
+xfs
+btrfs
 
 Create filesystem:
 
-```
 mkfs.ext4 /dev/sdb1
-```
 
 Mount filesystem:
 
-```
-mkdir /mnt/ext4
 mount /dev/sdb1 /mnt/ext4
-```
 
-Verify mount:
+Unmount:
 
-```
-mount | grep /dev/sdb1
-```
+umount /mnt/ext4
 
 Persistent mounts:
 
-```
 /etc/fstab
-```
+21. Disk Investigation
 
----
+List storage devices:
 
-# 18. LVM
+lsblk
 
-Install tool:
+Kernel messages:
 
-```
+dmesg
+
+Check errors:
+
+dmesg | grep error
+22. RAID (Storage Redundancy)
+
+RAID stands for:
+
+Redundant Array of Independent Disks.
+
+Common RAID levels:
+
+RAID 0 — Striping
+RAID 1 — Mirroring
+RAID 5 — Striping with parity
+RAID 6 — Dual parity
+
+RAID improves:
+
+performance
+redundancy
+availability
+
+Example:
+
+RAID 1 commonly used for OS disks.
+
+23. Logical Volume Manager (LVM)
+
+LVM provides flexible disk management.
+
+Install:
+
 apt-get install lvm2
-```
 
 List logical volumes:
 
-```
 lvs
-```
+vgs
+pvs
 
----
+Benefits:
 
-# 19. Utilities
+resize disks without downtime
+combine disks
+snapshots
+24. Links in Linux
 
-Download file:
+Hard link:
 
-```
-curl http_link -o filename
-```
+ln file1 file2
 
-Run local Ansible test:
+Soft link:
 
-```
-ansible localhost -m ping
-```
+ln -s file1 link1
 
----
+Example deployment structure:
 
-# 20. Troubleshooting Runbooks (SRE)
+/app/current -> /app/releases/v2
+25. Logs
 
-## High CPU Usage
+Important log files:
 
-Symptoms:
+/var/log/dmesg
+/var/log/syslog
 
-* system slow
-* high load average
+Logs are essential for:
 
-Check load:
-
-```
-uptime
-```
-
-Identify processes consuming CPU:
-
-```
-top
-```
-
-or
-
-```
-ps aux --sort=-%cpu | head
-```
-
-Kill problematic process:
-
-```
-kill -15 PID
-kill -9 PID
-```
-
----
-
-## Disk Full
-
-Check disk usage:
-
-```
-df -h
-```
-
-Find large directories:
-
-```
-du -sh /*
-```
-
-Check deleted files still open:
-
-```
-lsof | grep deleted
-```
-
-Restart service using deleted file.
-
----
-
-## Memory Leak
-
-Check memory usage:
-
-```
-free -m
-```
-
-Find top memory consumers:
-
-```
-ps aux --sort=-%mem | head
-```
-
-Check OOM killer logs:
-
-```
-dmesg | grep -i kill
-```
-
----
-
-## Process Hanging
-
-Check processes:
-
-```
-ps -ef
-```
-
-Check process status:
-
-```
-ps aux
-```
-
-Kill stuck process:
-
-```
-kill PID
-kill -9 PID
-```
-
----
-
-## Service Not Starting
-
-Check service status:
-
-```
-systemctl status service_name
-```
+troubleshooting
+debugging
+incident response
+26. Journalctl (Systemd Logs)
 
 View logs:
 
-```
-journalctl -u service_name
-```
+journalctl
 
-Restart service:
+Service logs:
 
-```
-systemctl restart service_name
-```
+journalctl -u nginx
 
----
+Show recent errors:
 
-## Port Already in Use
+journalctl -p err -n 50
 
-Find process using port:
+Follow logs:
 
-```
-lsof -i :80
-```
+journalctl -f
+27. File Search by Time (Incident Analysis)
 
-or
+Find files modified less than 2 days ago:
 
-```
-netstat -tulpn
-```
+find /var -mtime -2
 
-Kill process if needed.
+Find files modified more than 2 days ago:
 
----
+find /var -mtime +2
 
-# 21. Incident Response (SRE Practice)
+Find files modified exactly 2 days ago:
 
-Example incident structure:
+find /var -mtime 2
 
-Incident: High CPU on production node
+Real SRE example:
 
-Root Cause: runaway process
+find /var/log -mtime -1
 
-Resolution: restart service
+Used during incident investigations.
 
-Prevention: add monitoring alerts
+28. Shell Configuration Files
+
+Important shell files:
+
+/etc/bashrc
+~/.profile
+
+They define:
+
+environment variables
+aliases
+shell behavior
+
+Example:
+
+export JAVA_HOME=/usr/lib/jvm/java-17
+export PATH=$PATH:$JAVA_HOME/bin
