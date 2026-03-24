@@ -733,3 +733,664 @@ Example:
 
 export JAVA_HOME=/usr/lib/jvm/java-17
 export PATH=$PATH:$JAVA_HOME/bin
+
+
+
+29. Advanced SRE Troubleshooting & Production Operations
+
+This section contains real-world debugging techniques used by Senior Site Reliability Engineers during production incidents.
+
+The goal is to quickly identify:
+
+CPU bottlenecks
+Memory pressure
+Disk IO issues
+Network problems
+Application failures
+Infrastructure incidents
+
+This section reflects real operational workflows used in production environments.
+
+29.1 Production Incident Investigation Flow
+
+When a production system becomes slow or unstable, SREs usually follow a structured investigation process.
+
+Step 1 — Check system load
+
+uptime
+
+This shows:
+
+load average
+system pressure
+possible overload situations
+
+Step 2 — Check CPU usage
+
+top
+
+Look for:
+
+high CPU processes
+runaway processes
+system vs user CPU usage
+
+Another useful command:
+
+ps aux --sort=-%cpu | head
+
+Step 3 — Check memory usage
+
+free -m
+
+Real-time memory statistics:
+
+vmstat 1
+
+Look for:
+
+swap usage
+memory pressure
+blocked processes
+
+Step 4 — Check disk performance
+
+iostat -x 1
+
+Investigate:
+
+disk latency
+high IO wait
+overloaded storage
+
+Check disk usage:
+
+df -h
+
+Find large directories:
+
+du -sh /* 2>/dev/null | sort -hr | head
+
+Step 5 — Check network connections
+
+ss -tulpn
+
+Summary of connections:
+
+ss -s
+
+Network debugging:
+
+mtr google.com
+
+Packet capture:
+
+tcpdump -i eth0
+29.2 CPU Debugging
+
+High CPU is one of the most common production incidents.
+
+Check CPU usage
+
+top
+
+More detailed CPU metrics
+
+mpstat -P ALL 1
+
+Per-process usage
+
+pidstat 1
+
+Possible causes:
+
+inefficient code
+infinite loops
+heavy batch jobs
+misconfigured services
+29.3 Memory Debugging
+
+Memory issues often cause application crashes or OOM events.
+
+Check memory usage
+
+free -m
+
+Check memory allocation per process
+
+smem
+
+Inspect process memory
+
+pmap -x PID
+
+Check kernel memory info
+
+cat /proc/meminfo
+
+Check if OOM killer was triggered
+
+dmesg | grep -i oom
+
+Common causes:
+
+memory leaks
+large caches
+container limits
+unexpected workload spikes
+29.4 Disk IO Troubleshooting
+
+Disk IO bottlenecks are common in databases and logging systems.
+
+Check IO statistics
+
+iostat -xz 1
+
+Check active disk usage
+
+iotop
+
+Disk usage overview
+
+df -h
+
+Find largest files
+
+find / -type f -size +1G
+
+Common causes:
+
+log growth
+backup jobs
+database spikes
+insufficient storage performance
+29.5 Network Troubleshooting
+
+Networking issues can cause timeouts, latency, or service outages.
+
+Check open ports
+
+ss -tuln
+
+Check DNS resolution
+
+dig google.com
+
+Test connectivity
+
+ping google.com
+
+Trace network path
+
+traceroute google.com
+
+Advanced network diagnostics
+
+mtr google.com
+
+Capture packets
+
+tcpdump -i eth0 port 443
+
+Common issues:
+
+DNS failures
+firewall blocks
+routing problems
+connection saturation
+29.6 Linux Internals Useful for SRE
+
+Senior SREs often inspect Linux internals to diagnose complex issues.
+
+Check file descriptor limits
+
+ulimit -n
+
+Open files per process
+
+lsof
+
+Process limits
+
+cat /proc/PID/limits
+
+CPU information
+
+cat /proc/cpuinfo
+
+Memory internals
+
+cat /proc/meminfo
+
+This helps identify:
+
+resource exhaustion
+system limits
+kernel-level constraints
+
+29.7 Kubernetes Troubleshooting
+
+Modern SREs frequently debug Kubernetes clusters.
+
+Check pods
+
+kubectl get pods -A
+
+Describe pod
+
+kubectl describe pod POD_NAME
+
+Check logs
+
+kubectl logs POD_NAME
+
+Check node usage
+
+kubectl top nodes
+
+Check pod resource usage
+
+kubectl top pod
+
+Common Kubernetes issues:
+
+CrashLoopBackOff
+OOMKilled
+ImagePullBackOff
+Node pressure
+Networking issues
+
+29.8 Real Production Incident Example
+
+Incident: High CPU Usage in Production
+
+Symptoms:
+
+API latency increased
+Requests timing out
+Pods restarting
+
+Investigation
+
+top
+
+Then:
+
+ps aux --sort=-%cpu
+
+Check service logs
+
+journalctl -u service_name
+
+Possible root causes:
+
+bad deployment
+inefficient query
+traffic spike
+autoscaling failure
+
+Resolution:
+
+rollback deployment
+restart service
+scale infrastructure
+fix application issue
+
+29.9 Observability Basics (SRE Core Concepts)
+
+A strong SRE focuses on observability.
+
+Key concepts:
+
+SLI — Service Level Indicator
+SLO — Service Level Objective
+SLA — Service Level Agreement
+Error Budget — allowed failure rate
+
+These concepts are part of the SRE model introduced in:
+
+Site Reliability Engineering
+
+29.10 What Senior SREs Always Check First During Incidents
+
+A quick checklist used in many real production environments.
+
+System health
+
+uptime
+
+CPU
+
+top
+
+Memory
+
+free -m
+
+Disk
+
+df -h
+
+Network
+
+ss -s
+
+Logs
+
+journalctl -xe
+
+Processes
+
+ps aux
+
+This approach allows SREs to diagnose most infrastructure incidents within minutes.
+
+
+30. Real-World Failure Scenarios & SRE Incident Playbooks
+
+This section describes real production failures that Site Reliability Engineers commonly face.
+It explains how incidents are investigated, diagnosed, and resolved.
+
+Understanding failure scenarios is critical for building reliable systems.
+
+A Senior SRE is not only expected to know Linux commands, but also:
+
+Diagnose complex outages
+Identify root causes quickly
+Mitigate incidents
+Prevent recurrence
+30.1 Incident: Service Is Slow
+
+Symptoms:
+
+API latency increased
+Users reporting slow responses
+Timeouts in applications
+
+Investigation Flow
+
+Check system load
+
+uptime
+
+Check CPU usage
+
+top
+
+Check processes using CPU
+
+ps aux --sort=-%cpu | head
+
+Check memory pressure
+
+vmstat 1
+
+Check disk performance
+
+iostat -x 1
+
+Check network connections
+
+ss -s
+
+Possible Root Causes:
+
+traffic spike
+inefficient queries
+CPU saturation
+disk bottleneck
+networking congestion
+
+Resolution Actions:
+
+scale infrastructure
+restart impacted services
+rollback deployment
+optimize application queries
+30.2 Incident: Disk Full
+
+This is one of the most common incidents in production environments.
+
+Symptoms:
+
+services crashing
+logs failing to write
+database errors
+
+Check disk usage
+
+df -h
+
+Find largest directories
+
+du -sh /* 2>/dev/null | sort -hr | head
+
+Find large files
+
+find / -type f -size +500M
+
+Check logs
+
+ls -lh /var/log
+
+Common Causes:
+
+log rotation failure
+backup files
+temporary files
+runaway processes generating logs
+
+Resolution:
+
+clean old logs
+configure log rotation
+increase disk capacity
+archive data
+
+Prevention:
+
+monitoring alerts
+log rotation policies
+disk usage dashboards
+30.3 Incident: Server Running Out of Memory
+
+Symptoms:
+
+application crashes
+OOMKilled events
+system slowdown
+
+Check memory
+
+free -m
+
+Check memory pressure
+
+vmstat 1
+
+Find memory-heavy processes
+
+ps aux --sort=-%mem | head
+
+Check OOM events
+
+dmesg | grep -i oom
+
+Possible Causes:
+
+memory leak
+container limits
+increased workload
+inefficient caching
+
+Resolution:
+
+restart service
+increase memory
+fix memory leak
+scale service horizontally
+30.4 Incident: High Network Latency
+
+Symptoms:
+
+slow API responses
+database connection delays
+timeouts between services
+
+Check connectivity
+
+ping service-host
+
+Check routing
+
+traceroute service-host
+
+Advanced network diagnostics
+
+mtr service-host
+
+Check active connections
+
+ss -tulnp
+
+Capture packets
+
+tcpdump -i eth0
+
+Possible Causes:
+
+network congestion
+routing issue
+firewall misconfiguration
+DNS failure
+
+Resolution:
+
+fix routing
+update firewall rules
+scale networking resources
+move traffic
+30.5 Incident: Kubernetes Pod Keeps Restarting
+
+Symptoms:
+
+CrashLoopBackOff
+
+Check pods
+
+kubectl get pods
+
+Describe pod
+
+kubectl describe pod POD_NAME
+
+Check logs
+
+kubectl logs POD_NAME
+
+Check events
+
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+Common Causes:
+
+application crash
+missing environment variables
+image problems
+resource limits
+
+Resolution:
+
+fix configuration
+update image
+increase resources
+rollback deployment
+30.6 Incident: Node Is Not Ready
+
+Check nodes
+
+kubectl get nodes
+
+Describe node
+
+kubectl describe node NODE_NAME
+
+Check kubelet logs
+
+journalctl -u kubelet
+
+Common Causes:
+
+disk pressure
+memory pressure
+network failure
+kubelet crash
+30.7 Golden Signals (Critical SRE Concept)
+
+Senior SREs monitor four key metrics known as the Golden Signals.
+
+Latency
+Traffic
+Errors
+Saturation
+
+These signals help detect issues before they escalate.
+
+This concept comes from:
+
+Site Reliability Engineering
+
+30.8 Postmortem Culture
+
+After every major incident, SRE teams conduct a postmortem.
+
+A good postmortem includes:
+
+Incident Summary
+Impact
+Root Cause
+Timeline
+Mitigation
+Prevention Actions
+
+Example structure
+
+Incident ID: PROD-2026-01
+
+Start Time:
+End Time:
+
+Impact:
+Users affected:
+
+Root Cause:
+
+Resolution:
+
+Action Items:
+
+Postmortems improve reliability and prevent repeated failures.
+
+30.9 What Makes a Senior SRE Different
+
+A Senior SRE focuses on:
+
+Reliability
+Automation
+Monitoring
+Resilience
+Scalability
+
+Senior engineers do not only fix problems — they design systems that prevent them.
+
+Key mindset:
+
+Automate repetitive tasks
+Eliminate manual operations
+Improve observability
+Reduce incident frequency
+
+
+
+
+
