@@ -1391,6 +1391,931 @@ Improve observability
 Reduce incident frequency
 
 
+32. Linux Failures in Production
 
+In real SRE environments, Linux failures are rarely simple. Systems fail under load, resource exhaustion, kernel behavior, or misconfiguration.
 
+A Senior SRE must be able to recognize failure patterns quickly.
 
+32.1 CPU Saturation
+
+Symptoms:
+
+High load average
+High CPU usage
+System slow
+Requests timing out
+
+Diagnosis
+
+top
+htop
+uptime
+mpstat -P ALL 1
+pidstat 1
+
+Important concept:
+
+Load average vs CPU usage.
+
+Load > CPU cores = saturation
+
+Example:
+
+8 CPU server
+
+Load average:
+15.2
+
+This means the system is overloaded.
+
+32.2 IO Bottlenecks
+
+Very common in production.
+
+Symptoms:
+
+High latency
+Slow applications
+CPU idle but system slow
+
+Diagnosis
+
+iostat -xz 1
+iotop
+vmstat 1
+sar -d 1
+
+Key metric:
+
+await
+
+If await is high → disk bottleneck.
+
+32.3 Memory Exhaustion
+
+Symptoms:
+
+OOM killer
+Services restarting
+System instability
+
+Check:
+
+free -h
+vmstat 1
+cat /proc/meminfo
+dmesg | grep -i oom
+
+Important:
+
+Linux will kill processes automatically.
+
+Example log:
+
+Out of memory: Kill process 18421 (java)
+
+This is critical in Kubernetes nodes.
+
+32.4 File Descriptor Exhaustion
+
+Very common in high-traffic systems.
+
+Symptoms:
+
+Application crashes
+Cannot open files
+Connection failures
+
+Check limits
+
+ulimit -n
+cat /proc/sys/fs/file-max
+lsof | wc -l
+
+Real incident example:
+
+Nginx hitting file limit.
+
+Fix:
+
+/etc/security/limits.conf
+32.5 Zombie Processes
+
+Symptoms:
+
+Process table pollution
+Parent process not reaping child processes
+
+Check:
+
+ps aux | grep Z
+
+Solution:
+
+Fix application code or restart parent process.
+
+33. Linux Incident Debugging Playbooks
+
+This section is extremely important in real SRE work.
+
+Incidents must be debugged methodically.
+
+33.1 Server is Slow
+
+Step 1 — Check Load
+
+uptime
+
+Step 2 — CPU usage
+
+top
+mpstat
+
+Step 3 — Memory
+
+free -h
+vmstat
+
+Step 4 — Disk
+
+iostat -xz 1
+
+Step 5 — Processes
+
+ps aux --sort=-%cpu
+
+Step 6 — Logs
+
+journalctl -xe
+dmesg
+33.2 High Latency in Application
+
+Check:
+
+Network
+Disk
+CPU
+Locks
+Thread pools
+
+Commands:
+
+ss -s
+netstat -tulnp
+iostat
+pidstat
+strace
+33.3 System Randomly Restarting
+
+Check:
+
+journalctl -b -1
+dmesg
+
+Look for:
+
+Kernel panic
+OOM
+Hardware failure
+
+34. Linux Performance Deep Dive (SRE Level)
+
+This is where SRE becomes advanced.
+
+Performance must be understood at system level.
+
+34.1 Understanding Load Average
+
+Load average represents:
+
+Running processes
++
+Waiting processes
+
+Many engineers misunderstand this.
+
+Load includes:
+
+CPU waiting
+IO waiting
+
+34.2 CPU Analysis
+
+Key tools:
+
+mpstat
+pidstat
+perf
+top
+
+Advanced analysis:
+
+perf top
+perf record
+perf report
+
+This is used in production performance debugging.
+
+34.3 Memory Performance
+
+Important areas:
+
+Page cache
+Swap
+Dirty pages
+Memory fragmentation
+
+Check:
+
+vmstat
+slabtop
+free
+
+Advanced:
+
+numactl
+
+NUMA problems are common in large servers.
+
+35. Linux Kernel Concepts for SRE
+
+Most SREs don't know this — but senior ones do.
+
+35.1 Scheduler
+
+Linux uses:
+
+Completely Fair Scheduler (CFS)
+
+Concept:
+
+Processes share CPU fairly.
+
+Important metric:
+
+context switches
+
+Check:
+
+vmstat 1
+35.2 Interrupts
+
+Hardware interrupts affect performance.
+
+Check:
+
+cat /proc/interrupts
+
+Problems:
+
+NIC interrupt imbalance.
+
+Fix:
+
+irqbalance
+35.3 Memory Paging
+
+Linux uses virtual memory.
+
+Important concepts:
+
+Pages
+Page faults
+Swapping
+
+Check:
+
+vmstat
+
+Major page faults indicate problems.
+
+36. Linux + Containers + Kubernetes Nodes
+
+Modern SRE must understand this.
+
+Containers run on Linux kernel features.
+
+36.1 cgroups
+
+Control:
+
+CPU
+Memory
+IO
+
+Check:
+
+/sys/fs/cgroup
+
+Example:
+
+Limit memory of container.
+
+36.2 Namespaces
+
+Namespaces isolate:
+
+Process IDs
+Network
+Filesystem
+Users
+
+Check:
+
+lsns
+36.3 Container Networking
+
+Understand:
+
+Bridge networks
+Overlay networks
+Service mesh traffic
+
+Important tools:
+
+ip a
+ip route
+iptables
+37. Real Production Incident Scenarios
+
+This is what makes your repo very strong.
+
+37.1 Case: High Load but CPU Idle
+
+Cause:
+
+IO Wait
+
+Check:
+
+top
+iostat
+
+Fix:
+
+Faster disk
+Tune IO
+Use SSD
+
+37.2 Case: Kubernetes Node Not Ready
+
+Possible causes:
+
+Disk full
+Memory pressure
+Network plugin failure
+
+Check:
+
+kubectl describe node
+journalctl -u kubelet
+37.3 Case: Sudden Traffic Spike
+
+Symptoms:
+
+Latency increases
+Errors increase
+
+SRE actions:
+
+Scale services
+Enable autoscaling
+Protect system
+
+38. Advanced Linux Observability
+
+Observability is critical in SRE. Modern reliability engineering depends heavily on monitoring and incident investigation practices.
+
+Metrics
+
+CPU
+Memory
+Disk
+Network
+Load
+
+Tools:
+
+Prometheus
+Node Exporter
+Grafana
+Logs
+
+Centralized logging:
+
+ELK stack
+Loki
+
+Commands:
+
+journalctl
+tail -f
+Tracing
+
+Distributed systems debugging.
+
+Tools:
+
+Jaeger
+OpenTelemetry
+
+39. Advanced SRE Troubleshooting Mindset
+
+Senior SREs think differently.
+
+Principles:
+
+1 Design for failure
+2 Measure everything
+3 Automate operations
+4 Reduce toil
+5 Build reliable systems
+
+SRE integrates software engineering with infrastructure operations to maintain reliable large-scale systems.
+
+40. Senior SRE Linux Mastery Roadmap
+
+This is a realistic progression.
+
+Level 1 — Junior
+
+Linux commands
+Processes
+Networking basics
+
+Level 2 — Intermediate
+
+Debug production issues
+Monitoring systems
+Automation
+
+Level 3 — Advanced
+
+Kernel understanding
+Performance tuning
+Incident leadership
+
+Level 4 — Senior SRE
+
+Design reliable systems
+Capacity planning
+Failure engineering
+Distributed systems debugging
+
+41. Important Linux Commands and Concepts (Fundamentals → Advanced)
+
+This section covers essential Linux commands and environment concepts that every SRE must understand. These commands are frequently used in production troubleshooting, automation, and system administration.
+
+41.1 Running Processes in Background with nohup
+
+The nohup command allows a process to continue running even after the user logs out of the terminal session.
+
+This is useful in remote environments such as SSH sessions where disconnecting would normally stop running processes.
+
+Basic syntax:
+
+nohup command &
+
+Example:
+
+nohup cp -rf /etc /backup &
+
+Explanation:
+
+nohup prevents the process from stopping when the terminal closes.
+cp -rf /etc /backup copies the directory recursively.
+& runs the command in the background.
+
+Output:
+
+By default, output is written to:
+
+nohup.out
+
+Production use cases:
+
+Long-running backups
+Data migrations
+Log processing
+Batch jobs
+Temporary automation tasks
+
+Check the running process:
+
+ps aux | grep cp
+
+Monitor output:
+
+tail -f nohup.out
+41.2 Monitoring Commands with watch
+
+The watch command runs another command repeatedly at a specified interval and displays the output in real time.
+
+This is extremely useful during incidents and debugging.
+
+Basic syntax:
+
+watch command
+
+Example:
+
+watch df -h
+
+This refreshes disk usage every 2 seconds.
+
+Custom interval:
+
+watch -n 1 command
+
+Example:
+
+watch -n 1 free -h
+
+Real SRE use cases:
+
+Monitoring memory during an incident.
+
+watch -n 1 free -h
+
+Monitoring Kubernetes nodes:
+
+watch kubectl get nodes
+
+Monitoring connections:
+
+watch ss -s
+41.3 Soft Links vs Hard Links
+
+Linux allows files to be referenced using links.
+
+There are two types:
+
+Hard links
+Symbolic links (soft links)
+
+Hard Link
+
+A hard link is another name for the same file inode.
+
+Important characteristics:
+
+Same inode
+Cannot link directories
+Must be on the same filesystem
+If the original file is deleted, the hard link still works
+
+Create a hard link:
+
+ln file.txt hardlink.txt
+
+Check inode:
+
+ls -li
+
+Example output:
+
+123456 file.txt
+123456 hardlink.txt
+
+Same inode = same file.
+
+Soft Link (Symbolic Link)
+
+A symbolic link is a pointer to another file.
+
+Create symbolic link:
+
+ln -s file.txt symlink.txt
+
+Check:
+
+ls -l
+
+Output example:
+
+symlink.txt -> file.txt
+
+If the original file is deleted:
+
+The symlink becomes broken.
+
+Production SRE usage:
+
+Symbolic links are widely used in:
+
+Application deployments
+Version switching
+Configuration management
+Container images
+Kubernetes volumes
+
+Example:
+
+/app/current -> /app/releases/v3
+
+This allows instant rollbacks.
+
+41.4 The stat Command
+
+The stat command displays detailed information about a file.
+
+This is very useful when debugging permissions, timestamps, or file changes.
+
+Example:
+
+stat file.txt
+
+Output includes:
+
+File size
+Permissions
+Owner
+Access time
+Modify time
+Change time
+Inode number
+
+Example real use case:
+
+Investigating when a configuration file was modified during an incident.
+
+stat /etc/nginx/nginx.conf
+41.5 The ss Command (Modern Network Inspection Tool)
+
+The ss command is a modern replacement for netstat.
+
+It is faster and more powerful.
+
+Example:
+
+ss -tulnp
+
+Explanation:
+
+t TCP connections
+u UDP connections
+l listening sockets
+n numeric output
+p show process
+
+Example output shows:
+
+Open ports
+Listening services
+Associated processes
+
+Check total connections:
+
+ss -s
+
+Find connections to a specific port:
+
+ss -tulnp | grep 443
+
+Production use case:
+
+Detecting traffic spikes or connection leaks.
+
+41.6 The host Command
+
+The host command is used for DNS lookups.
+
+Basic example:
+
+host google.com
+
+Output:
+
+IP address
+DNS resolution
+
+Reverse lookup:
+
+host 8.8.8.8
+
+Production SRE use cases:
+
+Debugging:
+
+DNS propagation issues
+Load balancer DNS
+Service discovery problems
+Cloud networking issues
+
+Example:
+
+host api.company.com
+41.7 The nmap Command (Network Scanning Tool)
+
+nmap is used to discover hosts and services on a network.
+
+It is widely used in:
+
+Security analysis
+Network debugging
+Infrastructure discovery
+
+Basic scan:
+
+nmap localhost
+
+Scan specific port:
+
+nmap -p 80 localhost
+
+Scan open ports:
+
+nmap -p- server-ip
+
+Service detection:
+
+nmap -sV server-ip
+
+Real SRE usage:
+
+Understanding which services are running on a server during incident investigation.
+
+Example:
+
+A port unexpectedly open:
+
+nmap production-server
+41.8 /etc/profile
+
+The file:
+
+/etc/profile
+
+Is a system-wide configuration file executed for login shells.
+
+It defines environment variables and system settings for all users.
+
+Common variables defined here:
+
+PATH
+USER
+HOSTNAME
+LANG
+
+Example:
+
+export PATH=$PATH:/usr/local/bin
+
+This ensures commands in /usr/local/bin are available.
+
+Important note for SREs:
+
+Changes here affect all users in the system.
+
+Reload:
+
+source /etc/profile
+41.9 /etc/bashrc
+
+This file configures behavior for interactive bash shells.
+
+It typically includes:
+
+Aliases
+Shell options
+Prompt customization
+Functions
+
+Example:
+
+alias ll='ls -la'
+
+Difference between /etc/profile and /etc/bashrc
+
+File	Purpose
+/etc/profile	Login shell configuration
+/etc/bashrc	Interactive shell configuration
+
+Flow:
+
+Login shell → loads /etc/profile
+Interactive shell → loads /etc/bashrc
+
+Understanding this is important when debugging environment issues.
+
+41.10 $? — Exit Status of Last Command
+
+The variable:
+
+$?
+
+Stores the exit code of the last executed command.
+
+Example:
+
+ls /tmp
+echo $?
+
+Output:
+
+0
+
+Meaning:
+
+Command executed successfully.
+
+If command fails:
+
+ls /nonexistent
+echo $?
+
+Output:
+
+2
+
+This is extremely important in automation and scripting.
+
+Example in scripts:
+
+if [ $? -ne 0 ]; then
+    echo "Command failed"
+fi
+
+Production SRE use:
+
+Validating automation reliability.
+
+41.11 $$ — Current Bash Process ID
+
+The variable:
+
+$$
+
+Returns the PID of the current shell.
+
+Example:
+
+echo $$
+
+Output:
+
+21456
+
+This is useful when:
+
+Debugging scripts
+Managing temporary files
+Process tracking
+
+Example:
+
+tmpfile=/tmp/script_$$.log
+41.12 The set Command
+
+The set command controls shell behavior and displays environment variables.
+
+Show all variables:
+
+set
+
+Important for debugging scripts.
+
+Common production usage:
+
+Enable strict mode in scripts.
+
+set -e
+
+Meaning:
+
+Exit immediately if a command fails.
+
+Advanced usage:
+
+set -x
+
+This prints commands as they execute.
+
+Very useful in debugging automation pipelines.
+
+Example:
+
+set -ex
+41.13 The unset Command
+
+The unset command removes a variable or function.
+
+Example:
+
+MY_VAR=hello
+unset MY_VAR
+
+Check:
+
+echo $MY_VAR
+
+Output:
+
+(empty)
+
+Use cases:
+
+Cleaning environment variables
+Resetting shell state
+Debugging configuration conflicts
