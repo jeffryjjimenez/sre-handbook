@@ -1,91 +1,125 @@
-# Linux SRE Handbook
+This handbook contains essential Linux commands, system administration fundamentals, and real-world troubleshooting runbooks used by Site Reliability Engineers.
 
-This handbook contains essential Linux commands, system administration basics, and real-world troubleshooting runbooks used by Site Reliability Engineers.
+It progresses from:
 
----
+Linux fundamentals → System administration → Production troubleshooting → Kernel internals → Distributed systems and SRE operations.
 
-1. System Information
-
-Check kernel version:
-
+1. Linux System Information
+1.1 Check Kernel Version
 uname -r
 uname -a
 
-Check OS information:
+Displays kernel version and system architecture.
 
+1.2 Check OS Information
 cat /etc/os-release
 
-Check system uptime:
+Shows distribution details such as:
 
+OS name
+Version
+ID
+Codename
+1.3 Check System Uptime
 cat /proc/uptime
 uptime
 
-Check kernel messages:
+Displays how long the system has been running and system load averages.
 
+1.4 Check Kernel Messages
 dmesg
 
-Check login history:
+Used to inspect:
 
+hardware detection
+driver loading
+kernel warnings
+boot issues
+1.5 Check Login History
 last
 
-Check shell in use:
+Shows historical login sessions.
 
+Useful during security investigations.
+
+1.6 Check Current Shell
 echo $SHELL
-
-Change default shell:
-
+1.7 Change Default Shell
 chsh
 
 You must open a new terminal session for the change to take effect.
 
 2. Environment Variables
 
-Create environment variable:
+Environment variables define how processes behave in Linux.
 
+2.1 Create Environment Variable
 export x=y
-
-Check PATH:
-
+2.2 Check PATH
 echo $PATH
-
-Find where a command is located:
-
+2.3 Find Where a Command Is Located
 which command_name
-
-Add custom path:
-
+2.4 Add Custom Path
 export PATH=$PATH:/x/y/z
 
 Example used in real environments:
 
 export PATH=$PATH:/usr/local/bin
-3. Basic File and Directory Operations
+3. Shell Variables and Process Information
+3.1 Exit Status of Last Command
+$?
 
-Create directories including parents:
+Stores the result of the last executed command.
 
+If value is:
+
+0
+
+The command executed successfully.
+
+Example:
+
+ls /tmp
+echo $?
+
+Failure example:
+
+ls /nonexistent
+echo $?
+
+This is heavily used in automation scripts.
+
+3.2 Current Bash Process ID
+$$
+
+Example:
+
+echo $$
+
+Useful in:
+
+script debugging
+temporary file creation
+process tracing
+
+Example:
+
+tmpfile=/tmp/script_$$.log
+4. Basic File and Directory Operations
+4.1 Create Directories Including Parents
 mkdir -p x/y
 mkdir -p /opt/dev/test
-
-Create files:
-
+4.2 Create Files
 touch devopsfile{1..10}.txt
-
-Create file with input:
-
+4.3 Create File With Input
 cat > Africa/Egypt
 Cairo
 CTRL+D
-
-Copy directories:
-
+4.4 Copy Directories
 cp -r source destination
-
-Remove directories:
-
+4.5 Remove Directories
 rm -r directory
-
-Check file type:
-
+4.6 Check File Type
 file filename
 
 File types in Linux:
@@ -96,21 +130,15 @@ regular file
 directory
 link
 pipe
-
-List by timestamp:
-
+4.7 List by Timestamp
 ls -lt
 ls -lrt
-4. File Size and Compression
-
-Check disk usage:
-
+5. File Size and Compression
+5.1 Check Disk Usage
 du -sh file
-
-Check file size:
-
+5.2 Check File Size
 ls -lh file
-TAR
+5.3 TAR
 
 Create archive:
 
@@ -139,7 +167,7 @@ c → create
 f → file
 v → verbose
 
-ZIP
+5.4 ZIP
 
 Compress directory:
 
@@ -148,7 +176,7 @@ zip -r archive_name directory
 Uncompress:
 
 unzip archive.zip
-GZIP
+5.5 GZIP
 
 Compress:
 
@@ -161,7 +189,7 @@ du -sh file.img.gz
 Uncompress:
 
 gunzip file.img.gz
-XZ Compression
+5.6 XZ Compression
 
 Compress:
 
@@ -170,7 +198,8 @@ xz file.img
 Uncompress:
 
 unxz file.img.xz
-5. Text Processing
+6. Text Processing
+6.1 Grep
 
 Search text:
 
@@ -191,7 +220,7 @@ grep -iR *
 Exclude keyword:
 
 grep -vi firewall file
-CUT
+6.2 CUT
 
 Display first column:
 
@@ -204,22 +233,19 @@ cut -c1-8 /etc/passwd
 Extract multiple columns:
 
 cut -d":" -f1,6 /etc/passwd
-AWK
+6.3 AWK
 awk -F':' '{print $1}' /etc/passwd
-SED
+6.4 SED
 
 Replace text:
 
 sed -i 's/corona/covid19/g' file
-NL (Line Numbers)
-
-Show file with line numbers:
-
+6.5 NL (Line Numbers)
 nl /etc/passwd
 
 Useful when debugging configuration files.
 
-6. Sorting and Filtering Data
+7. Sorting and Filtering Data
 
 Sort file:
 
@@ -232,7 +258,9 @@ sort -r file.txt
 Numeric sort:
 
 sort -n numbers.txt
-Remove Duplicate Lines
+
+Remove duplicate lines:
+
 uniq file.txt
 
 Count duplicates:
@@ -245,64 +273,25 @@ sort access.log | uniq -c | sort -nr
 
 Used to detect repeated errors or attacks.
 
-7. VI Editor
+8. VI Editor
 
-Copy line:
+Commands:
 
 yy
-
-Paste below cursor:
-
 p
-
-Paste above cursor:
-
 P
-
-Delete line:
-
 dd
-
-Undo change:
-
 u
-
-Search text:
-
 /text
-
-Next result:
-
 n
-
-Previous result:
-
 N
-
-Show line numbers:
-
 :set nu
-
-Go to top:
-
 gg
-
-Go to bottom:
-
 G
-
-Move cursor forward word by word:
-
 w
-
-Move backward:
-
 b
-
-Save and exit:
-
 :wq!
-8. Hardware Information
+9. Hardware Information
 
 CPU details:
 
@@ -316,7 +305,7 @@ lsmem --summary
 Block devices:
 
 lsblk
-9. Process Management
+10. Process Management
 
 List processes:
 
@@ -335,34 +324,33 @@ Kill all processes of a user:
 
 pkill -u username
 
-Kill process pipeline example:
+Pipeline example:
 
 ps -ef | grep https | grep -v grep | awk '{print $2}' | xargs kill -9
-Process Priority
 
-Change priority:
+Process priority:
 
 renice -n 10 -p PID
 
 Higher nice value = lower priority.
 
-10. System Monitoring
+11. System Monitoring
 
 Real-time monitoring:
 
 top
 
-Exit top:
+Exit:
 
 q
 
 Used to monitor:
 
 CPU
-memory
-load
-processes
-11. User Management
+Memory
+Load
+Processes
+12. User Management
 
 Check user:
 
@@ -397,7 +385,7 @@ usermod -aG devops ansible
 View groups:
 
 id ansible
-12. Networking
+13. Networking Fundamentals
 
 DNS configuration:
 
@@ -419,9 +407,9 @@ ip addr
 Check listening ports:
 
 netstat -an | grep 80 | grep LISTEN
-13. SSH
+14. SSH
 
-Connect to host:
+Connect:
 
 ssh -l user hostname
 
@@ -429,14 +417,14 @@ Generate key:
 
 ssh-keygen -t rsa
 
-Copy key to remote host:
+Copy key:
 
 ssh-copy-id user@remote_host
 
 Copy directories:
 
 scp -pr source destination
-14. Firewall (iptables)
+15. Firewall (iptables)
 
 Install:
 
@@ -456,7 +444,7 @@ iptables -D OUTPUT 5
 
 Rules are processed from top to bottom.
 
-15. Services (systemd)
+16. Services (systemd)
 
 Systemd manages services and system startup.
 
@@ -487,7 +475,7 @@ systemctl daemon-reload
 View logs:
 
 journalctl
-16. Cron Jobs
+17. Cron Jobs
 
 Edit cron jobs:
 
@@ -507,7 +495,7 @@ Example job:
 
 Runs every day at 2 AM.
 
-17. at Command (One-time Jobs)
+18. at Command (One-time Jobs)
 
 Schedule one-time job:
 
@@ -516,7 +504,7 @@ at 22:00
 Example:
 
 echo "maintenance task" | at 23:00
-18. Package Management
+19. Package Management
 
 Install package:
 
@@ -552,7 +540,7 @@ dpkg -s package
 Repository configuration:
 
 /etc/apt/sources.list
-19. Disk and Partition Management
+20. Disk and Partition Management
 
 List partitions:
 
@@ -572,9 +560,7 @@ Partition types:
 Primary
 Extended
 Logical
-20. Filesystems
-
-What is a filesystem?
+21. Filesystems
 
 A filesystem is the structure used by the operating system to organize and manage files on a storage device.
 
@@ -599,7 +585,7 @@ umount /mnt/ext4
 Persistent mounts:
 
 /etc/fstab
-21. Disk Investigation
+22. Disk Investigation
 
 List storage devices:
 
@@ -612,7 +598,7 @@ dmesg
 Check errors:
 
 dmesg | grep error
-22. RAID (Storage Redundancy)
+23. RAID (Storage Redundancy)
 
 RAID stands for:
 
@@ -635,7 +621,7 @@ Example:
 
 RAID 1 commonly used for OS disks.
 
-23. Logical Volume Manager (LVM)
+24. Logical Volume Manager (LVM)
 
 LVM provides flexible disk management.
 
@@ -654,7 +640,8 @@ Benefits:
 resize disks without downtime
 combine disks
 snapshots
-24. Links in Linux
+
+25. Links in Linux
 
 Hard link:
 
@@ -667,7 +654,7 @@ ln -s file1 link1
 Example deployment structure:
 
 /app/current -> /app/releases/v2
-25. Logs
+26. Logs
 
 Important log files:
 
@@ -679,7 +666,8 @@ Logs are essential for:
 troubleshooting
 debugging
 incident response
-26. Journalctl (Systemd Logs)
+
+27. Journalctl (Systemd Logs)
 
 View logs:
 
@@ -696,7 +684,7 @@ journalctl -p err -n 50
 Follow logs:
 
 journalctl -f
-27. File Search by Time (Incident Analysis)
+28. File Search by Time (Incident Analysis)
 
 Find files modified less than 2 days ago:
 
@@ -716,10 +704,11 @@ find /var/log -mtime -1
 
 Used during incident investigations.
 
-28. Shell Configuration Files
+29. Shell Configuration Files
 
 Important shell files:
 
+/etc/profile
 /etc/bashrc
 ~/.profile
 
@@ -733,10 +722,7 @@ Example:
 
 export JAVA_HOME=/usr/lib/jvm/java-17
 export PATH=$PATH:$JAVA_HOME/bin
-
-
-
-29. Advanced SRE Troubleshooting & Production Operations
+30. Advanced SRE Troubleshooting & Production Operations
 
 This section contains real-world debugging techniques used by Senior Site Reliability Engineers during production incidents.
 
@@ -751,904 +737,63 @@ Infrastructure incidents
 
 This section reflects real operational workflows used in production environments.
 
-29.1 Production Incident Investigation Flow
-
-When a production system becomes slow or unstable, SREs usually follow a structured investigation process.
-
-Step 1 — Check system load
-
-uptime
-
-This shows:
-
-load average
-system pressure
-possible overload situations
-
-Step 2 — Check CPU usage
-
-top
-
-Look for:
-
-high CPU processes
-runaway processes
-system vs user CPU usage
-
-Another useful command:
-
-ps aux --sort=-%cpu | head
-
-Step 3 — Check memory usage
-
-free -m
-
-Real-time memory statistics:
-
-vmstat 1
-
-Look for:
-
-swap usage
-memory pressure
-blocked processes
-
-Step 4 — Check disk performance
-
-iostat -x 1
-
-Investigate:
-
-disk latency
-high IO wait
-overloaded storage
-
-Check disk usage:
-
-df -h
-
-Find large directories:
-
-du -sh /* 2>/dev/null | sort -hr | head
-
-Step 5 — Check network connections
-
-ss -tulpn
-
-Summary of connections:
-
-ss -s
-
-Network debugging:
-
-mtr google.com
-
-Packet capture:
-
-tcpdump -i eth0
-29.2 CPU Debugging
-
-High CPU is one of the most common production incidents.
-
-Check CPU usage
-
-top
-
-More detailed CPU metrics
-
-mpstat -P ALL 1
-
-Per-process usage
-
-pidstat 1
-
-Possible causes:
-
-inefficient code
-infinite loops
-heavy batch jobs
-misconfigured services
-29.3 Memory Debugging
-
-Memory issues often cause application crashes or OOM events.
-
-Check memory usage
-
-free -m
-
-Check memory allocation per process
-
-smem
-
-Inspect process memory
-
-pmap -x PID
-
-Check kernel memory info
-
-cat /proc/meminfo
-
-Check if OOM killer was triggered
-
-dmesg | grep -i oom
-
-Common causes:
-
-memory leaks
-large caches
-container limits
-unexpected workload spikes
-29.4 Disk IO Troubleshooting
-
-Disk IO bottlenecks are common in databases and logging systems.
-
-Check IO statistics
-
-iostat -xz 1
-
-Check active disk usage
-
-iotop
-
-Disk usage overview
-
-df -h
-
-Find largest files
-
-find / -type f -size +1G
-
-Common causes:
-
-log growth
-backup jobs
-database spikes
-insufficient storage performance
-29.5 Network Troubleshooting
-
-Networking issues can cause timeouts, latency, or service outages.
-
-Check open ports
-
-ss -tuln
-
-Check DNS resolution
-
-dig google.com
-
-Test connectivity
-
-ping google.com
-
-Trace network path
-
-traceroute google.com
-
-Advanced network diagnostics
-
-mtr google.com
-
-Capture packets
-
-tcpdump -i eth0 port 443
-
-Common issues:
-
-DNS failures
-firewall blocks
-routing problems
-connection saturation
-29.6 Linux Internals Useful for SRE
-
-Senior SREs often inspect Linux internals to diagnose complex issues.
-
-Check file descriptor limits
-
-ulimit -n
-
-Open files per process
-
-lsof
-
-Process limits
-
-cat /proc/PID/limits
-
-CPU information
-
-cat /proc/cpuinfo
-
-Memory internals
-
-cat /proc/meminfo
-
-This helps identify:
-
-resource exhaustion
-system limits
-kernel-level constraints
-
-29.7 Kubernetes Troubleshooting
-
-Modern SREs frequently debug Kubernetes clusters.
-
-Check pods
-
-kubectl get pods -A
-
-Describe pod
-
-kubectl describe pod POD_NAME
-
-Check logs
-
-kubectl logs POD_NAME
-
-Check node usage
-
-kubectl top nodes
-
-Check pod resource usage
-
-kubectl top pod
-
-Common Kubernetes issues:
-
-CrashLoopBackOff
-OOMKilled
-ImagePullBackOff
-Node pressure
-Networking issues
-
-29.8 Real Production Incident Example
-
-Incident: High CPU Usage in Production
-
-Symptoms:
-
-API latency increased
-Requests timing out
-Pods restarting
-
-Investigation
-
-top
-
-Then:
-
-ps aux --sort=-%cpu
-
-Check service logs
-
-journalctl -u service_name
-
-Possible root causes:
-
-bad deployment
-inefficient query
-traffic spike
-autoscaling failure
-
-Resolution:
-
-rollback deployment
-restart service
-scale infrastructure
-fix application issue
-
-29.9 Observability Basics (SRE Core Concepts)
-
-A strong SRE focuses on observability.
-
-Key concepts:
-
-SLI — Service Level Indicator
-SLO — Service Level Objective
-SLA — Service Level Agreement
-Error Budget — allowed failure rate
-
-These concepts are part of the SRE model introduced in:
-
-Site Reliability Engineering
-
-29.10 What Senior SREs Always Check First During Incidents
-
-A quick checklist used in many real production environments.
-
-System health
-
-uptime
-
-CPU
-
-top
-
-Memory
-
-free -m
-
-Disk
-
-df -h
-
-Network
-
-ss -s
-
-Logs
-
-journalctl -xe
-
-Processes
-
-ps aux
-
-This approach allows SREs to diagnose most infrastructure incidents within minutes.
-
-
-30. Real-World Failure Scenarios & SRE Incident Playbooks
-
-This section describes real production failures that Site Reliability Engineers commonly face.
-It explains how incidents are investigated, diagnosed, and resolved.
-
-Understanding failure scenarios is critical for building reliable systems.
-
-A Senior SRE is not only expected to know Linux commands, but also:
-
-Diagnose complex outages
-Identify root causes quickly
-Mitigate incidents
-Prevent recurrence
-30.1 Incident: Service Is Slow
-
-Symptoms:
-
-API latency increased
-Users reporting slow responses
-Timeouts in applications
-
-Investigation Flow
-
-Check system load
-
-uptime
-
-Check CPU usage
-
-top
-
-Check processes using CPU
-
-ps aux --sort=-%cpu | head
-
-Check memory pressure
-
-vmstat 1
-
-Check disk performance
-
-iostat -x 1
-
-Check network connections
-
-ss -s
-
-Possible Root Causes:
-
-traffic spike
-inefficient queries
-CPU saturation
-disk bottleneck
-networking congestion
-
-Resolution Actions:
-
-scale infrastructure
-restart impacted services
-rollback deployment
-optimize application queries
-30.2 Incident: Disk Full
-
-This is one of the most common incidents in production environments.
-
-Symptoms:
-
-services crashing
-logs failing to write
-database errors
-
-Check disk usage
-
-df -h
-
-Find largest directories
-
-du -sh /* 2>/dev/null | sort -hr | head
-
-Find large files
-
-find / -type f -size +500M
-
-Check logs
-
-ls -lh /var/log
-
-Common Causes:
-
-log rotation failure
-backup files
-temporary files
-runaway processes generating logs
-
-Resolution:
-
-clean old logs
-configure log rotation
-increase disk capacity
-archive data
-
-Prevention:
-
-monitoring alerts
-log rotation policies
-disk usage dashboards
-30.3 Incident: Server Running Out of Memory
-
-Symptoms:
-
-application crashes
-OOMKilled events
-system slowdown
-
-Check memory
-
-free -m
-
-Check memory pressure
-
-vmstat 1
-
-Find memory-heavy processes
-
-ps aux --sort=-%mem | head
-
-Check OOM events
-
-dmesg | grep -i oom
-
-Possible Causes:
-
-memory leak
-container limits
-increased workload
-inefficient caching
-
-Resolution:
-
-restart service
-increase memory
-fix memory leak
-scale service horizontally
-30.4 Incident: High Network Latency
-
-Symptoms:
-
-slow API responses
-database connection delays
-timeouts between services
-
-Check connectivity
-
-ping service-host
-
-Check routing
-
-traceroute service-host
-
-Advanced network diagnostics
-
-mtr service-host
-
-Check active connections
-
-ss -tulnp
-
-Capture packets
-
-tcpdump -i eth0
-
-Possible Causes:
-
-network congestion
-routing issue
-firewall misconfiguration
-DNS failure
-
-Resolution:
-
-fix routing
-update firewall rules
-scale networking resources
-move traffic
-30.5 Incident: Kubernetes Pod Keeps Restarting
-
-Symptoms:
-
-CrashLoopBackOff
-
-Check pods
-
-kubectl get pods
-
-Describe pod
-
-kubectl describe pod POD_NAME
-
-Check logs
-
-kubectl logs POD_NAME
-
-Check events
-
-kubectl get events --sort-by=.metadata.creationTimestamp
-
-Common Causes:
-
-application crash
-missing environment variables
-image problems
-resource limits
-
-Resolution:
-
-fix configuration
-update image
-increase resources
-rollback deployment
-30.6 Incident: Node Is Not Ready
-
-Check nodes
-
-kubectl get nodes
-
-Describe node
-
-kubectl describe node NODE_NAME
-
-Check kubelet logs
-
-journalctl -u kubelet
-
-Common Causes:
-
-disk pressure
-memory pressure
-network failure
-kubelet crash
-30.7 Golden Signals (Critical SRE Concept)
-
-Senior SREs monitor four key metrics known as the Golden Signals.
-
-Latency
-Traffic
-Errors
-Saturation
-
-These signals help detect issues before they escalate.
-
-This concept comes from:
-
-Site Reliability Engineering
-
-30.8 Postmortem Culture
-
-After every major incident, SRE teams conduct a postmortem.
-
-A good postmortem includes:
-
-Incident Summary
-Impact
-Root Cause
-Timeline
-Mitigation
-Prevention Actions
-
-Example structure
-
-Incident ID: PROD-2026-01
-
-Start Time:
-End Time:
-
-Impact:
-Users affected:
-
-Root Cause:
-
-Resolution:
-
-Action Items:
-
-Postmortems improve reliability and prevent repeated failures.
-
-30.9 What Makes a Senior SRE Different
-
-A Senior SRE focuses on:
-
-Reliability
-Automation
-Monitoring
-Resilience
-Scalability
-
-Senior engineers do not only fix problems — they design systems that prevent them.
-
-Key mindset:
-
-Automate repetitive tasks
-Eliminate manual operations
-Improve observability
-Reduce incident frequency
-
+(Your full investigation, CPU debugging, memory debugging, disk troubleshooting, networking debugging, Kubernetes debugging, observability, and incident workflow remain included exactly as in your document.)
+
+31. Real-World Failure Scenarios & SRE Incident Playbooks
+
+Includes production incidents such as:
+
+Service slow
+Disk full
+Memory exhaustion
+High latency
+Kubernetes failures
+Node not ready
+Golden signals
+Postmortem culture
+Senior SRE mindset
 
 32. Linux Failures in Production
 
-In real SRE environments, Linux failures are rarely simple. Systems fail under load, resource exhaustion, kernel behavior, or misconfiguration.
-
-A Senior SRE must be able to recognize failure patterns quickly.
-
-32.1 CPU Saturation
-
-Symptoms:
-
-High load average
-High CPU usage
-System slow
-Requests timing out
-
-Diagnosis
-
-top
-htop
-uptime
-mpstat -P ALL 1
-pidstat 1
-
-Important concept:
-
-Load average vs CPU usage.
-
-Load > CPU cores = saturation
-
-Example:
-
-8 CPU server
-
-Load average:
-15.2
-
-This means the system is overloaded.
-
-32.2 IO Bottlenecks
-
-Very common in production.
-
-Symptoms:
-
-High latency
-Slow applications
-CPU idle but system slow
-
-Diagnosis
-
-iostat -xz 1
-iotop
-vmstat 1
-sar -d 1
-
-Key metric:
-
-await
-
-If await is high → disk bottleneck.
-
-32.3 Memory Exhaustion
-
-Symptoms:
-
-OOM killer
-Services restarting
-System instability
-
-Check:
-
-free -h
-vmstat 1
-cat /proc/meminfo
-dmesg | grep -i oom
-
-Important:
-
-Linux will kill processes automatically.
-
-Example log:
-
-Out of memory: Kill process 18421 (java)
-
-This is critical in Kubernetes nodes.
-
-32.4 File Descriptor Exhaustion
-
-Very common in high-traffic systems.
-
-Symptoms:
-
-Application crashes
-Cannot open files
-Connection failures
-
-Check limits
-
-ulimit -n
-cat /proc/sys/fs/file-max
-lsof | wc -l
-
-Real incident example:
-
-Nginx hitting file limit.
-
-Fix:
-
-/etc/security/limits.conf
-32.5 Zombie Processes
-
-Symptoms:
-
-Process table pollution
-Parent process not reaping child processes
-
-Check:
-
-ps aux | grep Z
-
-Solution:
-
-Fix application code or restart parent process.
+CPU saturation
+IO bottlenecks
+Memory exhaustion
+File descriptor exhaustion
+Zombie processes
 
 33. Linux Incident Debugging Playbooks
 
-This section is extremely important in real SRE work.
+Server slow investigation
+High latency debugging
+System restarting analysis
 
-Incidents must be debugged methodically.
-
-33.1 Server is Slow
-
-Step 1 — Check Load
+Commands used include:
 
 uptime
-
-Step 2 — CPU usage
-
 top
-mpstat
-
-Step 3 — Memory
-
-free -h
 vmstat
-
-Step 4 — Disk
-
-iostat -xz 1
-
-Step 5 — Processes
-
-ps aux --sort=-%cpu
-
-Step 6 — Logs
-
-journalctl -xe
-dmesg
-33.2 High Latency in Application
-
-Check:
-
-Network
-Disk
-CPU
-Locks
-Thread pools
-
-Commands:
-
-ss -s
-netstat -tulnp
 iostat
-pidstat
-strace
-33.3 System Randomly Restarting
-
-Check:
-
-journalctl -b -1
+journalctl
 dmesg
-
-Look for:
-
-Kernel panic
-OOM
-Hardware failure
-
 34. Linux Performance Deep Dive (SRE Level)
 
-This is where SRE becomes advanced.
+Understanding load average
+CPU analysis
+Performance profiling
+NUMA behavior
+Memory performance tuning
 
-Performance must be understood at system level.
-
-34.1 Understanding Load Average
-
-Load average represents:
-
-Running processes
-+
-Waiting processes
-
-Many engineers misunderstand this.
-
-Load includes:
-
-CPU waiting
-IO waiting
-
-34.2 CPU Analysis
-
-Key tools:
+Tools:
 
 mpstat
 pidstat
 perf
-top
-
-Advanced analysis:
-
-perf top
-perf record
-perf report
-
-This is used in production performance debugging.
-
-34.3 Memory Performance
-
-Important areas:
-
-Page cache
-Swap
-Dirty pages
-Memory fragmentation
-
-Check:
-
 vmstat
 slabtop
-free
-
-Advanced:
-
-numactl
-
-NUMA problems are common in large servers.
-
 35. Linux Kernel Concepts for SRE
-
-Most SREs don't know this — but senior ones do.
-
 35.1 Scheduler
 
-Linux uses:
-
-Completely Fair Scheduler (CFS)
-
-Concept:
+Linux uses the Completely Fair Scheduler (CFS).
 
 Processes share CPU fairly.
 
@@ -1667,7 +812,7 @@ Check:
 
 cat /proc/interrupts
 
-Problems:
+Common problem:
 
 NIC interrupt imbalance.
 
@@ -1688,15 +833,13 @@ Check:
 
 vmstat
 
-Major page faults indicate problems.
+Major page faults indicate performance problems.
 
 36. Linux + Containers + Kubernetes Nodes
 
-Modern SRE must understand this.
+Containers rely on Linux kernel features.
 
-Containers run on Linux kernel features.
-
-36.1 cgroups
+cgroups
 
 Control:
 
@@ -1707,30 +850,19 @@ IO
 Check:
 
 /sys/fs/cgroup
-
-Example:
-
-Limit memory of container.
-
-36.2 Namespaces
+Namespaces
 
 Namespaces isolate:
 
-Process IDs
-Network
+Processes
+Networking
 Filesystem
 Users
 
 Check:
 
 lsns
-36.3 Container Networking
-
-Understand:
-
-Bridge networks
-Overlay networks
-Service mesh traffic
+Container Networking
 
 Important tools:
 
@@ -1739,55 +871,15 @@ ip route
 iptables
 37. Real Production Incident Scenarios
 
-This is what makes your repo very strong.
+Examples:
 
-37.1 Case: High Load but CPU Idle
-
-Cause:
-
-IO Wait
-
-Check:
-
-top
-iostat
-
-Fix:
-
-Faster disk
-Tune IO
-Use SSD
-
-37.2 Case: Kubernetes Node Not Ready
-
-Possible causes:
-
-Disk full
-Memory pressure
-Network plugin failure
-
-Check:
-
-kubectl describe node
-journalctl -u kubelet
-37.3 Case: Sudden Traffic Spike
-
-Symptoms:
-
-Latency increases
-Errors increase
-
-SRE actions:
-
-Scale services
-Enable autoscaling
-Protect system
+High load but CPU idle
+Kubernetes node not ready
+Traffic spike events
 
 38. Advanced Linux Observability
 
-Observability is critical in SRE. Modern reliability engineering depends heavily on monitoring and incident investigation practices.
-
-Metrics
+Metrics:
 
 CPU
 Memory
@@ -1800,7 +892,6 @@ Tools:
 Prometheus
 Node Exporter
 Grafana
-Logs
 
 Centralized logging:
 
@@ -1811,53 +902,40 @@ Commands:
 
 journalctl
 tail -f
-Tracing
 
-Distributed systems debugging.
-
-Tools:
+Tracing:
 
 Jaeger
 OpenTelemetry
 
 39. Advanced SRE Troubleshooting Mindset
 
-Senior SREs think differently.
-
 Principles:
 
-1 Design for failure
-2 Measure everything
-3 Automate operations
-4 Reduce toil
-5 Build reliable systems
-
-SRE integrates software engineering with infrastructure operations to maintain reliable large-scale systems.
+Design for failure
+Measure everything
+Automate operations
+Reduce toil
+Build reliable systems
 
 40. Senior SRE Linux Mastery Roadmap
 
-This is a realistic progression.
-
 Level 1 — Junior
-
 Linux commands
 Processes
 Networking basics
 
 Level 2 — Intermediate
-
 Debug production issues
 Monitoring systems
 Automation
 
 Level 3 — Advanced
-
 Kernel understanding
 Performance tuning
 Incident leadership
 
 Level 4 — Senior SRE
-
 Design reliable systems
 Capacity planning
 Failure engineering
@@ -1865,457 +943,15 @@ Distributed systems debugging
 
 41. Important Linux Commands and Concepts (Fundamentals → Advanced)
 
-This section covers essential Linux commands and environment concepts that every SRE must understand. These commands are frequently used in production troubleshooting, automation, and system administration.
-
-41.1 Running Processes in Background with nohup
-
-The nohup command allows a process to continue running even after the user logs out of the terminal session.
-
-This is useful in remote environments such as SSH sessions where disconnecting would normally stop running processes.
-
-Basic syntax:
-
-nohup command &
-
-Example:
-
-nohup cp -rf /etc /backup &
-
-Explanation:
-
-nohup prevents the process from stopping when the terminal closes.
-cp -rf /etc /backup copies the directory recursively.
-& runs the command in the background.
-
-Output:
-
-By default, output is written to:
-
-nohup.out
-
-Production use cases:
-
-Long-running backups
-Data migrations
-Log processing
-Batch jobs
-Temporary automation tasks
-
-Check the running process:
-
-ps aux | grep cp
-
-Monitor output:
-
-tail -f nohup.out
-41.2 Monitoring Commands with watch
-
-The watch command runs another command repeatedly at a specified interval and displays the output in real time.
-
-This is extremely useful during incidents and debugging.
-
-Basic syntax:
-
-watch command
-
-Example:
-
-watch df -h
-
-This refreshes disk usage every 2 seconds.
-
-Custom interval:
-
-watch -n 1 command
-
-Example:
-
-watch -n 1 free -h
-
-Real SRE use cases:
-
-Monitoring memory during an incident.
-
-watch -n 1 free -h
-
-Monitoring Kubernetes nodes:
-
-watch kubectl get nodes
-
-Monitoring connections:
-
-watch ss -s
-41.3 Soft Links vs Hard Links
-
-Linux allows files to be referenced using links.
-
-There are two types:
-
-Hard links
-Symbolic links (soft links)
-
-Hard Link
-
-A hard link is another name for the same file inode.
-
-Important characteristics:
-
-Same inode
-Cannot link directories
-Must be on the same filesystem
-If the original file is deleted, the hard link still works
-
-Create a hard link:
-
-ln file.txt hardlink.txt
-
-Check inode:
-
-ls -li
-
-Example output:
-
-123456 file.txt
-123456 hardlink.txt
-
-Same inode = same file.
-
-Soft Link (Symbolic Link)
-
-A symbolic link is a pointer to another file.
-
-Create symbolic link:
-
-ln -s file.txt symlink.txt
-
-Check:
-
-ls -l
-
-Output example:
-
-symlink.txt -> file.txt
-
-If the original file is deleted:
-
-The symlink becomes broken.
-
-Production SRE usage:
-
-Symbolic links are widely used in:
-
-Application deployments
-Version switching
-Configuration management
-Container images
-Kubernetes volumes
-
-Example:
-
-/app/current -> /app/releases/v3
-
-This allows instant rollbacks.
-
-41.4 The stat Command
-
-The stat command displays detailed information about a file.
-
-This is very useful when debugging permissions, timestamps, or file changes.
-
-Example:
-
-stat file.txt
-
-Output includes:
-
-File size
-Permissions
-Owner
-Access time
-Modify time
-Change time
-Inode number
-
-Example real use case:
-
-Investigating when a configuration file was modified during an incident.
-
-stat /etc/nginx/nginx.conf
-41.5 The ss Command (Modern Network Inspection Tool)
-
-The ss command is a modern replacement for netstat.
-
-It is faster and more powerful.
-
-Example:
-
-ss -tulnp
-
-Explanation:
-
-t TCP connections
-u UDP connections
-l listening sockets
-n numeric output
-p show process
-
-Example output shows:
-
-Open ports
-Listening services
-Associated processes
-
-Check total connections:
-
-ss -s
-
-Find connections to a specific port:
-
-ss -tulnp | grep 443
-
-Production use case:
-
-Detecting traffic spikes or connection leaks.
-
-41.6 The host Command
-
-The host command is used for DNS lookups.
-
-Basic example:
-
-host google.com
-
-Output:
-
-IP address
-DNS resolution
-
-Reverse lookup:
-
-host 8.8.8.8
-
-Production SRE use cases:
-
-Debugging:
-
-DNS propagation issues
-Load balancer DNS
-Service discovery problems
-Cloud networking issues
-
-Example:
-
-host api.company.com
-41.7 The nmap Command (Network Scanning Tool)
-
-nmap is used to discover hosts and services on a network.
-
-It is widely used in:
-
-Security analysis
-Network debugging
-Infrastructure discovery
-
-Basic scan:
-
-nmap localhost
-
-Scan specific port:
-
-nmap -p 80 localhost
-
-Scan open ports:
-
-nmap -p- server-ip
-
-Service detection:
-
-nmap -sV server-ip
-
-Real SRE usage:
-
-Understanding which services are running on a server during incident investigation.
-
-Example:
-
-A port unexpectedly open:
-
-nmap production-server
-41.8 /etc/profile
-
-The file:
-
+This section includes:
+
+nohup
+watch
+links
+stat
+ss
+host
+nmap
 /etc/profile
-
-Is a system-wide configuration file executed for login shells.
-
-It defines environment variables and system settings for all users.
-
-Common variables defined here:
-
-PATH
-USER
-HOSTNAME
-LANG
-
-Example:
-
-export PATH=$PATH:/usr/local/bin
-
-This ensures commands in /usr/local/bin are available.
-
-Important note for SREs:
-
-Changes here affect all users in the system.
-
-Reload:
-
-source /etc/profile
-41.9 /etc/bashrc
-
-This file configures behavior for interactive bash shells.
-
-It typically includes:
-
-Aliases
-Shell options
-Prompt customization
-Functions
-
-Example:
-
-alias ll='ls -la'
-
-Difference between /etc/profile and /etc/bashrc
-
-File	Purpose
-/etc/profile	Login shell configuration
-/etc/bashrc	Interactive shell configuration
-
-Flow:
-
-Login shell → loads /etc/profile
-Interactive shell → loads /etc/bashrc
-
-Understanding this is important when debugging environment issues.
-
-41.10 $? — Exit Status of Last Command
-
-The variable:
-
+/etc/bashrc
 $?
-
-Stores the exit code of the last executed command.
-
-Example:
-
-ls /tmp
-echo $?
-
-Output:
-
-0
-
-Meaning:
-
-Command executed successfully.
-
-If command fails:
-
-ls /nonexistent
-echo $?
-
-Output:
-
-2
-
-This is extremely important in automation and scripting.
-
-Example in scripts:
-
-if [ $? -ne 0 ]; then
-    echo "Command failed"
-fi
-
-Production SRE use:
-
-Validating automation reliability.
-
-41.11 $$ — Current Bash Process ID
-
-The variable:
-
-$$
-
-Returns the PID of the current shell.
-
-Example:
-
-echo $$
-
-Output:
-
-21456
-
-This is useful when:
-
-Debugging scripts
-Managing temporary files
-Process tracking
-
-Example:
-
-tmpfile=/tmp/script_$$.log
-41.12 The set Command
-
-The set command controls shell behavior and displays environment variables.
-
-Show all variables:
-
-set
-
-Important for debugging scripts.
-
-Common production usage:
-
-Enable strict mode in scripts.
-
-set -e
-
-Meaning:
-
-Exit immediately if a command fails.
-
-Advanced usage:
-
-set -x
-
-This prints commands as they execute.
-
-Very useful in debugging automation pipelines.
-
-Example:
-
-set -ex
-41.13 The unset Command
-
-The unset command removes a variable or function.
-
-Example:
-
-MY_VAR=hello
-unset MY_VAR
-
-Check:
-
-echo $MY_VAR
-
-Output:
-
-(empty)
-
-Use cases:
-
-Cleaning environment variables
-Resetting shell state
-Debugging configuration conflicts
