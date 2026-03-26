@@ -5,13 +5,16 @@ It progresses from:
 Linux fundamentals → System administration → Production troubleshooting → Kernel internals → Distributed systems and SRE operations.
 
 1. Linux System Information
+
 1.1 Check Kernel Version
-uname -r
+
+uname -r (only shows release version)
 uname -a
 
 Displays kernel version and system architecture.
 
 1.2 Check OS Information
+
 cat /etc/os-release
 
 Shows distribution details such as:
@@ -20,13 +23,16 @@ OS name
 Version
 ID
 Codename
+
 1.3 Check System Uptime
+
 cat /proc/uptime
 uptime
 
 Displays how long the system has been running and system load averages.
 
 1.4 Check Kernel Messages
+
 dmesg
 
 Used to inspect:
@@ -35,7 +41,10 @@ hardware detection
 driver loading
 kernel warnings
 boot issues
+
+
 1.5 Check Login History
+
 last
 
 Shows historical login sessions.
@@ -43,8 +52,11 @@ Shows historical login sessions.
 Useful during security investigations.
 
 1.6 Check Current Shell
+
 echo $SHELL
+
 1.7 Change Default Shell
+
 chsh
 
 You must open a new terminal session for the change to take effect.
@@ -55,18 +67,26 @@ Environment variables define how processes behave in Linux.
 
 2.1 Create Environment Variable
 export x=y
+
 2.2 Check PATH
 echo $PATH
+
 2.3 Find Where a Command Is Located
+
 which command_name
+
 2.4 Add Custom Path
+
 export PATH=$PATH:/x/y/z
 
 Example used in real environments:
 
 export PATH=$PATH:/usr/local/bin
+
 3. Shell Variables and Process Information
+
 3.1 Exit Status of Last Command
+
 $?
 
 Stores the result of the last executed command.
@@ -90,6 +110,7 @@ echo $?
 This is heavily used in automation scripts.
 
 3.2 Current Bash Process ID
+
 $$
 
 Example:
@@ -105,21 +126,34 @@ process tracing
 Example:
 
 tmpfile=/tmp/script_$$.log
+
 4. Basic File and Directory Operations
+
 4.1 Create Directories Including Parents
+
 mkdir -p x/y
 mkdir -p /opt/dev/test
+
 4.2 Create Files
+
 touch devopsfile{1..10}.txt
+
 4.3 Create File With Input
+
 cat > Africa/Egypt
 Cairo
 CTRL+D
+
 4.4 Copy Directories
+
 cp -r source destination
+
 4.5 Remove Directories
+
 rm -r directory
+
 4.6 Check File Type
+
 file filename
 
 File types in Linux:
@@ -130,14 +164,22 @@ regular file
 directory
 link
 pipe
+
 4.7 List by Timestamp
+
 ls -lt
 ls -lrt
+
 5. File Size and Compression
+
 5.1 Check Disk Usage
+
 du -sh file
+
 5.2 Check File Size
+
 ls -lh file
+
 5.3 TAR
 
 Create archive:
@@ -176,6 +218,7 @@ zip -r archive_name directory
 Uncompress:
 
 unzip archive.zip
+
 5.5 GZIP
 
 Compress:
@@ -189,6 +232,7 @@ du -sh file.img.gz
 Uncompress:
 
 gunzip file.img.gz
+
 5.6 XZ Compression
 
 Compress:
@@ -198,7 +242,9 @@ xz file.img
 Uncompress:
 
 unxz file.img.xz
+
 6. Text Processing
+
 6.1 Grep
 
 Search text:
@@ -220,6 +266,7 @@ grep -iR *
 Exclude keyword:
 
 grep -vi firewall file
+
 6.2 CUT
 
 Display first column:
@@ -233,17 +280,25 @@ cut -c1-8 /etc/passwd
 Extract multiple columns:
 
 cut -d":" -f1,6 /etc/passwd
+
 6.3 AWK
+
 awk -F':' '{print $1}' /etc/passwd
+
 6.4 SED
 
 Replace text:
 
 sed -i 's/corona/covid19/g' file
+
 6.5 NL (Line Numbers)
+
 nl /etc/passwd
 
 Useful when debugging configuration files.
+
+
+-----------------------------------------------------
 
 7. Sorting and Filtering Data
 
