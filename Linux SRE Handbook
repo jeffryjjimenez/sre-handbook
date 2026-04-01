@@ -317,6 +317,7 @@ sort -n numbers.txt
 Remove duplicate lines:
 
 uniq file.txt
+sort file.txt | uniq , for this reason, sort is used with uniq
 
 Count duplicates:
 
@@ -326,66 +327,68 @@ Real-world log analysis:
 
 sort access.log | uniq -c | sort -nr
 
-Used to detect repeated errors or attacks.
+Used to detect repeated errors or attacks. sort -nr sorts it numerically and in reverse order.
 
 8. VI Editor
 
 Commands:
 
-yy
-p
-P
-dd
-u
-/text
+yy  >>> It copies the line
+p   >>> It pastes the content after the cursor
+P   >>> It pastes the content before the cursor
+dd  >>> It deletes a line
+u   >>> It undoes the last change.
+/text  
 n
 N
-:set nu
-gg
-G
-w
-b
+:set nu  >>> It activates the numbers of line.
+gg >>> Go at the beginning of a file. 
+G  >>> Go at the end of a file.
+w  >>> Jump to the second word.
+b  >>> Get back to the previous word
 :wq!
+
 9. Hardware Information
 
 CPU details:
 
-lscpu
+lscpu : it shows detail about the processor. 
 
 Memory usage:
 
 free -m
-lsmem --summary
+lsmem --summary: more technical info about blocks of memory
 
 Block devices:
 
-lsblk
+lsblk : It lists and partitions.
+
 10. Process Management
 
 List processes:
 
 ps aux
-ps -ef
+ps -ef : More used in scripts
 
 Find process:
 
-pgrep process_name
+pgrep process_name : it returns the process id of the process's name 
 
 Kill process:
 
-pkill process_name
+pkill process_name : it kills the process id by using the name. Like: pkill nginx
 
-Kill all processes of a user:
-
-pkill -u username
+pkill -u username : it kills all processes of a user
 
 Pipeline example:
 
 ps -ef | grep https | grep -v grep | awk '{print $2}' | xargs kill -9
 
+Kill -9 is to kill the process forcefully.
+
 Process priority:
 
-renice -n 10 -p PID
+renice -n 10 -p PID : it changes the priority of a process to 10
 
 Higher nice value = lower priority.
 
@@ -405,6 +408,7 @@ CPU
 Memory
 Load
 Processes
+
 12. User Management
 
 Check user:
@@ -417,7 +421,7 @@ useradd user
 
 Delete user:
 
-userdel -r user
+userdel -r user : it also deletes the directory.
 
 Set password:
 
@@ -435,11 +439,12 @@ Important system files:
 
 Add user to group:
 
-usermod -aG devops ansible
+usermod -aG devops ansible: here a means add, and G group. Here ansible user will be added to the devops group.
 
 View groups:
 
 id ansible
+
 13. Networking Fundamentals
 
 DNS configuration:
@@ -461,12 +466,17 @@ ip addr
 
 Check listening ports:
 
-netstat -an | grep 80 | grep LISTEN
+netstat -an | grep 80 | grep LISTEN , with "-an" to list connections and ports
+
+but netstat is being replaced by:
+
+ss -tuln , since it is quicker and more modern
+
 14. SSH
 
 Connect:
 
-ssh -l user hostname
+ssh -l user hostname or ssh user@IP
 
 Generate key:
 
@@ -478,7 +488,8 @@ ssh-copy-id user@remote_host
 
 Copy directories:
 
-scp -pr source destination
+scp -pr source destination : Here permissions are preserved and and it is recursevely. 
+
 15. Firewall (iptables)
 
 Install:
@@ -491,11 +502,11 @@ iptables -L
 
 Insert rule:
 
-iptables -I OUTPUT -p tcp -d 172.16.238.100 --dport 443 -j ACCEPT
+iptables -I OUTPUT -p tcp -d 172.16.238.100 --dport 443 -j ACCEPT: This permits the http connection to this iip.
 
 Delete rule:
 
-iptables -D OUTPUT 5
+iptables -D OUTPUT 5 : it deletes the rule #5 of the output chain.
 
 Rules are processed from top to bottom.
 
@@ -530,7 +541,9 @@ systemctl daemon-reload
 View logs:
 
 journalctl
-17. Cron Jobs
+journalctl -u docker : logs only for docler
+
+17. Cron Jobs : to schedule commands or scripts.
 
 Edit cron jobs:
 
@@ -550,6 +563,8 @@ Example job:
 
 Runs every day at 2 AM.
 
+---------------------------------
+
 18. at Command (One-time Jobs)
 
 Schedule one-time job:
@@ -559,6 +574,7 @@ at 22:00
 Example:
 
 echo "maintenance task" | at 23:00
+
 19. Package Management
 
 Install package:
