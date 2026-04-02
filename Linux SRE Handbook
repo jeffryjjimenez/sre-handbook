@@ -298,8 +298,6 @@ nl /etc/passwd
 Useful when debugging configuration files.
 
 
------------------------------------------------------
-
 7. Sorting and Filtering Data
 
 Sort file:
