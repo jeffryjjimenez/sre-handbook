@@ -743,34 +743,48 @@ Check errors:
 dmesg | grep error :Filters the kernel messages to only show errors
 
 
------------------------------------------------------------------
+23. RAID (Storage Redundancy): Redundant Array of Independent Disks
 
-23. RAID (Storage Redundancy)
+It combines multiple disks into one logical unit.
+Used to improve:
 
-RAID stands for:
-
-Redundant Array of Independent Disks.
+Performance
+Redundancy (fault tolerance)
+Availability (uptime)
 
 Common RAID levels:
 
-RAID 0 — Striping
-RAID 1 — Mirroring
-RAID 5 — Striping with parity
-RAID 6 — Dual parity
+RAID 0 — Striping: Data is split across multiple disks. No redundancy, used for non critical data. It is very fast
 
-RAID improves:
+Disk 1: A1  A3  A5
+Disk 2: A2  A4  A6
 
-performance
-redundancy
-availability
+RAID 1 — Mirroring: Data is duplicated across disks: High redundancy, If one disk fails → data still exists.
 
-Example:
+Disk 1: A B C
+Disk 2: A B C
 
-RAID 1 commonly used for OS disks.
+RAID 5 — Striping with parity: Data + parity distributed across disks. Can survive 1 disk failure
+
+Disk 1: A1  A4  P
+Disk 2: A2  P   A5
+Disk 3: P   A3  A6
+
+RAID 6 — Dual parity: Similar to RAID 5 but with 2 parity blocks. Can survive 2 disk failures but more overhead
+
+Note: Parity is extra information stored with your data that allows the system to rebuild missing data if a disk fails.
 
 24. Logical Volume Manager (LVM)
 
 LVM provides flexible disk management.
+
+Instead of:
+
+Disk → Partition → Filesystem
+
+You get:
+
+Disk → LVM → Flexible volumes → Filesystem
 
 Install:
 
@@ -778,35 +792,36 @@ apt-get install lvm2
 
 List logical volumes:
 
-lvs
-vgs
-pvs
+lvs:  Logigal volumes. For virtual partitions
+vgs: Volume groups.  A group of storage
+pvs : Physical volumes (disks or partitions)
 
 Benefits:
 
-resize disks without downtime
-combine disks
-snapshots
+resize disks without downtime: lvextend -L +10G /dev/vg0/home
+combine disks: Instead of managing separate disks, it is much easier to manage.
+snapshots: Point in time copy.  Used for backups and rollbacks.
 
 25. Links in Linux
 
-Hard link:
+Hard link: Both files point to the same data on disk. If you modify one, the other shows the change too. It survives file deletion.
 
 ln file1 file2
 
-Soft link:
+Soft link: Creates a pointer (shortcut) to another file. Difference: It points to path and not to data.
 
 ln -s file1 link1
 
 Example deployment structure:
 
 /app/current -> /app/releases/v2
+
 26. Logs
 
 Important log files:
 
-/var/log/dmesg
-/var/log/syslog
+/var/log/dmesg: Kernel messages, boot information, hardware events
+/var/log/syslog: System and Service logs.
 
 Logs are essential for:
 
@@ -814,28 +829,35 @@ troubleshooting
 debugging
 incident response
 
-27. Journalctl (Systemd Logs)
+27. Journalctl (Systemd Logs: Kernel, service logs and system events)
 
 View logs:
 
 journalctl
 
-Service logs:
+Service logs for an specific service:
 
 journalctl -u nginx
+
+with: -u = unit (service name)
 
 Show recent errors:
 
 journalctl -p err -n 50
 
+With priority = error
+
 Follow logs:
 
-journalctl -f
+journalctl -f : Works like tail -f /var/log/syslog
+
 28. File Search by Time (Incident Analysis)
 
 Find files modified less than 2 days ago:
 
 find /var -mtime -2
+
+With mtime as modified time.
 
 Find files modified more than 2 days ago:
 
@@ -847,17 +869,30 @@ find /var -mtime 2
 
 Real SRE example:
 
-find /var/log -mtime -1
+find /var/log -mtime -1  : Find logs modified in the last 24 hours
 
 Used during incident investigations.
 
+Delete old backup files:
+
+find /var/backups -mtime +30 -delete
+
+
+find /var/log -mtime -1 -exec grep "ERROR" {} \;
+
+mtime -1 : Files modified in the last 24 h
+-exec : tells find to run a command on each file it found
+When you use -exec with find, {} represents the current file that find has located.
+\; : marks the end of the -exec command.
+
+
 29. Shell Configuration Files
 
-Important shell files:
+Important shell files (that the shell runs automatically when you start a session):
 
-/etc/profile
-/etc/bashrc
-~/.profile
+/etc/profile : Sets global environment variables and startup programs for all users
+/etc/bashrc : Defines shell behavior and aliases
+
 
 They define:
 
@@ -869,6 +904,22 @@ Example:
 
 export JAVA_HOME=/usr/lib/jvm/java-17
 export PATH=$PATH:$JAVA_HOME/bin
+
+This sets JAVA_HOME and adds its bin folder to your PATH so commands like java and javac work anywhere.
+
+alias gs='git status'
+
+To define an alias permanently: echo "alias ll='ls -lah'" >> ~/.bashrc
+
+Where "~" represents the home directory.
+
+or Making a permanent alias system-wide: 
+
+sudo nano /etc/bash.bashrc
+Add the bottom add: alias gs='git status'
+
+Source: Loads environment variables, aliases, functions, and shell settings immediately without logging out and back in.
+
 30. Advanced SRE Troubleshooting & Production Operations
 
 This section contains real-world debugging techniques used by Senior Site Reliability Engineers during production incidents.
@@ -876,15 +927,66 @@ This section contains real-world debugging techniques used by Senior Site Reliab
 The goal is to quickly identify:
 
 CPU bottlenecks
-Memory pressure
-Disk IO issues
-Network problems
-Application failures
-Infrastructure incidents
+Check usage:
 
-This section reflects real operational workflows used in production environments.
+top 
+htop
+ps aux --sort=-%cpu | head -n 10 : Find top consumers.
+strace -p <PID>  # see system calls : Inspect process
 
-(Your full investigation, CPU debugging, memory debugging, disk troubleshooting, networking debugging, Kubernetes debugging, observability, and incident workflow remain included exactly as in your document.)
+Note: strace is a Linux tool that traces system calls (open, read, write, send, recv) made by a process.
+If a program is stuck or slow, strace shows exactly what it’s trying to do in real time.
+
+Memory pressure (OOM kills):
+
+free -h
+ps aux --sort=-%mem | head -n 10
+
+Where:
+ps → “process status”, shows currently running processes.
+--sort=-%mem : it sorts output by memory.
+
+dmesg | grep -i 'oom' : Check for OOM events
+
+Disk IO issues (slow writes, full disks)
+
+df -h : Check usage
+iostat -x 1 : Check I/O
+
+Where:
+
+iostat Stands for I/O statistics.
+Shows how much input/output is happening on your disks (or partitions).
+Helps identify disk bottlenecks, slow drives, or processes doing heavy I/O.
+-x: Extended statistics. Gives detailed metrics per device,
+The number at the end is the interval in seconds.
+
+Network problems (packet loss, connectivity issues):
+
+Check interfaces: 
+
+ip addr
+ip link
+
+Check connectivity:
+
+ping 8.8.8.8
+traceroute google.com
+
+Check listening ports:
+
+netstat -tulnp
+ss -tulnp
+
+Application failures (crashes, errors in logs)
+
+Check logs:
+journalctl -u <service>
+
+Infrastructure incidents (node failures, cloud issues)
+
+kubectl get pods -A: Check pod status
+kubectl logs <pod> -n <namespace> : Inspect pod logs
 
 31. Real-World Failure Scenarios & SRE Incident Playbooks
 
