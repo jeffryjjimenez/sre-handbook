@@ -557,13 +557,31 @@ Remove cron jobs:
 
 crontab -r
 
-Example job:
+Cron format:
 
-0 2 * * * backup.sh
+* * * * * command
 
-Runs every day at 2 AM.
+With "*" as: Minute Hour Day of Month  Month  Day of the week
 
----------------------------------
+Check cron service is ok: systemctl status cron
+
+Example jobs:
+
+Runs every day, every month at 2 AM:
+
+0 2 * * * backup.sh >> /var/log/backup.log 2>&1, with 2>&1 to redirect the error output and also the standard output
+
+Remove old logs with more than 7 days: 
+
+0 3 * * * find /var/log -type f -name "*.log" -mtime +7 -delete >> /var/log/cleanup.log 2>&1
+
+- Show usage of cpu and memory each 5 minutes: */5 * * * * top -b -n1 | head -20 >> /var/log/system_usage.log 2>&1
+
+With "-b" executes top in batch (non interactive mode, it prints the info as text)
+and "-n1" which says to execute only one time.  "-n5" will execute 5 times.
+
+- Detect network problems: */1 * * * * ping -c 1 -w 5  google.com || echo "NETWORK DOWN" >> /var/log/network.log
+with "-w 5" → wait maximum 5 seconds
 
 18. at Command (One-time Jobs)
 
@@ -571,9 +589,33 @@ Schedule one-time job:
 
 at 22:00
 
+Then add the commands to run at that time, (Ctrl+D) to save it.
+
+
 Example:
 
-echo "maintenance task" | at 23:00
+echo "maintenance task" | at 22:00
+Output: job 1 at Thu Apr  2 22:00:00 2026 > job id and execution date given by the system
+
+Or: 
+
+echo "/home/ubuntu/db_migration.sh >> /var/log/db_migration.log 2>&1" | at 22:00
+
+Or:
+
+echo "systemctl stop myservice; /home/ubuntu/db_migration.sh; systemctl start myservice" | at 22:00
+
+Viewing scheduled at jobs: 
+
+atq
+
+Removing a scheduled job:
+
+atrm <job_number>
+
+Deletes a scheduled at job.
+
+Note: You get <job_number> from atq.
 
 19. Package Management
 
@@ -589,6 +631,10 @@ Upgrade packages:
 
 apt upgrade
 
+apt update
+apt upgrade
+Always run apt update before apt upgrade to avoid missing updates: apt update && apt upgrade -y
+
 Search package:
 
 apt search package
@@ -601,53 +647,75 @@ Remove including configs:
 
 apt purge package
 
-DPKG:
+DPKG: Debian package manager and repo configuration tool.
 
-dpkg -i package.deb
-dpkg -r package
-dpkg -l
-dpkg -s package
+dpkg -i package.deb : Installs  a package
+dpkg -r package : Removes an installed package but keeps configuration files.
+dpkg -l : List intalled package
+dpkg -s package :Shows package information
 
 Repository configuration:
 
-/etc/apt/sources.list
+/etc/apt/sources.list  : Define package repositories
+
 20. Disk and Partition Management
 
 List partitions:
 
-fdisk -l
+fdisk -l Shows all disks and partitions on the system
 
-Inspect disk:
+Inspect an specific disk:
 
 fdisk -l /dev/sda
 
 Partition tools:
 
-fdisk
-parted
+fdisk : modern tool
+parted : classic tool
+
+Example:
+
+parted /dev/sda
+fdisk /dev/sda
 
 Partition types:
 
-Primary
-Extended
-Logical
+Primary (Maximum of 4 per disk. Can be bootable)
+Extended (A container for logical partitions. Only 1 extended partition per disk)
+Logical (Inside the extended partition. Allows more than 4 partitions)
+
+Example layout:
+
+/dev/sda1 → Primary (bootable)
+/dev/sda2 → Primary
+/dev/sda3 → Extended
+/dev/sda5 → Logical inside extended
+/dev/sda6 → Logical inside extended
+
 21. Filesystems
 
 A filesystem is the structure used by the operating system to organize and manage files on a storage device.
 
 Examples:
 
-ext4
-xfs
+ext4 : Default
+xfs : High Performance
 btrfs
 
 Create filesystem:
 
-mkfs.ext4 /dev/sdb1
+mkfs.ext4 /dev/sdb1 : formats the partition /dev/sdb1 with ext4. (Warning: This erases all data on the partition.)
+
+Tip: Always backup data before creating a filesystem.
 
 Mount filesystem:
 
-mount /dev/sdb1 /mnt/ext4
+mount /dev/sdb1 /mnt/ext4 : Mounts the filesystem on /dev/sdb1 to the directory /mnt/ext4
+
+Check mounts:
+
+df -h
+mount | grep /dev/sdb1
 
 Unmount:
 
@@ -655,20 +723,30 @@ umount /mnt/ext4
 
 Persistent mounts:
 
-/etc/fstab
+To make a filesystem mount automatically at boot, you add an entry to /etc/fstab:
+
+Example:
+
+/dev/sdb1  /mnt/ext4  ext4  defaults  0  2
+
+
 22. Disk Investigation
 
 List storage devices:
 
-lsblk
+lsblk  : Shows all block devices in a tree-like structure.
 
 Kernel messages:
 
-dmesg
+dmesg : Very useful for troubleshooting disks in production systems.
 
 Check errors:
 
-dmesg | grep error
+dmesg | grep error :Filters the kernel messages to only show errors
+
+
+-----------------------------------------------------------------
+
 23. RAID (Storage Redundancy)
 
 RAID stands for:
