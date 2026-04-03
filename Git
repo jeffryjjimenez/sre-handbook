@@ -44,21 +44,30 @@ sudo yum install git -y
 Verify installation:
 
 git --version
+
 3. Initial Git Configuration
 
 Set your identity:
 
-git config --global user.name "Your Name"
-git config --global user.email "your@email.com"
+git config --global user.name "Your Name" : git config --global user.name jeffryjjimenez
+git config --global user.email "your@email.com" :  git config --global user.email jeffryjjimenez@gmail.com
+git config --global --unset XXX
 
 View configuration:
 
-git config --list
+git config --list : 
+
+ubuntu@ubuntu-vm:~$ git config --list
+user.name=jeffryjjimenez
+user.email=jeffryjjimenez@gmail.com
+
 4. Creating a Repository
+
 mkdir git-lab
 cd git-lab
 git init
 ls -a  # shows .git directory
+
 5. Git Architecture & Workflow
 
 Git uses three main areas:
@@ -72,8 +81,11 @@ Local Repository: commits stored permanently
 Workflow Example:
 
 edit file → git add → git commit
+
 6. File States
+
 State	Description
+
 Untracked	New file not yet tracked
 Modified	Tracked file changed
 Staged	Ready to commit
@@ -82,39 +94,55 @@ Committed	Snapshot saved in repository
 Check status:
 
 git status
+
 7. First Commit (Lab)
+
 touch app.txt
 echo "Hello SRE" >> app.txt
 git add app.txt
 git commit -m "initial commit"
-git log
+git log : commit 6f0b320a2cb55a3b17dccd00663b9732da2171d3 (HEAD -> master)
+
 8. Adding Files
+
 git add file.txt       # stage a specific file
 git add .              # stage all files
 git status             # check staged files
+
 9. Viewing Commit History
+
 git log                  # full commit history
-git log --oneline        # short version
+git log --oneline        # short version , Ex: 6f0b320 (HEAD -> master) initial commit
 git log --graph --oneline --all   # graph view
 git show <commit_id>     # detailed info
+
 10. Git Diff
-git diff                 # changes in working directory
-git diff --staged        # staged changes
-git diff <commit1> <commit2>   # compare commits
+
+git diff                 # changes in working directory. Will see an + or - if there was a change.
+git diff --staged        # staged changes : Shows what you have staged (added) but not yet committed
+git diff <commit1> <commit2>   # compare commits in history
+
 11. Undoing Changes
-git restore file.txt                  # discard changes in working directory
-git restore --staged file.txt        # unstage changes
-git revert <commit_id>               # safely undo a commit
-git reset --hard <commit_id>         # reset to previous commit (dangerous)
+
+git restore file.txt                  # discard changes in working directory (Line by line)
+git restore --staged file.txt        # unstage changes (Removes the file from the staging area (undo git add))
+git revert <commit_id>               # safely undo a commit. Will create a new commit.
+git reset --hard <commit_id>         # reset to previous commit (dangerous since You lose uncommitted changes)
+
+git reset --hard 6f0b320
+# HEAD now points to 6f0b320, all later commits gone
+
 12. Branching
+
 git branch                      # list branches
 git branch feature-login        # create branch
 git checkout -b feature-login   # create & switch
-git switch -c feature-login     # alternative to checkout
+git switch feature-login     # alternative to checkout
 git checkout main               # switch branch
 git branch -d feature-login     # delete branch safely
 git branch -D feature-login     # force delete
-git branch -m new-name          # rename branch
+git branch -m old-name new-name        # rename branch
+
 13. Merging Branches
 git checkout main
 git merge feature-login
