@@ -999,18 +999,36 @@ High latency
 Kubernetes failures
 Node not ready
 Golden signals
+
+SREs monitor 4 key metrics:
+
+Signal	Meaning
+Latency	How fast requests are
+Traffic	How many requests
+Errors	Failure rate
+Saturation	Resource usage (CPU, memory, disk)
+
 Postmortem culture
-Senior SRE mindset
+
+After the incident:
+
+What happened?
+Why did it happen?
+How do we prevent it?
+
+
 
 32. Linux Failures in Production
 
-CPU saturation
-IO bottlenecks
-Memory exhaustion
+CPU saturation: CPU is fully utilized → system becomes slow or unresponsive
+IO bottlenecks: Disk is too slow to handle read/write requests
+Memory exhaustion: System runs out of RAM (OOM killer))
 File descriptor exhaustion
-Zombie processes
+Zombie processes: Process finished execution but still exists in process table
+run: ps aux | grep Z (z is the zombie process column)
 
 33. Linux Incident Debugging Playbooks
+
 
 Server slow investigation
 High latency debugging
@@ -1020,26 +1038,28 @@ Commands used include:
 
 uptime
 top
-vmstat
+vmstat (Virtual Memory Statistics) vmstat 1: Real time (1s). This shows system performance. You see: CPU, Memory, IO
 iostat
 journalctl
 dmesg
+
 34. Linux Performance Deep Dive (SRE Level)
 
 Understanding load average
 CPU analysis
 Performance profiling
-NUMA behavior
 Memory performance tuning
 
 Tools:
 
-mpstat
-pidstat
-perf
-vmstat
-slabtop
+mpstat: mpstat -P ALL 1  . It shows cpu user per core.
+pidstat: Shows CPU, memory, I/O per process. Helps identify which process is causing the exhaustion.
+perf (Performance Profiling): Shows what functions are consuming CPU inside programs
+vmstat: System overview
+slabtop: Shows kernel memory usage
+
 35. Linux Kernel Concepts for SRE
+
 35.1 Scheduler
 
 Linux uses the Completely Fair Scheduler (CFS).
@@ -1048,14 +1068,16 @@ Processes share CPU fairly.
 
 Important metric:
 
-context switches
+Context switches: It happens when the CPU switches from running one process to another.
+This is normal, but too many context switches → CPU overhead
 
 Check:
 
 vmstat 1
+
 35.2 Interrupts
 
-Hardware interrupts affect performance.
+Hardware interrupts affect performance (from devices like NICs, disks).
 
 Check:
 
@@ -1067,16 +1089,17 @@ NIC interrupt imbalance.
 
 Fix:
 
-irqbalance
+irqbalance: is a daemon that distributes hardware interrupts across CPUs
+
 35.3 Memory Paging
 
 Linux uses virtual memory.
 
 Important concepts:
 
-Pages
-Page faults
-Swapping
+Pages: A fixed-size block of memory
+Page faults: Process tries to access a page not in RAM
+Swapping: Moving pages between RAM and disk to free memory
 
 Check:
 
@@ -1088,7 +1111,7 @@ Major page faults indicate performance problems.
 
 Containers rely on Linux kernel features.
 
-cgroups
+cgroups (Control Group): It limits and monitor resources per container
 
 Control:
 
@@ -1099,7 +1122,8 @@ IO
 Check:
 
 /sys/fs/cgroup
-Namespaces
+
+Namespaces: Provide isolation between containers.
 
 Namespaces isolate:
 
@@ -1110,97 +1134,55 @@ Users
 
 Check:
 
-lsns
-Container Networking
+lsns: Lists namespace types, IDs, and processes using them
+Container Networking:
 
 Important tools:
 
-ip a
-ip route
-iptables
+ip a        # Show interfaces
+ip route    # Show routing
+iptables -L # Check firewall rules
+
 37. Real Production Incident Scenarios
 
 Examples:
 
 High load but CPU idle
+
+vmstat 1      # Check blocked processes (b column)
+iostat -x 1   # Check disk I/O
+pidstat -d 1  # Per-process I/O stats
+
 Kubernetes node not ready
+
+kubectl get nodes → node shows NotReady
+
 Traffic spike events
 
-38. Advanced Linux Observability
+kubectl top nodes      # Check CPU/Memory usage
+kubectl top pods       # Check per-pod usage
+netstat -anp | grep 80 # Check open connections
 
-Metrics:
-
-CPU
-Memory
-Disk
-Network
-Load
-
-Tools:
-
-Prometheus
-Node Exporter
-Grafana
-
-Centralized logging:
-
-ELK stack
-Loki
-
-Commands:
-
-journalctl
-tail -f
-
-Tracing:
-
-Jaeger
-OpenTelemetry
-
-39. Advanced SRE Troubleshooting Mindset
-
-Principles:
-
-Design for failure
-Measure everything
-Automate operations
-Reduce toil
-Build reliable systems
-
-40. Senior SRE Linux Mastery Roadmap
-
-Level 1 — Junior
-Linux commands
-Processes
-Networking basics
-
-Level 2 — Intermediate
-Debug production issues
-Monitoring systems
-Automation
-
-Level 3 — Advanced
-Kernel understanding
-Performance tuning
-Incident leadership
-
-Level 4 — Senior SRE
-Design reliable systems
-Capacity planning
-Failure engineering
-Distributed systems debugging
-
-41. Important Linux Commands and Concepts (Fundamentals → Advanced)
+38. Important Linux Commands and Concepts (Fundamentals → Advanced)
 
 This section includes:
 
-nohup
-watch
-links
-stat
-ss
-host
-nmap
-/etc/profile
-/etc/bashrc
-$?
+nohup: nohup ./backup.sh & : Keeps processes running after logout.
+watch: repeatedly run a command, useful for monitoring
+dmesg / journalctl → kernel and service logs
+stat: Inspect files.
+df / du / lsblk: disk usage and partitions
+ss: modern replacement for netstat
+host/dig: DNS queries
+nmap: port scanning & network discovery
+vmstat / iostat / pidstat → memory, I/O, per-process stats
+$?: exit code of last command
+systemctl → manage services
+cron / at → scheduled tasks
+Filesystem & Partitions → fdisk, mkfs, mount, umount, /etc/fstab
+iostat -x 1: Check disk I/O
+strace -p <PID>: Trace process system calls
+find /var/log -mtime -1: Find files by modification time:
+top / htop → real-time process & CPU monitoring
+vmstat / iostat / pidstat → memory, I/O, per-process stats
+lsof stands for LiSt Open Files: For seeing which processes have which files open
