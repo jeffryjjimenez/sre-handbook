@@ -248,99 +248,153 @@ git reset --hard origin/main
 
 Temporarily save uncommitted changes:
 
-git stash                  # save
-git stash list             # list stashes
-git stash show <stash_id>  # view stash changes
-git stash apply <stash_id> # apply stash
-git stash pop              # apply and remove stash
+git stash                  # Useful when you need to switch branches, pull updates, or test something quickly without losing your work.
+
+Leaves your working directory clean.
+
+git stash list             # list stashes 
+git stash show <stash_id>  # view stash changes and details
+git stash show -p stash@{0} # See full details
+git stash apply <stash_id> # Restores the changes (to the working directory) without removing the stash.
+git stash pop              # apply and remove stash: Restores changes and deletes the stash.
 git stash drop <stash_id>  # delete stash
 git stash clear            # delete all stashes
-18. Tags
-git tag -a v1.0 -m "first release"
-git tag
-git show v1.0
-git push --tags
+
+Note: You CANNOT apply a stash if the same file is already modified
+
+Example:
+
+# Save your changes temporarily
+
+- Takes your uncommitted changes
+- Saves them in a stash
+- Cleans your working directory
+
+Command: git stash save "WIP hotfix"
+
+# Pull latest changes safely
+
+- Fetches changes from remote (origin)
+- Merges them into your local branch (main)
+
+Command: git pull origin main
+
+# Restore your work
+
+- Takes your saved changes from stash
+- Applies them back into your working directory
+- Deletes the stash
+
+Command: git stash pop
+
+
+18. Tags (A tag is a label attached to a specific commit)
+
+git tag -a v1.0 -m "first release" # This attaches v1.0 to your current commit
+git tag # List tags
+git show v1.0  # Show tag details
+git push --tags # Push tags to remote (Tags are NOT pushed automatically with git push)
+
+If something breaks (rollback):
+
+git checkout v1.0  : Instantly go back to a stable version
+
 19. Advanced Git (Senior SRE Focus)
-Git Rebase
+
+Git Rebase # Instead of merging, it moves your commits on top of another branch
 git rebase main
 
 Linear history, cleaner logs
 
-Git Cherry-Pick
+Example
+
+You have:
+
+main:      A---B---C
+feature:        D---E
+
+Run:
+
+git rebase main
+
+Result:
+
+main:      A---B---C
+feature:            D'---E'
+
+👉 Your commits are reapplied on top of main
+
+
+
+Git Cherry-Pick # Takes one specific commit and applies it to your current branch.
+
 git cherry-pick <commit_id>
 
 Apply a specific commit, useful for hotfixes
 
-Git Reflog (Recovery)
-git reflog
-git reset --hard HEAD@{2}   # recover lost commit
-Git Bisect (Debugging)
+git checkout main
+git cherry-pick abc123
+
+Only that commit is copied into main
+
+If cherry-pick pauses → just:
+git add .
+git cherry-pick --continue
+
+Git Reflog (Recovery) # Shows every action you've done locally, even deleted commits.
+
+git reflog   
+git reset --hard HEAD@{2}   # Restores your repo to that state/commit
+Git Bisect (Debugging) # Finds the exact commit that introduced a bug using binary search.
 git bisect start
-git bisect bad
-git bisect good <commit>
+git bisect bad              # current version is broken
+git bisect good <commit>    # known good version
 
-Binary search to find faulty commit
+Summary:
 
-20. Git Hooks
+Rebase      → clean history
+Cherry-pick → copy one commit
+Reflog      → recover lost work
+Bisect      → find buggy commit
 
-.git/hooks/ directory
-
-Examples: pre-commit, pre-push, post-merge
-
-Use cases: tests, security checks, formatting enforcement
-
-21. Git Submodules
-git submodule add <repo_url>
-git submodule init
-git submodule update
-
-Manage nested repositories
-
-22. Git Troubleshooting (SRE Section)
+20. Git Troubleshooting (SRE Section)
 
 Recover deleted commit:
 
-git reflog
-git reset --hard <commit>
+git reflog # shows a history of where your HEAD (and branches) have been
+git reset --hard <commit> : This command moves your current branch AND working directory back to a specific commit.
 
 Undo bad merge:
 
-git reset --hard HEAD~1
+git reset --hard HEAD~1 # Moves your branch one commit back (Completely removes the last commit)
 
 Restore deleted file:
 
 git checkout <commit> -- file.txt
 
+Takes file.txt from a specific commit
+Restores it into your current working directory
+
+👉 It does NOT change your branch, only that file
+
 Find bug introduction commit:
 
-git bisect
-23. Git Best Practices for SRE
+git bisect  # Finds the exact commit that introduced a bug using binary search
 
-Branches: feature/*, bugfix/*, hotfix/*
 
-Commit messages:
+21. Production Workflow Example
 
-fix: memory leak
-feat: retry logic
-docs: update README
-
-Avoid force pushes on shared branches
-
-Use pull requests for review
-
-Small, logical commits
-
-24. Production Workflow Example
-git checkout -b fix-memory-leak
+git checkout -b fix-memory-leak # Never work directly on main in production systems
 git add .
 git commit -m "fix: memory leak in worker"
-git push origin fix-memory-leak
+git push origin fix-memory-leak  # Uploads branch to remote repository
 
 Workflow:
 
 Create branch → Implement → Commit → Push → PR → Review → Merge → Deploy
 
-25. Quick Command Reference
+22. Quick Command Reference
+
 git init
 git clone
 git status
@@ -352,14 +406,15 @@ git branch
 git checkout
 git merge
 git push
-git pull
+git pull # Fetch + merge changes from remote
 git stash
 git stash pop
 git tag
-git reflog
-git bisect
-git rebase
-26. Practice Labs
+git reflog # Show history of HEAD movements (recovery tool)
+git bisect # Debugging regressions
+git rebase # To have a clean history
+
+23. Practice Labs
 
 Lab 1: Create repository, commit 3 files, view history
 Lab 2: Create feature branch, make changes, merge to main
@@ -367,12 +422,12 @@ Lab 3: Create merge conflict, resolve manually
 Lab 4: Use git stash during branch switch
 Lab 5: Recover lost commit using reflog
 
-27. Senior SRE Skills with Git
+24. Senior SRE Skills with Git
 
 ✔ Branching strategies
 ✔ Rebasing vs merging
-✔ Resolving conflicts
-✔ Recovering lost commits
+✔ Resolving conflicts (Identify conflict markers (<<<<<<)) , Decide correct version. Use git status/diff
+✔ Recovering lost commits # git reflog and git reset --hard <commit>
 ✔ Debugging history with bisect
-✔ Managing remote repositories
+✔ Managing remote repositories # git fetch/pull/push
 ✔ CI/CD Git workflows
