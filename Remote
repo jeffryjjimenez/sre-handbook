@@ -1,110 +1,201 @@
-El trabajo remoto en tecnología es una realidad creciente: más del 60% de los profesionales buscan roles 100% remotos[1]. Para un SRE/DevOps senior de LATAM, la estrategia más efectiva combina vías múltiples: portales internacionales, plataformas especializadas en talento latino, y networking en comunidades técnicas.
-•	Principales portales globales: We Work Remotely, RemoteOK, FlexJobs, Wellfound/AngelList, entre otros[2][3].
-•	Portales LATAM y freelance: Get on Board, Workana, WeRemoto, Torre.ai, además de plataformas freelance como Upwork, Toptal o Gun.io[2][4].
-•	Empresas remotas top: Compañías “remote-first” como GitLab, Zapier, Automattic, Atlassian, Datadog, etc., ofrecen múltiples vacantes SRE con contratación global[5][6][7]. Sus carreras están abiertas en sus sitios web oficiales.
-•	Comunidades clave: Subreddits como r/sre, r/RemoteJobs, y Slack/Discord de DevOps (por ejemplo DevOps Chat, SRE Slack Community) publican ofertas antes de salir en portales generales[8][9].
-•	Proceso recomendado: Optimiza tu perfil (CV, LinkedIn, GitHub), aplica en 10–20 ofertas/semana en los portales, y combina esto con networking directo (mensajes en LinkedIn a managers, posts en Slack). Seguimiento regular de cada postulación es clave.
-•	Protección ante estafas: Nunca pagues por aplicar ni des datos sensibles. Verifica toda oferta buscándola en sitios confiables (Glassdoor, LinkedIn) y confirmando direcciones/contactos oficiales[10][11].
-Este playbook contiene tablas comparativas, plantillas prácticas (mensaje LinkedIn, CV, portfolio) y un flujo de aplicación. Sigue estos pasos y fuentes para maximizar tus chances de conseguir un rol SRE remoto internacional.
-1. Plataformas de empleo remoto
-Para encontrar SRE/DevOps globales, conviene usar múltiples portales especializados:
-•	We Work Remotely: Uno de los más grandes, empresas globales (tech, Cloud, DevOps) publican aquí[2]. Filtra por “DevOps” o “Anywhere” para roles SRE. Aplica directo en la web de la empresa.
-•	RemoteOK: Portal muy usado para roles técnicos. Permite buscar por etiquetas (e.g. AWS, Kubernetes, Terraform). Muestra rangos salariales. Filtra “Worldwide” y “DevOps/SRE”.
-•	Wellfound (ex-AngelList): Especializada en startups y tecnología. Crea perfil detallado, postula a startups remotas. Incluye posibles opciones de acciones (“equity”).
-•	FlexJobs: Sitio paga (suscripción) con ofertas filtradas y legítimas. Alto costo de vida, evita scams. Ideal si quieres curar el proceso, pero hay que pagar membresía.
-•	LinkedIn: No es exclusivo remoto, pero con filtros “Remote” + palabras clave (SRE, DevOps) aparece mucho. Útil para conectar con reclutadores. Optimiza tu título (ver sección 4). Usa la función “Trabajos remotos”.
+🌍 SRE Remote Job Search Playbook (LATAM → Global)
 
-Figura: Ejemplo de lista de portales globales recomendados (FlexJobs, Remote.co, WeWorkRemotely, RemoteOK, etc.)[12].
-Paso a paso en cada portal: regístrate, busca por categorías (DevOps, Cloud) y zona “Remote/Anywhere”, y postula con tu CV/Carta de presentación. Guarda enlaces de cada oferta para seguimiento. Una buena práctica es mantener un registro tipo Kanban de cada aplicación (portal, fecha, estado).
-Comparativa de portales globales
+El trabajo remoto en tecnología es una realidad creciente: más del 60% de los profesionales buscan roles 100% remotos.
+
+Para un SRE/DevOps Senior en LATAM, la estrategia más efectiva combina:
+
+Portales globales
+Plataformas LATAM
+Empresas remote-first
+Networking en comunidades técnicas
+🎯 Estrategia General
+Enfoque multi-canal:
+🌐 Portales globales → mayor volumen y salarios altos
+🌎 Portales LATAM → menor competencia inicial
+🏢 Empresas remote-first → contratación directa
+🤝 Networking → acceso a oportunidades ocultas
+1. 🌐 Plataformas de empleo remoto
+🔹 Principales portales globales
+We Work Remotely
+→ Uno de los más grandes, empresas globales (Cloud, DevOps)
+RemoteOK
+→ Filtros por stack (AWS, Kubernetes, Terraform) + salarios visibles
+Wellfound (AngelList)
+→ Startups + equity + contacto directo con founders
+FlexJobs
+→ Plataforma paga con ofertas verificadas (sin estafas)
+LinkedIn
+→ Filtros: Remote + SRE/DevOps
+→ Clave para networking con reclutadores
+⚙️ Cómo usar estos portales (workflow)
+Crear perfil
+Filtrar:
+“Remote / Anywhere”
+“DevOps / SRE”
+Aplicar directamente
+Guardar cada oferta
+Trackear en Kanban (Trello / Airtable)
+📊 Comparativa de portales
 Portal	Ventajas	Desventajas
-WeWorkRemotely	Gran volumen, roles senior y startups[2]
-Competencia alta, pocos filtros.
-RemoteOK	Roles DevOps/Cloud, muestra salarios[13]
-También muchos roles freelance.
-Wellfound (Angel)	Startups (equity), contacto directo fundadores	Requiere perfil muy completo.
-FlexJobs	Solo empleos verificados (sin estafas)[14]
-Requiere suscripción de pago.
-LinkedIn	Networking, empleos directos, filtros remotos	Mucha competencia; requiere optimización constante.
-JustRemote/NoDesk/Jobspresso	Multidisciplinarios, curados	Menos ofertas SRE específicas.
-(Basado en análisis de blogs y comunidad[2][12].)
-Portales específicos para LATAM
-•	Get on Board (GOB): Enfocado en tecnología/startups LATAM. Publica empleos remotos que pagan en dólares[15]. Sitio fuerte en Chile, Perú, Colombia; muchas ofertas DevOps.
-•	Torre.ai: Plataforma de matching con IA, popular en LATAM. Gratuita para candidatos; muchos reclutadores la usan[16]. A menudo no requiere entrevista inicial (solo skills). Atención: su algoritmo recomienda, pero hay que aplicar a través de su sistema.
-•	Workana / Freelancer / Fiverr: Plataformas freelance líderes en LATAM[17]. Útiles para proyectos puntuales DevOps (automatización, infra). Crea perfil completo, busca proyectos SRE/DevOps, oferta precios competitivos.
-•	WeRemoto / RemotoJob: Directorios en español. WeRemoto agrupa trabajos hispanohablantes (diversos roles tech)[18]; RemotoJob similar. Menos competencia global pero también salarios menores.
-Cada portal tiene un flujo similar: Registro → Crear perfil detallado → Buscar “SRE/DevOps” + “Remoto” → Aplicar con CV. En algunos (Upwork, Workana) debes enviar propuestas personalizadas a ofertas freelance.
-2. Empresas remote-first que contratan SRE
-Muchas empresas globales tech contratan SRE/DevOps remotos. Tabla de ejemplos clave y cómo aplicar:
-Empresa	Política remota	Cómo postular (carreras)
-GitLab	100% remoto (contrata global)[5]
-careers.gitlab.com – filtra por “Site Reliability”. GitLab publica sus salarios abiertamente.
-Zapier	100% remoto (70+ países)[6]
-zapier.com/jobs – roles devops/SRE, muy orientados a integración web.
-Automattic	100% remoto (WordPress.com)	automattic.com/work-with-us – ocasionalmente roles de infraestructura/SRE.
-Atlassian	Remote-friendly (“Team Anywhere”)[7]
-atlassian.com/careers – busca “Remote” en filtros. Jira/Confluence.
-Datadog	Distribuido, varios roles remotos[19]
-datadoghq.com/careers – contratos en sistemas de monitoreo.
-Cloudflare	Muchos roles WFH en diversas locaciones	cloudflare.com/careers – busca “Remote / US & International”.
-HashiCorp	Sede en EEUU, pero muchos roles distribuidos	hashicorp.com/careers – vacantes en plataforma/infra.
-Elastic	Global con cultura open source, algunas vacantes remotas	elastic.co/careers – roles de plataforma y SRE.
-Grafana Labs	Equipo global (Slack, Prometheus)	grafana.com/about/careers – plazas SRE/Backend.
-PagerDuty	SaaS en DevOps, roles remotos USA/EU	pagerduty.com/careers – manejarás alertas/incidentes.
-(Ejemplos basados en prácticas de mercado y artículos sobre empresas remotas[6][7]. Siempre postula en sus propias secciones de “Carreras”.)
-Consejo: En la web de cada empresa, busca filtros como “remote”, “worldwide”, “distributed team” o roles abiertos en la región LATAM. Algunas requieren que coloques tu país cuando aplicas (por temas legales/pago). Lee bien si es WFH global o solo “USA + LATAM”.
-3. Comunidades donde aparecen ofertas primero
-Además de portales, muchas vacantes (y avisos de reclutadores) aparecen en comunidades técnicas:
-•	Reddit:
-•	r/RemoteJobs, r/remotework – comparten ofertas varias y consejos.
-•	r/sre, r/devopsjobs – puestos específicos de SRE/DevOps; debates sobre búsqueda laboral.
-•	r/teletrabajo (en español) y r/lacamiseta – experiencias y alertas de trabajos remotos LATAM.
-•	Slack/Discord: Hay comunidades de ingenieros y DevOps con canales de empleo. Ejemplos: el Slack “Site Reliability Engineering (SRE) Community” (público)[9], DevOps Chat (∼19K miembros)[8], SRE Worldwide, HangOps o grupos de Kubernetes. En ellas se comparten avisos y es posible preguntar por oportunidades.
-•	Foros y listas:
-•	Hacker News – cada primeros meses se publica “Ask HN: Who is hiring?” con ofertas.
-•	LinkedIn – al seguir empresas y reclutadores del área, a veces publican en sus redes propias antes que en portales.
-•	Eventos online – webinars/meetups de DevOps o Slack públicos de tecnología latinoamericana donde emergen oportunidades exclusivas.
-En resumen, hay que vigilar estos canales diariamente y participar. Por ejemplo, en r/RemoteJobs se comparten consejos de búsqueda y enlaces a entrevistas[12].
-4. Plantillas y perfil optimizado
-LinkedIn Headline: Usa palabras clave y objetivo claro. Ejemplo:
+WeWorkRemotely	Alto volumen, roles senior	Mucha competencia
+RemoteOK	Salarios visibles, tech-focused	Muchos freelance
+Wellfound	Startups + equity	Perfil exigente
+FlexJobs	Sin estafas	Pago
+LinkedIn	Networking + visibilidad	Alta competencia
+JustRemote / NoDesk	Curados	Menos SRE
+2. 🌎 Portales específicos LATAM
+Get on Board (GOB)
+→ Ofertas tech LATAM, muchas en USD
+Torre.ai
+→ Matching con IA, alta adopción en LATAM
+Workana / Freelancer / Fiverr
+→ Freelance DevOps (infra, automatización)
+WeRemoto / RemotoJob
+→ Ofertas en español (menos competencia, menor salario)
+🔁 Flujo típico
 
-Site Reliability Engineer | Kubernetes | Terraform | AWS | Abierto a roles remotos
-Esto facilita que reclutadores te encuentren. En la sección de extracto/profesional resume tus logros (infra ahorrada, SLAs mejorados, etc.).
-Mensaje de contacto en LinkedIn: Sé breve y personalizado. Por ejemplo:
+Registro → Perfil completo → Buscar “SRE/DevOps” → Aplicar
 
-Hola [Nombre], soy SRE con X años en IBM (Kubernetes, AWS). Estoy explorando oportunidades remotas internacionales. Me interesa [Empresa] porque [razón breve]. ¿Podríamos conectar para conversar? Gracias.
-Este tipo de mensaje personal y directo suele dar buena respuesta.
-Email de presentación: Al aplicar por correo, usa asunto claro (“SRE Remoto – [Tu Nombre] – [Empresa]”). En el cuerpo, resalta tu experiencia relevante en 2-3 líneas, menciona el rol específico y el por qué encajas. Adjunta CV en PDF.
-CV / Portfolio checklist:
-- Incluye tu GitHub o portfolio con ejemplos reales (infra como código, pipelines, dashboards). Ejemplo: repos con Terraform para crear clústeres, automatización de incidentes, logs/monitoring en Prometheus/Grafana.
-- Lista tus stacks y tecnologías (e.g. Kubernetes, AWS, Docker, Terraform, Ansible, CI/CD, Prometheus, Grafana, Linux). En la sección de skills menciona observability, cloud security, escalabilidad, etc.
-- Proyectos personales o contribuciones open source demuestran pasión y habilidad. Un buen portafolio técnico es diferencial para roles SRE.
-5. Rutina semanal y métricas
-Organiza una rutina similar cada semana:
-•	Lunes: Repasa RemoteOK y WWR, aplica a las ofertas más recientes.
-•	Martes: Postula en Wellfound, Get on Board y portales freelance (Upwork).
-•	Miércoles: Networking – mensajes en LinkedIn a nuevos contactos del sector, revisión de Slack de DevOps/Discord.
-•	Jueves: Busca en comunidades (Reddit, grupos de Facebook/Telegram de TI), aplica a WeRemoto/Workana. Revisa startups emergentes.
-•	Viernes: Seguimiento – envía correos de agradecimiento/interés a quienes contactaste esta semana. Actualiza tu tracker.
-Métricas clave: Apunta a 10–20 aplicaciones/semana. Haz seguimiento (fecha de envío, respuesta recibida, stage del proceso). Mantén una hoja o app (por ejemplo, Trello o Airtable) con estas métricas. Esto te ayudará a identificar qué fuentes convierten mejor (porcentaje de entrevistas) y dónde enfocarte.
-6. Señales de estafa y cómo verificar ofertas
-Hay muchas ofertas fraudulentas que debes evitar:
-•	Pedir dinero o equipo al candidato: Es un engaño seguro. Si te piden pagar por algo (entrenamiento, kits, software), aléjate inmediatamente[11].
-•	Ofertas demasiado buenas: Sueldos “de locura” para el perfil bajan la plausibilidad. Siempre comprueba la reputación de la empresa antes de emocionarte.
-•	Canales informales: Si la empresa te contacta por WhatsApp/Telegram sin haberte postulado, es sospechoso. Los reclutadores legítimos usan email corporativo o LinkedIn.
-•	Falta de datos verificables: Antes de postular o aceptar, busca la empresa en Google, LinkedIn, Glassdoor. Verifica la dirección física o existencia en registros. Un usuario en Reddit aconseja: pide la dirección/telefono de la compañía y confirma que coincidan[10]. Si no encuentras referencias, desconfía.
-•	Pagos por cheque o giro: Clásico timo: te envían un cheque falso pidiéndote pagar a proveedores inexistentes. Siempre recuerda: no envíes dinero jamás. Como advierten en comunidad, “tan pronto como TÚ tengas que pagar algo, es señal de scam”[11].
-Por último, confía en tu sentido común. Si algo “no se siente bien”, es mejor ignorarlo. Recuerda consultar en foros (r/scams, r/jobs) si tienes dudas antes de seguir adelante.
-7. Recursos y enlaces útiles
-•	Artículos y listas de portales de empleo remoto[2][12].
-•	Blogs corporativos de empresas remotas (p.ej. GitLab) para entender su cultura de contratación.
-•	Subreddits antes mencionados (r/RemoteJobs, r/sre, r/devopsjobs) y Slack de SRE/DevOps[8][9].
-Sigue actualizado en estas fuentes: muchas vacantes SRE se discuten abiertamente en redes y foros antes de llegarte por canales oficiales. ¡Suerte en tu búsqueda!
-graph TD
-    A[Optimizar CV/LinkedIn/GitHub] --> B[Buscar ofertas en portales (WWR, RemoteOK, etc.)]
-    B --> C[Postular con CV y carta personalizada]
-    C --> D[Seguir en redes: LinkedIn, Slack, Reddit]
-    D --> E[Preparar entrevistas técnicas]
-    E --> F[Entrevistas y negociaciones]
-    F --> G[Oferta recibida / Negociar sueldo]
-Figura: Flujo recomendado de aplicación a un puesto SRE remoto. Cada paso incluye preparación (A), postulación (B–C), networking (D), y cierre del proceso (E–G) en un ciclo continuo de mejora.
+👉 En freelance:
+
+Enviar propuestas personalizadas
+Competir por precio + reputación
+3. 🏢 Empresas remote-first (Top targets)
+
+Empresas globales que contratan SRE remotos:
+
+GitLab → 100% remoto
+Zapier → remoto en 70+ países
+Automattic → WordPress ecosystem
+Atlassian → “Team Anywhere”
+Datadog → observabilidad
+Cloudflare → infraestructura global
+HashiCorp → IaC / cloud tooling
+Elastic → search + observability
+Grafana Labs → monitoring stack
+PagerDuty → incident response
+🎯 Cómo aplicar correctamente
+Aplicar SIEMPRE en sitio oficial (careers)
+Usar filtros:
+“Remote”
+“Worldwide”
+Validar:
+Restricciones por país
+Tipo de contrato
+4. 🧠 Comunidades (ventaja competitiva)
+
+👉 Aquí aparecen oportunidades antes que en portales
+
+🔴 Reddit
+r/RemoteJobs
+r/remotework
+r/sre
+r/devopsjobs
+r/teletrabajo
+r/lacamiseta
+💬 Slack / Discord
+SRE Slack Community
+DevOps Chat (~19K miembros)
+HangOps
+Kubernetes groups
+🌐 Otros
+Hacker News → “Who is hiring?”
+LinkedIn posts de reclutadores
+Meetups / webinars
+5. 🧾 Perfil y plantillas optimizadas
+🔹 LinkedIn Headline
+Site Reliability Engineer | Kubernetes | Terraform | AWS | Open to Remote
+🔹 Mensaje LinkedIn
+Hola [Nombre], soy SRE con experiencia en Kubernetes y AWS.
+Estoy explorando oportunidades remotas y me interesa [Empresa].
+
+¿Podríamos conectar? Gracias.
+🔹 Email de aplicación
+
+Subject:
+
+SRE Remote – [Tu Nombre] – [Empresa]
+Contenido:
+2–3 líneas de experiencia relevante
+Por qué encajas
+CV adjunto
+🔹 CV / Portfolio Checklist
+GitHub con:
+Terraform
+Kubernetes
+CI/CD pipelines
+Observability (Prometheus/Grafana)
+Skills clave:
+Cloud (AWS/GCP)
+Containers
+IaC
+Monitoring
+Security
+Scalability
+
+👉 Proyectos reales = diferenciador clave
+
+6. 📅 Rutina semanal (alta performance)
+Día	Actividad
+Lunes	RemoteOK + WWR
+Martes	Wellfound + GOB
+Miércoles	Networking (LinkedIn / Slack)
+Jueves	Comunidades + freelance
+Viernes	Seguimiento + tracking
+📊 Métricas clave
+10–20 aplicaciones / semana
+% entrevistas
+% respuestas
+Fuente más efectiva
+
+👉 Trackear en:
+
+Trello
+Airtable
+Notion
+7. 🚨 Estafas (CRÍTICO)
+Señales claras
+❌ Pedir dinero
+❌ Ofertas demasiado buenas
+❌ Contacto por WhatsApp/Telegram sin contexto
+❌ Empresa sin presencia online
+❌ Pagos por cheque
+🔍 Cómo validar
+Buscar en:
+LinkedIn
+Glassdoor
+Google
+Verificar:
+Dominio de email
+Dirección real
+
+👉 Regla de oro:
+
+“Si tú tienes que pagar algo → es scam”
+
+8. 🔄 Flujo completo
+
+ A[Optimizar CV/LinkedIn/GitHub] --> 
+    B --> [Buscar ofertas]
+    C --> [Aplicar]
+    D --> [Networking]
+    E --> [Preparar entrevistas]
+    F --> [Entrevistas]
+    G --> [Oferta / Negociación]
+
+
+
+
+🧠 Evaluación final (modo senior)
+🔥 Lo que hiciste MUY bien:
+
+✔ Cobertura completa
+✔ Estrategia correcta
+✔ Enfoque LATAM → Global
+✔ Incluye networking (clave senior)
+
+🔧 Lo que mejoré:
+Organización tipo playbook real
+Mejor lectura rápida (importante en GitHub)
+Eliminé redundancia visual
+Más enfoque estratégico
