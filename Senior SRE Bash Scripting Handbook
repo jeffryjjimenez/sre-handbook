@@ -1,58 +1,75 @@
-1. 🔰 Bash Basics
+📌 Description
 
+Production-ready Bash scripts designed for Site Reliability Engineering (SRE):
+
+Auto-healing systems
+Monitoring & alerting
+Multi-node automation
+Incident response
+Backup & recovery
+
+Built following SRE principles: reliability, observability, and automation
+
+⚙️ Features
+
+✔ Idempotent scripts
+✔ Logging & observability
+✔ Error handling (fail-fast)
+✔ Scalable (multi-node support)
+✔ Production-ready patterns
+
+🚀 Use Cases
+Automatically restart failed services
+Monitor disk usage and alert
+Deploy applications across multiple servers
+Parse logs and detect critical errors
+Backup systems and validate integrity
+🧠 Tech Stack
+Bash
+Linux
+SSH / SCP
+Cron
+🔰 1. Bash Fundamentals (Foundation Layer)
 Shebang
-
 #!/bin/bash
 Make Script Executable
 chmod +x script.sh
 ./script.sh
-
-2. 📊 Comparisons & Conditions
-
+📊 2. Comparisons & Conditions
 Numeric Comparisons
--eq   equal
--ne   not equal
--lt   less than
--le   less or equal
--gt   greater than
--ge   greater or equal
-
+-eq   equal  
+-ne   not equal  
+-lt   less than  
+-le   less or equal  
+-gt   greater than  
+-ge   greater or equal  
 String Comparisons
-
-==    equal
-!=    not equal
-
-3. 📁 File Tests
-
--e   exists
--f   file exists
--d   directory exists
--s   exists and not empty
--x   executable
--w   writable
--r   readable
-
-4. 🧾 User Input Handling
-
+==    equal  
+!=    not equal  
+📁 3. File Tests
+-e   exists  
+-f   file exists  
+-d   directory exists  
+-s   exists and not empty  
+-x   executable  
+-w   writable  
+-r   readable  
+🧾 4. User Input Handling
 read -p "Username: " USER
-read -sp "Password: " PASS   # hidden input
-read -n 1 OPTION             # single character
+read -sp "Password: " PASS
+read -n 1 OPTION
 Example
 echo -n "Enter your name: "
 read name
 echo "Welcome $name"
-
-5. ➕ Arithmetic Operations
-
+➕ 5. Arithmetic Operations
 result=$((a * b))
 Example
 read first
 read second
 product=$((first * second))
 echo $product
-
-6. 🔀 Conditional Logic
-
+🔀 6. Conditional Logic
 if [ condition ]; then
   command
 elif [ condition ]; then
@@ -60,17 +77,13 @@ elif [ condition ]; then
 else
   command
 fi
-
 Example
-
 if [ $number -gt 100 ]; then
   echo "Greater than 100"
 else
   echo "Less than 100"
 fi
-
-7. 🔁 Loops
-
+🔁 7. Loops
 For Loop
 for i in {1..5}
 do
@@ -88,35 +101,25 @@ while true
 do
   command
 done
-
-8. 📦 Variables & Environment
-
+📦 8. Variables & Environment
 VAR="value"
 echo $VAR
 Export (Global Variable)
 export VAR="value"
-
 System Variables
-
-$0   script name
-$1   first argument
-$?   last exit status
-$$   process ID
-$USER current user
-
-9. ⚙️ Command Substitution
-
+$0   script name  
+$1   first argument  
+$?   last exit status  
+$$   process ID  
+$USER current user  
+⚙️ 9. Command Substitution
 files=$(ls)
-
-10. 🔍 Text Processing (SRE Critical)
-
+🔍 10. Text Processing (SRE Critical)
 Extract Memory
 free -m | grep Mem | awk '{print $4}'
 Disk Usage Parsing
 df -h | awk '{print $5}' | cut -d'%' -f1
-
-11. 🛠️ System Monitoring Script
-
+🛠️ 11. System Monitoring Script
 #!/bin/bash
 
 echo "Uptime:"
@@ -127,18 +130,14 @@ free -m
 
 echo "Disk:"
 df -h
-
-12. 📦 Package Installation Automation
-
+📦 12. Package Installation Automation
 package="httpd wget unzip"
 svc="httpd"
 
 yum install $package -y &> /dev/null
 systemctl start $svc
 systemctl enable $svc
-
-13. 🔄 Service Health Check (SRE Critical)
-
+🔄 13. Service Health Check (SRE Critical)
 ls /var/run/httpd/httpd.pid &> /dev/null
 
 if [ $? -eq 0 ]; then
@@ -150,14 +149,10 @@ fi
 ✔ Alternative (better):
 
 if [ -f /var/run/httpd/httpd.pid ]; then
-
-14. ⏱️ Cron Jobs (Automation)
-
+⏱️ 14. Cron Jobs (Automation)
 crontab -e
 */5 * * * * /script.sh &>> /var/log/script.log
-
-15. 🌐 Remote Execution (Multi-Server SRE)
-
+🌐 15. Remote Execution (Multi-Server SRE)
 SSH Loop
 for host in $(cat hosts)
 do
@@ -169,8 +164,7 @@ do
   scp script.sh user@$host:/tmp/
   ssh user@$host sudo /tmp/script.sh
 done
-
-16. 📡 Network Monitoring
+📡 16. Network Monitoring
 ping -c1 IP &> /dev/null
 
 if [ $? -eq 0 ]; then
@@ -178,9 +172,7 @@ if [ $? -eq 0 ]; then
 else
   echo "FAIL"
 fi
-
-17. 📊 Disk Monitoring Script (Production Use)
-
+📊 17. Disk Monitoring Script (Production Use)
 usage=$(df -h | egrep -v "tmpfs|devtmpfs" | awk '{print $5}' | cut -d'%' -f1)
 
 for i in $usage
@@ -189,9 +181,7 @@ do
     echo "High disk usage: $i%"
   fi
 done
-
-18. 📜 Log Monitoring (REAL SRE USE CASE)
-
+📜 18. Log Monitoring (REAL SRE USE CASE)
 tail -fn0 /var/log/messages | while read line
 do
   echo "$line" | egrep -i "error|fail|critical"
@@ -199,107 +189,63 @@ do
     echo "$line" >> /tmp/errors.log
   fi
 done
-
-19. 📧 Alerting System
-
+📧 19. Alerting System
 if [ -s /tmp/errors.log ]; then
   cat /tmp/errors.log | sort | uniq | mail -s "ALERT" user@email.com
   rm /tmp/errors.log
 fi
-
-20. 👥 User Management Automation
-
-Create User
+👥 20. User Management Automation
 useradd username
-Validate User Exists
 grep -q username /etc/passwd
-
-21. 🧹 Cleanup & Maintenance
-
-Delete Old Files
+🧹 21. Cleanup & Maintenance
 find /home -type f -mtime +90 -exec rm {} \;
-Dry Run
 find /home -type f -mtime +90 -exec echo rm {} \;
-
-22. 📦 Backup Automation (SRE Scenario)
-
+📦 22. Backup Automation (SRE Scenario)
 tar cvf /tmp/backup.tar /etc /var
 gzip /tmp/backup.tar
 
 if [ $? -eq 0 ]; then
   scp /tmp/backup.tar.gz user@remote:/backup
 fi
-
-23. 🔪 Process Management
-
-Find PID
+🔪 23. Process Management
 ps -ef | grep process | grep -v grep | awk '{print $2}'
-Kill Process
 ... | xargs kill
-
-24. 🧪 Debugging & Safety
-
-set -x   # debug
-set -e   # exit on error
+🧪 24. Debugging & Safety
+set -x
+set -e
 set -o pipefail
-
-25. 🔐 Permissions
-
+🔐 25. Permissions
 chmod 755 file
 chown user:group file
 chgrp group file
-
-26. 🔄 File Operations
-
+🔄 26. File Operations
 cp -r dir1 dir2
 mv file /dest
 rm -rf dir
 mkdir -p path
-
-27. 🔧 Sed (Replace Text)
-
+🔧 27. Sed (Replace Text)
 sed -i 's/old/new/g' file.txt
-
-28. 📈 Performance & System Analysis
-
+📈 28. Performance & System Analysis
 top
 iostat -y 5
 vmstat
 lscpu
 cat /proc/meminfo
-
-29. 🧠 Advanced Patterns (Senior SRE Mindset)
-
-Defensive Script
+🧠 29. Advanced Patterns (Senior SRE Mindset)
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <arg>"
   exit 1
 fi
-Exit Early
-exit 0
 
-30. 🚀 Real SRE Scenarios
+exit 0
+🚀 30. Real SRE Scenarios
 
 ✔ Auto-healing Service
-Detect failure
-Restart service
-Log result
-Alert if fails
 ✔ Disk Alert System
-Parse df
-Threshold check
-Send alert
 ✔ Log Monitoring Pipeline
-Real-time detection
-Filter critical logs
-Notify team
 ✔ Multi-node Automation
-Push scripts via SSH
-Execute remotely
-Collect output
 
-31. 🏁 Key Takeaways (Senior Level)
-
+🏁 31. Key Takeaways (Senior Level)
 Always validate inputs
 Always check exit codes ($?)
 Use logging (&>> log)
@@ -307,3 +253,262 @@ Prefer idempotent scripts
 Avoid hardcoding → use variables
 Build reusable scripts
 Think in automation + observability
+🧠 32. SRE Philosophy in Bash
+
+At senior level, Bash is not just scripting:
+
+You are building:
+
+Self-healing systems
+Observability pipelines
+Automation frameworks
+Failure-resistant tooling
+🔐 33. Production Script Template (Golden Standard)
+#!/bin/bash
+
+set -euo pipefail
+
+LOG_FILE="/var/log/script.log"
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') | $1" | tee -a "$LOG_FILE"
+}
+
+error_exit() {
+  log "ERROR: $1"
+  exit 1
+}
+
+trap 'error_exit "Script failed at line $LINENO"' ERR
+📦 34. Modular Script Design
+install_packages() {
+  local packages="$1"
+  yum install -y $packages &>> $LOG_FILE
+}
+
+manage_service() {
+  local svc=$1
+  systemctl enable --now $svc &>> $LOG_FILE
+}
+🧩 35. Reusable Script Framework
+main() {
+  log "Starting deployment"
+  install_packages "httpd wget unzip"
+  manage_service "httpd"
+  log "Deployment completed"
+}
+
+main "$@"
+⚙️ 36. Idempotency (CRITICAL)
+if ! rpm -q httpd &> /dev/null; then
+  yum install -y httpd
+fi
+📊 37. Advanced Health Checks
+if systemctl is-active --quiet httpd; then
+  log "httpd is running"
+else
+  log "httpd is down, restarting..."
+  systemctl restart httpd
+fi
+🔁 38. Retry Logic
+retry() {
+  local retries=3
+  local count=0
+
+  until "$@"; do
+    exit_code=$?
+    count=$((count + 1))
+    if [ $count -lt $retries ]; then
+      sleep 2
+    else
+      return $exit_code
+    fi
+  done
+}
+📡 39. Parallel Execution
+for host in $(cat hosts); do
+  ssh user@$host "uptime" &
+done
+
+wait
+🧠 40. Advanced Logging Strategy
+exec > >(tee -a /var/log/script.log) 2>&1
+📂 41. Configuration-Driven Scripts
+source ./config.env
+🔍 42. Observability Integration
+tail -Fn0 /var/log/messages | while read line; do
+  if echo "$line" | grep -Ei "error|fail|critical"; then
+    echo "$line" >> /tmp/alerts.log
+  fi
+done
+📧 43. Alerting System (Improved)
+send_alert() {
+  local message="$1"
+  echo "$message" | mail -s "SRE Alert" team@email.com
+}
+💾 44. Backup + Validation
+backup() {
+  tar czf /tmp/backup.tar.gz /etc /var
+
+  if [ $? -eq 0 ]; then
+    log "Backup successful"
+  else
+    error_exit "Backup failed"
+  fi
+}
+📊 45. Disk Monitoring (Production Grade)
+check_disk() {
+  df -h | awk 'NR>1 {print $5}' | cut -d% -f1 | while read usage; do
+    if [ "$usage" -gt 80 ]; then
+      log "WARNING: Disk usage at $usage%"
+    fi
+  done
+}
+🧹 46. Auto Cleanup System
+cleanup() {
+  find /var/log -type f -mtime +7 -delete
+}
+🔐 47. Secure Scripting Practices
+rm -rf "${VAR:?}"
+🧪 48. Input Validation
+if [[ -z "${1:-}" ]]; then
+  echo "Usage: $0 <filename>"
+  exit 1
+fi
+🔄 49. Process Monitoring + Auto-Healing
+check_process() {
+  if ! pgrep httpd > /dev/null; then
+    log "httpd not running, restarting..."
+    systemctl restart httpd
+  fi
+}
+🌐 50. Multi-Server Deployment Framework
+deploy() {
+  for host in $(cat hosts); do
+    (
+      scp script.sh user@$host:/tmp/
+      ssh user@$host "bash /tmp/script.sh"
+    ) &
+  done
+  wait
+}
+🧠 51. Lock Files (Prevent Overlap)
+LOCKFILE="/tmp/script.lock"
+
+if [ -f "$LOCKFILE" ]; then
+  echo "Script already running"
+  exit 1
+fi
+
+touch $LOCKFILE
+trap "rm -f $LOCKFILE" EXIT
+🧩 52. Functions + Libraries
+lib/
+ ├── logging.sh
+ ├── network.sh
+ └── disk.sh
+source lib/logging.sh
+🧠 53. Performance Awareness
+grep something file
+🧬 54. Advanced Pipelines
+ps -ef --sort=-pcpu | head -5
+df -h | awk '{print $5}' | cut -d% -f1 | sort -nr
+🧯 55. Incident Response Script Example
+#!/bin/bash
+
+log "Incident detected"
+
+if ! systemctl is-active --quiet httpd; then
+  log "Restarting service"
+  systemctl restart httpd
+
+  if ! systemctl is-active --quiet httpd; then
+    send_alert "CRITICAL: httpd failed to restart"
+  fi
+fi
+📅 56. Cron + Observability
+*/5 * * * * /opt/scripts/monitor.sh >> /var/log/monitor.log 2>&1
+🧪 57. Testing Your Scripts
+Run with bash -x script.sh
+Test edge cases
+Simulate failures
+Run twice (idempotency test)
+🔥 58. Senior-Level Best Practices
+
+✔ Use set -euo pipefail
+✔ Validate inputs
+✔ Log everything
+✔ Handle failures explicitly
+✔ Use functions
+✔ Avoid duplication
+
+🧠 59. Real SRE Use Cases
+
+✅ Auto-Healing System
+✅ Distributed Deployment
+✅ Monitoring Pipeline
+✅ Backup + Validation
+
+🧱 60. Mini SRE Framework
+main() {
+  log "Starting SRE automation"
+
+  check_disk
+  check_process
+  cleanup
+
+  log "Completed"
+}
+
+main "$@"
+🧱 61. Core Scripts (REAL SRE LEVEL)
+logging.sh
+LOG_FILE="/var/log/sre.log"
+
+log() {
+  echo "$(date '+%F %T') | $1" | tee -a "$LOG_FILE"
+}
+retry.sh
+retry() { ... }
+service_health.sh
+# (as provided)
+disk_monitor.sh
+# (as provided)
+log_watcher.sh
+# (as provided)
+auto_heal.sh
+# (as provided)
+remote_exec.sh
+# (as provided)
+deploy_web.sh
+# (as provided)
+📊 62. SRE Scenarios (docs/scenarios.md)
+
+🔥 Service Outage
+🔥 Disk Full
+🔥 Log Explosion
+
+📄 63. .gitignore
+*.log
+*.tmp
+.env
+🧠 64. Git Setup
+git init
+git add .
+git commit -m "Initial SRE Bash Automation Toolkit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/sre-bash-automation.git
+git push -u origin main
+🎯 65. What This Shows Recruiters
+
+✅ Linux expertise
+✅ SRE mindset
+✅ Real incident automation
+✅ Production-quality scripting
+✅ Systems thinking
+
+🔥 66. Next-Level Enhancements
+CI/CD (GitHub Actions)
+Dockerized script runner
+Kubernetes health checks
+Terraform integration
