@@ -193,12 +193,12 @@ It is designed for **hands-on labs** and **automation-focused learning** for top
 ---
 
 ## Recommended Certifications
+ 
+- AWS Certified DevOps Engineer – Associate/Professional
+- AWS Certified Solutions Architect – Associate/Professional
+- Kubernetes (CKA and CKAD)  
+- Terraform Associate
 
-- AWS Certified SysOps Administrator – Associate  
-- AWS Certified DevOps Engineer – Professional  
-- Kubernetes Administrator (CKA)  
-- Terraform Associate (optional)  
-- Prometheus/Grafana courses
 
 ---
 
@@ -218,7 +218,7 @@ This repository is your **complete lab & reference guide for Senior SRE skills**
 
 
 SRE Senior Ultimate Lab & Reference Guide
-# SRE Senior Ultimate Lab & Reference Guide
+
 
 ---
 
