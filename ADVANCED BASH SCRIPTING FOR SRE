@@ -1,0 +1,242 @@
+1. 🔰 Bash Basics
+Shebang
+#!/bin/bash
+Make Script Executable
+chmod +x script.sh
+./script.sh
+2. 📊 Comparisons & Conditions
+Numeric Comparisons
+-eq   equal
+-ne   not equal
+-lt   less than
+-le   less or equal
+-gt   greater than
+-ge   greater or equal
+String Comparisons
+==    equal
+!=    not equal
+3. 📁 File Tests
+-e   exists
+-f   file exists
+-d   directory exists
+-s   exists and not empty
+-x   executable
+-w   writable
+-r   readable
+4. 🧾 User Input Handling
+read -p "Username: " USER
+read -sp "Password: " PASS   # hidden input
+read -n 1 OPTION             # single character
+Example
+echo -n "Enter your name: "
+read name
+echo "Welcome $name"
+5. ➕ Arithmetic Operations
+result=$((a * b))
+Example
+read first
+read second
+product=$((first * second))
+echo $product
+6. 🔀 Conditional Logic
+if [ condition ]; then
+  command
+elif [ condition ]; then
+  command
+else
+  command
+fi
+Example
+if [ $number -gt 100 ]; then
+  echo "Greater than 100"
+else
+  echo "Less than 100"
+fi
+7. 🔁 Loops
+For Loop
+for i in {1..5}
+do
+  echo $i
+done
+While Loop
+counter=0
+while [ $counter -lt 5 ]
+do
+  echo $counter
+  counter=$((counter + 1))
+done
+Infinite Loop
+while true
+do
+  command
+done
+8. 📦 Variables & Environment
+VAR="value"
+echo $VAR
+Export (Global Variable)
+export VAR="value"
+System Variables
+$0   script name
+$1   first argument
+$?   last exit status
+$$   process ID
+$USER current user
+9. ⚙️ Command Substitution
+files=$(ls)
+10. 🔍 Text Processing (SRE Critical)
+Extract Memory
+free -m | grep Mem | awk '{print $4}'
+Disk Usage Parsing
+df -h | awk '{print $5}' | cut -d'%' -f1
+11. 🛠️ System Monitoring Script
+#!/bin/bash
+
+echo "Uptime:"
+uptime
+
+echo "Memory:"
+free -m
+
+echo "Disk:"
+df -h
+12. 📦 Package Installation Automation
+package="httpd wget unzip"
+svc="httpd"
+
+yum install $package -y &> /dev/null
+systemctl start $svc
+systemctl enable $svc
+13. 🔄 Service Health Check (SRE Critical)
+ls /var/run/httpd/httpd.pid &> /dev/null
+
+if [ $? -eq 0 ]; then
+  echo "Service running"
+else
+  systemctl start httpd
+fi
+
+✔ Alternative (better):
+
+if [ -f /var/run/httpd/httpd.pid ]; then
+14. ⏱️ Cron Jobs (Automation)
+crontab -e
+*/5 * * * * /script.sh &>> /var/log/script.log
+15. 🌐 Remote Execution (Multi-Server SRE)
+SSH Loop
+for host in $(cat hosts)
+do
+  ssh user@$host uptime
+done
+SCP + Execution
+for host in $(cat hosts)
+do
+  scp script.sh user@$host:/tmp/
+  ssh user@$host sudo /tmp/script.sh
+done
+16. 📡 Network Monitoring
+ping -c1 IP &> /dev/null
+
+if [ $? -eq 0 ]; then
+  echo "OK"
+else
+  echo "FAIL"
+fi
+17. 📊 Disk Monitoring Script (Production Use)
+usage=$(df -h | egrep -v "tmpfs|devtmpfs" | awk '{print $5}' | cut -d'%' -f1)
+
+for i in $usage
+do
+  if [ $i -ge 80 ]; then
+    echo "High disk usage: $i%"
+  fi
+done
+18. 📜 Log Monitoring (REAL SRE USE CASE)
+tail -fn0 /var/log/messages | while read line
+do
+  echo "$line" | egrep -i "error|fail|critical"
+  if [ $? -eq 0 ]; then
+    echo "$line" >> /tmp/errors.log
+  fi
+done
+19. 📧 Alerting System
+if [ -s /tmp/errors.log ]; then
+  cat /tmp/errors.log | sort | uniq | mail -s "ALERT" user@email.com
+  rm /tmp/errors.log
+fi
+20. 👥 User Management Automation
+Create User
+useradd username
+Validate User Exists
+grep -q username /etc/passwd
+21. 🧹 Cleanup & Maintenance
+Delete Old Files
+find /home -type f -mtime +90 -exec rm {} \;
+Dry Run
+find /home -type f -mtime +90 -exec echo rm {} \;
+22. 📦 Backup Automation (SRE Scenario)
+tar cvf /tmp/backup.tar /etc /var
+gzip /tmp/backup.tar
+
+if [ $? -eq 0 ]; then
+  scp /tmp/backup.tar.gz user@remote:/backup
+fi
+23. 🔪 Process Management
+Find PID
+ps -ef | grep process | grep -v grep | awk '{print $2}'
+Kill Process
+... | xargs kill
+24. 🧪 Debugging & Safety
+set -x   # debug
+set -e   # exit on error
+set -o pipefail
+25. 🔐 Permissions
+chmod 755 file
+chown user:group file
+chgrp group file
+26. 🔄 File Operations
+cp -r dir1 dir2
+mv file /dest
+rm -rf dir
+mkdir -p path
+27. 🔧 Sed (Replace Text)
+sed -i 's/old/new/g' file.txt
+28. 📈 Performance & System Analysis
+top
+iostat -y 5
+vmstat
+lscpu
+cat /proc/meminfo
+29. 🧠 Advanced Patterns (Senior SRE Mindset)
+Defensive Script
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <arg>"
+  exit 1
+fi
+Exit Early
+exit 0
+30. 🚀 Real SRE Scenarios
+✔ Auto-healing Service
+Detect failure
+Restart service
+Log result
+Alert if fails
+✔ Disk Alert System
+Parse df
+Threshold check
+Send alert
+✔ Log Monitoring Pipeline
+Real-time detection
+Filter critical logs
+Notify team
+✔ Multi-node Automation
+Push scripts via SSH
+Execute remotely
+Collect output
+31. 🏁 Key Takeaways (Senior Level)
+Always validate inputs
+Always check exit codes ($?)
+Use logging (&>> log)
+Prefer idempotent scripts
+Avoid hardcoding → use variables
+Build reusable scripts
+Think in automation + observability
