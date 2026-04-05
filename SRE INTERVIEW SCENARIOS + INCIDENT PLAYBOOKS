@@ -1,0 +1,225 @@
+12. Real SRE Interview Scenarios (What Companies Actually Ask)
+
+These are not theoretical — these are real patterns used in interviews.
+
+12.1 Scenario: Service Down (Critical Incident)
+Problem:
+
+Production web service is down.
+
+What interviewer expects:
+Detection
+Diagnosis
+Mitigation
+Prevention
+Script (Auto-Healing + Logging)
+#!/usr/bin/env bash
+set -euo pipefail
+
+SERVICE="httpd"
+LOG="/var/log/service_monitor.log"
+
+log() {
+  echo "$(date '+%F %T') $1" | tee -a "$LOG"
+}
+
+if ! systemctl is-active --quiet "$SERVICE"; then
+  log "ERROR: $SERVICE is down. Restarting..."
+  systemctl restart "$SERVICE"
+
+  if systemctl is-active --quiet "$SERVICE"; then
+    log "INFO: $SERVICE restarted successfully"
+  else
+    log "CRITICAL: Failed to restart $SERVICE"
+  fi
+else
+  log "INFO: $SERVICE is running"
+fi
+What you should SAY in interview:
+“This is auto-healing”
+“Includes observability via logs”
+“Could integrate with alerting system”
+12.2 Scenario: High Disk Usage
+Problem:
+
+Disk reaches 95% → system crashes
+
+Script
+THRESHOLD=85
+
+df -h | awk 'NR>1 {print $5,$6}' | while read usage mount; do
+  value=$(echo $usage | cut -d'%' -f1)
+
+  if [ "$value" -ge "$THRESHOLD" ]; then
+    echo "WARNING: $mount at $value%"
+  fi
+done
+Expected Answer:
+Detect early
+Alert
+Optionally clean logs automatically
+12.3 Scenario: Memory Leak Detection
+free -m | awk '/Mem/ {print $3}'
+
+👉 Extend:
+
+Track over time
+Alert if increasing continuously
+12.4 Scenario: Process Not Running
+pgrep nginx > /dev/null || systemctl start nginx
+12.5 Scenario: Server Reachability (Fleet Monitoring)
+for ip in $(cat hosts); do
+  ping -c1 $ip &>/dev/null && echo "$ip OK" || echo "$ip DOWN"
+done
+13. Incident Response Playbook (REAL SRE WORK)
+13.1 Step-by-Step Incident Flow
+1. Detect
+Monitoring alert
+Logs
+Metrics
+2. Triage
+Is it widespread?
+Is it critical?
+3. Mitigate (FAST)
+systemctl restart service
+4. Diagnose (ROOT CAUSE)
+Logs
+Metrics
+Recent deployments
+5. Prevent
+Add monitoring
+Improve script
+Add automation
+13.2 Example: Full Incident Script
+#!/bin/bash
+
+SERVICE="nginx"
+
+if ! systemctl is-active --quiet $SERVICE; then
+  echo "Restarting $SERVICE"
+  systemctl restart $SERVICE
+
+  sleep 2
+
+  if ! systemctl is-active --quiet $SERVICE; then
+    echo "ALERT: Service failed to recover"
+  fi
+fi
+14. Real Production Automation Scenarios
+14.1 Fleet Patch Automation
+for host in $(cat hosts); do
+  ssh $host "yum update -y" &
+done
+wait
+14.2 Rolling Restart (Safe Deployment)
+for host in $(cat hosts); do
+  ssh $host "systemctl restart app"
+  sleep 5
+done
+
+👉 Prevents total outage
+
+14.3 Backup + Validation
+tar czf backup.tar.gz /data
+
+if [ -f backup.tar.gz ]; then
+  echo "Backup OK"
+else
+  echo "Backup FAILED"
+fi
+14.4 Log Monitoring + Alerting
+tail -fn0 /var/log/messages | while read line; do
+  echo "$line" | grep -i error && echo "$line" >> /tmp/errors.log
+done
+15. Failure Scenarios You MUST Handle
+15.1 Network Failure
+
+Solution:
+
+Retry logic
+Timeout handling
+15.2 Partial Failures
+
+Example:
+
+1 out of 10 servers failed
+
+👉 Must handle gracefully (don’t stop whole script)
+
+15.3 Silent Failures
+
+👉 Always check exit codes:
+
+command || echo "FAILED"
+15.4 Race Conditions
+
+👉 Use locks:
+
+flock -n /tmp/script.lock -c "./script.sh"
+16. SRE Thinking During Interviews
+When given ANY problem:
+
+You should structure answer like:
+
+1. Detection
+
+“How do I know it's broken?”
+
+2. Mitigation
+
+“How do I fix it fast?”
+
+3. Root Cause
+
+“Why did it happen?”
+
+4. Prevention
+
+“How do I make sure it never happens again?”
+
+17. Common Interview Questions (You Should Be Ready)
+🔹 “How do you monitor a service?”
+
+→ Health checks + logs + metrics
+
+🔹 “How do you handle failures?”
+
+→ Retry, fallback, alerting
+
+🔹 “How do you automate tasks?”
+
+→ Scripts + cron + CI/CD
+
+🔹 “How do you debug production issues?”
+
+→ Logs, metrics, system tools
+
+🔹 “How do you ensure reliability?”
+
+→ Idempotency, monitoring, automation
+
+18. What Makes You ELITE (Final Layer)
+You are NOT just writing scripts:
+
+You are:
+
+✔ Preventing outages
+✔ Reducing MTTR (Mean Time To Recovery)
+✔ Automating recovery
+✔ Improving system reliability
+✔ Thinking in systems, not commands
+
+FINAL MINDSET:
+
+“I don’t just write scripts.
+I design systems that don’t fail — and recover when they do.”
+
+🔥 FINAL RESULT
+
+With this section added, your repo now shows:
+
+✔ Hands-on scripting
+✔ Real production scenarios
+✔ Incident handling capability
+✔ Automation at scale
+✔ SRE mindset (this is the key)
