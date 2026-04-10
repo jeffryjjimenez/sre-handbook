@@ -19,34 +19,50 @@ Built following SRE principles: reliability, observability, and automation
 ✔ Production-ready patterns
 
 🚀 Use Cases
+
 Automatically restart failed services
 Monitor disk usage and alert
 Deploy applications across multiple servers
 Parse logs and detect critical errors
 Backup systems and validate integrity
+
 🧠 Tech Stack
+
 Bash
 Linux
 SSH / SCP
 Cron
+
 🔰 1. Bash Fundamentals (Foundation Layer)
+
 Shebang
+
 #!/bin/bash
+
 Make Script Executable
+
 chmod +x script.sh
+
 ./script.sh
+
 📊 2. Comparisons & Conditions
+
 Numeric Comparisons
+
 -eq   equal  
 -ne   not equal  
 -lt   less than  
 -le   less or equal  
 -gt   greater than  
--ge   greater or equal  
+-ge   greater or equal 
+
 String Comparisons
+
 ==    equal  
 !=    not equal  
+
 📁 3. File Tests
+
 -e   exists  
 -f   file exists  
 -d   directory exists  
@@ -54,22 +70,54 @@ String Comparisons
 -x   executable  
 -w   writable  
 -r   readable  
+
 🧾 4. User Input Handling
-read -p "Username: " USER
-read -sp "Password: " PASS
-read -n 1 OPTION
-Example
+
+read -p "Username: " USER  #read allows to the user to input data
+
+read -sp "Password: " PASS  #s for silent, it does not show what the user writes.
+
+read -n 1 OPTION   # -n 1 it means that only will read a caracter from the user.
+It does need the user press enter.
+
+Example 1:
+
 echo -n "Enter your name: "
 read name
 echo "Welcome $name"
+
+Example 2:
+
+#!/bin/bash
+
+read -p "Hola, introduce tu nombre: " nombre
+read -sp "Ahora tu contraseña: " pass
+echo    # Salto de línea para que el prompt no quede pegado
+read -n 1 -p "Marca 1 para seguir: " opcion
+echo    # Salto de línea para mostrar el resultado limpio
+
+echo "Nombre: $nombre"
+echo "Contraseña: $pass"
+echo "Opción seleccionada: $opcion"
+
+
 ➕ 5. Arithmetic Operations
+
 result=$((a * b))
+echo $result
+
 Example
-read first
-read second
-product=$((first * second))
-echo $product
+
+#!/bin/bash
+
+read -p "Ingresa el primer número: " first
+read -p "Ingresa el segundo número: " second
+
+product=$(( first * second ))
+echo "El producto es: $product"
+
 🔀 6. Conditional Logic
+
 if [ condition ]; then
   command
 elif [ condition ]; then
@@ -77,30 +125,63 @@ elif [ condition ]; then
 else
   command
 fi
+
 Example
+read -p "Ingrese su numero: " number
 if [ $number -gt 100 ]; then
   echo "Greater than 100"
 else
   echo "Less than 100"
 fi
+
+Or:
+
+#!/bin/bash
+
+read -p "Digite el numero: " numero
+
+if [ $numero -lt 100 ]; then
+   echo "Numero es menor que 100"
+elif [ $numero -gt 100 ]; then
+   echo "Numero es mayor a 100"
+else
+   echo "Numero es 100"
+fi       
+
 🔁 7. Loops
-For Loop
+
+For Loop:
+
 for i in {1..5}
 do
   echo $i
 done
-While Loop
+
+While Loop:
+
 counter=0
 while [ $counter -lt 5 ]
 do
   echo $counter
   counter=$((counter + 1))
 done
+
 Infinite Loop
+
 while true
 do
   command
 done
+
+Example:
+
+while true
+do
+  date
+  sleep 1
+done
+
+
 📦 8. Variables & Environment
 VAR="value"
 echo $VAR
