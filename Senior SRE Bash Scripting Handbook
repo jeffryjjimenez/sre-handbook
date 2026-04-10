@@ -183,24 +183,43 @@ done
 
 
 📦 8. Variables & Environment
+
 VAR="value"
 echo $VAR
 Export (Global Variable)
 export VAR="value"
+
 System Variables
-$0   script name  
-$1   first argument  
-$?   last exit status  
-$$   process ID  
-$USER current user  
+
+$0   # This displays the name of the shell or script currently running.
+$1   # This is used to display the first positional parameter passed to a script.
+$?   # This shows the exit status of the last command run. 0 for successful
+$$   process ID  # This prints the process ID (PID) of the current shell
+$USER # It outputs the username of the account you're logged into.
+
 ⚙️ 9. Command Substitution
-files=$(ls)
-🔍 10. Text Processing (SRE Critical)
+
+files=$(ls) # allows you to execute a command and substitute its output into another command or variable.
+
+🔍 10. Text Processing 
+
+
 Extract Memory
 free -m | grep Mem | awk '{print $4}'
 Disk Usage Parsing
+
 df -h | awk '{print $5}' | cut -d'%' -f1
+
+with:
+
+The cut command is used to split a line into parts based on a delimiter (caracter),
+and then extract specific fields (or columns) from the line.
+
+cut -d'<delimiter>' -f<field_number>
+In the example: -f1: This tells cut to select the first part (field) before the % symbol.
+
 🛠️ 11. System Monitoring Script
+
 #!/bin/bash
 
 echo "Uptime:"
@@ -211,28 +230,63 @@ free -m
 
 echo "Disk:"
 df -h
+
+
 📦 12. Package Installation Automation
-package="httpd wget unzip"
-svc="httpd"
 
-yum install $package -y &> /dev/null
-systemctl start $svc
-systemctl enable $svc
+#!/bin/bash
+
+package="apache2 wget unzip"
+svc="apache2" #for Ubuntu
+sudo apt install $package -y &> /dev/null # apt for Ubuntu, yum for Centos
+sudo systemctl start $svc
+sudo systemctl enable $svc
+
+No uninstall the above:
+
+#!/bin/bash
+
+# Define the packages to uninstall
+package="apache2 wget unzip"
+
+# Uninstall the packages
+echo "Uninstalling packages: $package"
+sudo apt purge $package -y &> /dev/null
+
+# Clean up unnecessary dependencies
+echo "Removing unnecessary packages..."
+sudo apt autoremove -y &> /dev/null
+
+# Successfully uninstalled
+echo "$package have been successfully uninstalled."
+
+
 🔄 13. Service Health Check (SRE Critical)
-ls /var/run/httpd/httpd.pid &> /dev/null
 
+#!/bin/bash
+
+# Verificar si el proceso de Apache está corriendo
+ls /var/run/apache2/apache2.pid &> /dev/null
+
+# Si el archivo existe, Apache está corriendo, si no, lo arrancamos
 if [ $? -eq 0 ]; then
-  echo "Service running"
+  echo "Apache2 está corriendo"
 else
-  systemctl start httpd
+  systemctl start apache2
 fi
 
 ✔ Alternative (better):
 
 if [ -f /var/run/httpd/httpd.pid ]; then
+ echo "Service running"
+else
+  systemctl start httpd
+fi
+
 ⏱️ 14. Cron Jobs (Automation)
 crontab -e
 */5 * * * * /script.sh &>> /var/log/script.log
+
 🌐 15. Remote Execution (Multi-Server SRE)
 SSH Loop
 for host in $(cat hosts)
