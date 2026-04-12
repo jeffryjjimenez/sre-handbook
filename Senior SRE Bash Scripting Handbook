@@ -242,7 +242,7 @@ sudo apt install $package -y &> /dev/null # apt for Ubuntu, yum for Centos
 sudo systemctl start $svc
 sudo systemctl enable $svc
 
-No uninstall the above:
+To uninstall the above:
 
 #!/bin/bash
 
@@ -272,7 +272,8 @@ ls /var/run/apache2/apache2.pid &> /dev/null
 if [ $? -eq 0 ]; then
   echo "Apache2 está corriendo"
 else
-  systemctl start apache2
+  sudo 
+systemctl start apache2
 fi
 
 ✔ Alternative (better):
@@ -284,21 +285,56 @@ else
 fi
 
 ⏱️ 14. Cron Jobs (Automation)
+
 crontab -e
+
 */5 * * * * /script.sh &>> /var/log/script.log
 
+Check con logs: grep CRON /var/log/syslog
+
+sudo systemctl status cron
+sudo systemctl start cron
+
 🌐 15. Remote Execution (Multi-Server SRE)
-SSH Loop
+
+SSH Loop:
+
 for host in $(cat hosts)
 do
   ssh user@$host uptime
 done
+
 SCP + Execution
+
 for host in $(cat hosts)
 do
   scp script.sh user@$host:/tmp/
   ssh user@$host sudo /tmp/script.sh
 done
+
+-----------------------------------------
+Note, to avoid entering the password use keys:
+
+# 1. Generate SSH Key Pair
+ssh-keygen -t rsa -b 4096  # This will generate a new SSH key pair (private and public keys), t for type of key and -b for bit lenght
+
+# 2. Copy the Public Key to the Remote Server
+ssh-copy-id user@remote_host  # Copies your public key to the remote server to enable passwordless login
+
+# 3. Verify SSH Login
+ssh user@remote_host  # Test that you can log in without entering a password
+
+# 4. (Optional) Disable Password Authentication on the Remote Server for Security
+# Edit the SSH configuration file on the remote server
+sudo nano /etc/ssh/sshd_config
+
+# Change the following line to disable password authentication
+# PasswordAuthentication no
+
+# Restart SSH service to apply changes
+sudo systemctl restart ssh
+----------------------------------------------------
+
 📡 16. Network Monitoring
 ping -c1 IP &> /dev/null
 
