@@ -336,6 +336,7 @@ sudo systemctl restart ssh
 ----------------------------------------------------
 
 📡 16. Network Monitoring
+
 ping -c1 IP &> /dev/null
 
 if [ $? -eq 0 ]; then
@@ -343,8 +344,10 @@ if [ $? -eq 0 ]; then
 else
   echo "FAIL"
 fi
+
 📊 17. Disk Monitoring Script (Production Use)
-usage=$(df -h | egrep -v "tmpfs|devtmpfs" | awk '{print $5}' | cut -d'%' -f1)
+
+usage=$(df -h | egrep -v "tmpfs|devtmpfs|Filesystem" | awk '{print $5}' | cut -d'%' -f1)
 
 for i in $usage
 do
@@ -352,7 +355,9 @@ do
     echo "High disk usage: $i%"
   fi
 done
+
 📜 18. Log Monitoring (REAL SRE USE CASE)
+
 tail -fn0 /var/log/messages | while read line
 do
   echo "$line" | egrep -i "error|fail|critical"
@@ -360,17 +365,50 @@ do
     echo "$line" >> /tmp/errors.log
   fi
 done
+
+where:
+
+-n0 to show only the new lines that are being added
+while read line: it  is a loop that will read every new line that will be added to /var/log/messages ( thanks to tail -f). "line" is the variable.
+echo "$line" | egrep -i "error|fail|critical" 
+  echo "$line": it prints on the screen the line that just read from: while read line 
+  egrep -i "error|fail|critical" : to look for a pattern
+  if [ $? -eq 0 ]; : this is executed only if if egrep finds a coincidence (it returns 0)
+  echo "$line" >> /tmp/errors.log : it adds the line that contains error,fail,critial to file: /tmp/errors.log
+
+
+
 📧 19. Alerting System
+
 if [ -s /tmp/errors.log ]; then
   cat /tmp/errors.log | sort | uniq | mail -s "ALERT" user@email.com
   rm /tmp/errors.log
 fi
+
+While:
+
+-s /tmp/errors.log : Test that this file is not empty:
+mail -s "ALERT" user@email.com : it send an email with subject(s)'s name as : ALERT" to: user@email.com
+
 👥 20. User Management Automation
-useradd username
-grep -q username /etc/passwd
+
+
+#!/bin/bash
+
+# Ask the nae of the user
+read -p "Enter the name of the user: " username
+
+# Create the user and show it
+sudo useradd "$username" && echo "User $username has been created successfully." || echo "Error to create the user."
+
+When the line && is executed only if it was successfully while || line is only executed if it failed.
+
+
+
 🧹 21. Cleanup & Maintenance
 find /home -type f -mtime +90 -exec rm {} \;
 find /home -type f -mtime +90 -exec echo rm {} \;
+
 📦 22. Backup Automation (SRE Scenario)
 tar cvf /tmp/backup.tar /etc /var
 gzip /tmp/backup.tar
