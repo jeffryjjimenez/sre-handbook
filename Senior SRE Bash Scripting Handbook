@@ -33,6 +33,11 @@ Linux
 SSH / SCP
 Cron
 
+Always use this at the begging of a script:
+
+#!/bin/bash
+set -xeuo pipefail
+
 🔰 1. Bash Fundamentals (Foundation Layer)
 
 Shebang
@@ -395,7 +400,7 @@ mail -s "ALERT" user@email.com : it send an email with subject(s)'s name as : AL
 
 #!/bin/bash
 
-# Ask the nae of the user
+# Ask the name of the user
 read -p "Enter the name of the user: " username
 
 # Create the user and show it
@@ -406,34 +411,121 @@ When the line && is executed only if it was successfully while || line is only e
 
 
 🧹 21. Cleanup & Maintenance
-find /home -type f -mtime +90 -exec rm {} \;
+
 find /home -type f -mtime +90 -exec echo rm {} \;
+find /home -type f -mtime +90 -exec rm {} \;
+
+Or advanced way:
+
+find /home -type f -mtime +90 \
+  ! -path "/home/*/.*" \
+  \( -name "*.log" -o -name "*.tmp" -o -name "*.cache" \) \
+  -exec echo rm {} \;
+
+It searches for old, non-hidden temporary files in /home and simulates deleting them.
+
+find /home → search inside /home
+-type f → only files (not directories)
+-mtime +90 → files older than 90 days
+! -path "/home/*/.*" → exclude hidden files (like .bashrc, .ssh)
+\( -name "*.log" -o -name "*.tmp" -o -name "*.cache" \) → only logs, temp, and cache files
+-exec echo rm {} \; → print delete commands instead of executing them
+
+
 
 📦 22. Backup Automation (SRE Scenario)
-tar cvf /tmp/backup.tar /etc /var
-gzip /tmp/backup.tar
 
-if [ $? -eq 0 ]; then
-  scp /tmp/backup.tar.gz user@remote:/backup
-fi
+tar cvf /tmp/backup.tar /etc /var && \
+gzip /tmp/backup.tar && \
+scp /tmp/backup.tar.gz user@remote:/backup
+
+With:
+
+Creates a .tar archive of /etc and /var in /tmp
+c = create, v = verbose, f = file
+
+gzip /tmp/backup.tar : compress it to : /tmp/backup.tar.gz"
+
+scp /tmp/backup.tar.gz user@remote:/backup   : Transfer it to a remote srver
+
+command1 && command2 && command3 means Run next command ONLY if previous succeeded. So If any step fails, the next one won’t run
+
+---
+
+Advanced backup:
+
+This script creates a timestamped compressed archive of user-level files (primarily $HOME),
+stores it locally in /tmp, logs execution steps, and reports success or failure. It is designed
+for lightweight automated backups (cron-ready) and does not include full system directories like /etc or /var.
+
+#!/bin/bash
+
+set -euo pipefail
+
+BACKUP_DIR="/tmp"
+TIMESTAMP=$(date +%F_%H-%M-%S)
+BACKUP_FILE="$BACKUP_DIR/backup_$TIMESTAMP.tar.gz"
+
+LOG_FILE="$HOME/backup.log"
+
+log() {
+  echo "$(date '+%F %T') - $1" | tee -a "$LOG_FILE"
+}
+
+error_exit() {
+  log "ERROR: $1"
+  exit 1
+}
+
+trap 'error_exit "Unexpected failure occurred."' ERR
+
+log "Starting backup..."
+
+# SAFE BACKUP (user-level only)
+tar -czf "$BACKUP_FILE" "$HOME" 2>/dev/null || error_exit "Tar failed"
+
+log "Backup created: $BACKUP_FILE"
+
+log "Backup completed successfully"
+
+
 🔪 23. Process Management
-ps -ef | grep process | grep -v grep | awk '{print $2}'
-... | xargs kill
+
+#!/bin/bash
+
+ps -ef | grep process | grep -v grep | awk '{print $2}' | xargs kill
+
+finds processes matching process, extracts their PIDs and kills them
+
 🧪 24. Debugging & Safety
-set -x
-set -e
-set -o pipefail
+
+set -x #Debug mode, Prints each command before it runs
+set -e #Exit on error, Script stops immediately if any command fails
+set -o pipefail #Pipeline safety, Makes pipelines fail if any command in the pipe fails
+set -u makes Bash crash the script if you use a variable that was never defined.
+
+But use this on the scripts:
+
+#!/bin/bash
+set -xeuo pipefail
+
 🔐 25. Permissions
+
 chmod 755 file
 chown user:group file
 chgrp group file
+
 🔄 26. File Operations
-cp -r dir1 dir2
+
+cp -r dir1 dir2 #dir2 is the copy of dir1
 mv file /dest
 rm -rf dir
-mkdir -p path
+mkdir -p path #Creates directories, including missing parent folders. If folders dont exist, they get created.
+
 🔧 27. Sed (Replace Text)
+
 sed -i 's/old/new/g' file.txt
+
 📈 28. Performance & System Analysis
 top
 iostat -y 5
