@@ -526,19 +526,49 @@ mkdir -p path #Creates directories, including missing parent folders. If folders
 
 sed -i 's/old/new/g' file.txt
 
+With:
+sed: tool to edit
+i: it edits the file
+'s/old/new/g': substitution instrucion. S for substitute, g to replace all the occurances ona line (if not set, only will replace the first line)
+
+Note: to change the file, not only the output, need to use the '-i" opton
+
 📈 28. Performance & System Analysis
-top
-iostat -y 5
-vmstat
-lscpu
-cat /proc/meminfo
+
+top  # q to exit, P to sort by CPU and M to sort by Memory
+iostat -y 5 : for disk(read/write) and cpu. It shows it every 5s
+vmstat 1 # Memory, processed, cpu and swap. 1 is for every second.
+lscpu # CPU info like number of cores, architecture.
+cat /proc/meminfo # MemTotal, MemFree, Buffers and Cached
+free -h
+
 🧠 29. Advanced Patterns (Senior SRE Mindset)
+
+#!/bin/bash
+
 if [ $# -eq 0 ]; then
-  echo "Usage: $0 <arg>"
-  exit 1
+  echo "Usage: $0 <name>"
+  exit 1  #the script ends immediately
 fi
 
-exit 0
+echo "Hello $1"
+exit 
+
+ubuntu@ubuntu-vm:~$ ./test.sh   # He enters the conditonal 
+Usage: ./test.sh <name>
+ubuntu@ubuntu-vm:~$ 
+
+or with parameter "jeff" (here does not enger into the conditional)
+
+ubuntu@ubuntu-vm:~$ ./test.sh jeff
+Hello jeff
+ubuntu@ubuntu-vm:~$ 
+
+variable meaning:
+$# : number of arguments I gave to the script
+$1 : I gave 1 argument
+$2 : I gave 2 argument
+
 🚀 30. Real SRE Scenarios
 
 ✔ Auto-healing Service
