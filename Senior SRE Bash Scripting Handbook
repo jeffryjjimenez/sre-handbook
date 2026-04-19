@@ -577,6 +577,7 @@ $2 : I gave 2 argument
 ✔ Multi-node Automation
 
 🏁 31. Key Takeaways (Senior Level)
+
 Always validate inputs
 Always check exit codes ($?)
 Use logging (&>> log)
@@ -584,6 +585,7 @@ Prefer idempotent scripts
 Avoid hardcoding → use variables
 Build reusable scripts
 Think in automation + observability
+
 🧠 32. SRE Philosophy in Bash
 
 At senior level, Bash is not just scripting:
@@ -594,7 +596,9 @@ Self-healing systems
 Observability pipelines
 Automation frameworks
 Failure-resistant tooling
+
 🔐 33. Production Script Template (Golden Standard)
+
 #!/bin/bash
 
 set -euo pipefail
@@ -611,7 +615,9 @@ error_exit() {
 }
 
 trap 'error_exit "Script failed at line $LINENO"' ERR
+
 📦 34. Modular Script Design
+
 install_packages() {
   local packages="$1"
   yum install -y $packages &>> $LOG_FILE
@@ -621,7 +627,9 @@ manage_service() {
   local svc=$1
   systemctl enable --now $svc &>> $LOG_FILE
 }
+
 🧩 35. Reusable Script Framework
+
 main() {
   log "Starting deployment"
   install_packages "httpd wget unzip"
@@ -630,17 +638,35 @@ main() {
 }
 
 main "$@"
+
 ⚙️ 36. Idempotency (CRITICAL)
-if ! rpm -q httpd &> /dev/null; then
-  yum install -y httpd
+
+if ! dpkg -q httpd &> /dev/null; then  # Ver si el paquete esta instalado,  &> /dev/null: for not showing anything on the screen. !: If not installed
+  apt install -y apache2
 fi
+
+
 📊 37. Advanced Health Checks
-if systemctl is-active --quiet httpd; then
+
+if systemctl is-active --quiet httpd; then  # quiet: does not print anything. 
   log "httpd is running"
 else
   log "httpd is down, restarting..."
   systemctl restart httpd
 fi
+
+if systemctl is-active --quiet apache2; then
+  echo "apache2 is running"
+else
+  echo "apache2 is down, restarting..."
+  sudo systemctl restart apache2
+fi
+
+ubuntu@ubuntu-vm:~$ ./test.sh
+apache2 is running
+ubuntu@ubuntu-vm:~$ 
+
+
 🔁 38. Retry Logic
 retry() {
   local retries=3
