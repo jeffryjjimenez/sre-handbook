@@ -641,7 +641,7 @@ main "$@"
 
 ⚙️ 36. Idempotency (CRITICAL)
 
-if ! dpkg -q httpd &> /dev/null; then  # Ver si el paquete esta instalado,  &> /dev/null: for not showing anything on the screen. !: If not installed
+if ! dpkg -q httpd &> /dev/null; then  # check if package is installed,  &> /dev/null: for not showing anything on the screen. !: If not installed
   apt install -y apache2
 fi
 
@@ -668,41 +668,125 @@ ubuntu@ubuntu-vm:~$
 
 
 🔁 38. Retry Logic
-retry() {
-  local retries=3
-  local count=0
 
-  until "$@"; do
-    exit_code=$?
-    count=$((count + 1))
-    if [ $count -lt $retries ]; then
-      sleep 2
+#!/bin/bash
+
+retry() {                     # define a custom function (command) called retry
+  local retries=3             # max number of attempts
+  local count=0               # current attempt counter
+
+  until "$@"; do              # run the passed command until it succeeds
+    exit_code=$?              # get exit code of last command
+    count=$((count + 1))      # increment attempt count
+    echo "Attempt $count failed (exit code: $exit_code)" # log failure
+
+    if [ $count -lt $retries ]; then  # if retries remain
+      echo "Retrying in 2 seconds..." # inform retry
+      sleep 2                         # wait before retry
     else
-      return $exit_code
+      echo "Command failed after $retries attempts" # final failure message
+      return $exit_code               # return error and stop
     fi
   done
 }
+
+echo "Updating package list..."      # step 1 message
+retry sudo apt update                # run command with retry logic
+
+echo "Installing curl..."            # step 2 message
+retry sudo apt install -y curl      # retry install if it fails
+
+echo "Done ✅"                       # script completed
+
+ 
+
 📡 39. Parallel Execution
+
 for host in $(cat hosts); do
-  ssh user@$host "uptime" &
+  ssh user@$host "uptime" &  # Execute the command in the background
 done
 
-wait
+wait  # Wait for all the processes on the background finishes
+
 🧠 40. Advanced Logging Strategy
-exec > >(tee -a /var/log/script.log) 2>&1
+
+#!/bin/bash
+
+exec > >(tee -a ./my.log) 2>&1
+
+echo "This is normal output"
+ls /fake-folder
+echo "Script continues"
+
+With:
+
+exec : All the output goes to the same file, not only the first line
+>> Redirects the output to "Tee"
+tee -a : append output to a file and also shows it on the screen
+2>&1 : redirects standard output and error.
+
+So output on the screen:
+
+This is normal output
+ls: cannot access '/fake-folder': No such file or directory
+Script continues
+
+And the same than my.log.
+
 📂 41. Configuration-Driven Scripts
+
+source ./config.env # Loads the config variable file from an external location within the script.
+
+Source executes the file like if the content is within the script.
+
+For instance;
+
+nano config.env
+
+APP_NAME="myapp"
+PORT=8080
+ENV="production"
+
+Script:
+
+#!/bin/bash
+
 source ./config.env
+
+echo "App: $APP_NAME"
+echo "Port: $PORT"
+echo "Env: $ENV"
+
 🔍 42. Observability Integration
-tail -Fn0 /var/log/messages | while read line; do
-  if echo "$line" | grep -Ei "error|fail|critical"; then
-    echo "$line" >> /tmp/alerts.log
-  fi
-done
+
+tail -Fn0 /var/log/messages | while read line; do   # follow logs live, while read line:It reads input line by line and processes each line in a loop
+  if echo "$line" | grep -Ei "error|fail|critical"; then  # check if line contains error keywords, the E means extended rejex. -i for ignore case-sensitive
+    echo "$line" >> /tmp/alerts.log                         # append matching line to alerts log
+  fi                                                        # end if condition
+done                                                        # loop forever over incoming log lines
+
+ubuntu@ubuntu-vm:~$ ./test.sh &
+[1] 34595
+ubuntu@ubuntu-vm:~$ jobs
+[1]+  Running                 ./test.sh &
+ubuntu@ubuntu-vm:~$ 
+
+
 📧 43. Alerting System (Improved)
+
 send_alert() {
-  local message="$1"
-  echo "$message" | mail -s "SRE Alert" team@email.com
+  local message="$1"        # takes the first argument
+  echo "$message" | mail -s "SRE Alert" team@email.com  # s is for subject, mail is the command, team..recipient
 }
+
+Usage" send_alert "Database is down"
+
+sends:
+
+Subject: SRE Alert
+Body: Database is down
+
+
 💾 44. Backup + Validation
 backup() {
   tar czf /tmp/backup.tar.gz /etc /var
