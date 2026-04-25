@@ -788,52 +788,125 @@ Body: Database is down
 
 
 💾 44. Backup + Validation
-backup() {
-  tar czf /tmp/backup.tar.gz /etc /var
 
-  if [ $? -eq 0 ]; then
-    log "Backup successful"
+#!/bin/bash
+
+backup() {
+  if tar czf /tmp/backup.tar.gz /etc /var && [ -s /tmp/backup.tar.gz ]; then
+    echo "Backup successful"
   else
-    error_exit "Backup failed"
+    echo "Backup failed"
+    exit 1
   fi
 }
+
+backup   # calling the funcion
+
+Or:
+
+#! /bin/bash
+
+backup () {
+  tar czf /tmp/backup.tar.gz /etc /var 
+  if [ $? -eq 0 ]; then
+	  echo "Backup successful"
+  else
+	  echo "Backup failed"
+	  exit 1
+  fi
+ }
+
+ backup
+
+
 📊 45. Disk Monitoring (Production Grade)
+
+#!/bin/bash
+
 check_disk() {
-  df -h | awk 'NR>1 {print $5}' | cut -d% -f1 | while read usage; do
+  df -h | grep -v Use% | awk '{print $5}' | cut -d% -f1 | while read usage
+  do
     if [ "$usage" -gt 80 ]; then
-      log "WARNING: Disk usage at $usage%"
+      echo "WARNING: Disk usage at $usage%"
     fi
   done
 }
+
+check_disk
+
+With: grep -v Use%: to remove the head
+cut -d% -f1  to remove: % , -f1 takes the part before the % and also $ is used as the separator.
+while read usage : It reads every number one by one and it saves the number on the variable: "usage"
+
 🧹 46. Auto Cleanup System
+
+#!/bin/bash
+
+#!/bin/bash
+
 cleanup() {
   find /var/log -type f -mtime +7 -delete
 }
-🔐 47. Secure Scripting Practices
-rm -rf "${VAR:?}"
-🧪 48. Input Validation
+
+cleanup
+
+Where -mtime +7  is for modified files with more than 7 days. 
+
+🧪 48. Input Validation  # validates script receives an argument.
+
 if [[ -z "${1:-}" ]]; then
-  echo "Usage: $0 <filename>"
+
+  echo "Usage: $0 <filename>" #nshows Usage: ./script.sh <filename> and ends the scrip 
   exit 1
 fi
+
 🔄 49. Process Monitoring + Auto-Healing
+
 check_process() {
-  if ! pgrep httpd > /dev/null; then
+  if ! pgrep httpd > /dev/null; then  # searches the process pgrep httpd
     log "httpd not running, restarting..."
     systemctl restart httpd
   fi
 }
+
+check_process
+
+Or:
+
+#!/bin/bash
+
+check_process() {
+  if ! pgrep apache2 > /dev/null; then
+    echo "apache2 not running, restarting..."
+    sudo systemctl restart apache2
+  fi
+}
+
+check_process
+
+
 🌐 50. Multi-Server Deployment Framework
+
+
+#!/bin/bash
+
 deploy() {
   for host in $(cat hosts); do
     (
       scp script.sh user@$host:/tmp/
-      ssh user@$host "bash /tmp/script.sh"
-    ) &
+      ssh user@$host "bash /tmp/script.sh" # to execute the script.
+    ) &  # & to run it in the background
   done
-  wait
+
+  wait # wait to finish any proccess on the background before exiting or continuing
 }
-🧠 51. Lock Files (Prevent Overlap)
+
+deploy
+
+🧠 51. Lock Files (Prevent Overlapping of same script executing at the same time)
+
+#!/bin/bash
+
 LOCKFILE="/tmp/script.lock"
 
 if [ -f "$LOCKFILE" ]; then
@@ -841,19 +914,43 @@ if [ -f "$LOCKFILE" ]; then
   exit 1
 fi
 
-touch $LOCKFILE
-trap "rm -f $LOCKFILE" EXIT
-🧩 52. Functions + Libraries
+touch "$LOCKFILE"
+trap "rm -f $LOCKFILE" EXIT  # when the scripts ends, even if it fails, removes the file 
+
+echo "Running..."
+sleep 30
+
+🧩 52. Functions + Libraries (use of modules to load functions and re-utilize them)
+
 lib/
  ├── logging.sh
  ├── network.sh
  └── disk.sh
+
+source lib/logging.sh #inside the script is like an include or import.
+
+Example:
+
+lib/logging.sh
+
+log() {
+  echo "[INFO] $1"
+}
+
+Main script:
+
+#!/bin/bash
+
 source lib/logging.sh
-🧠 53. Performance Awareness
-grep something file
+
+log "Backup started"  # same than echo "Backup started"
+
+
 🧬 54. Advanced Pipelines
-ps -ef --sort=-pcpu | head -5
-df -h | awk '{print $5}' | cut -d% -f1 | sort -nr
+
+ps -ef --sort=-pcpu | head -5  # -ef means all the processes and and complete format, pcpu: cpu percentage. "-" in pcpu is in descending way.
+df -h | awk '{print $5}' | cut -d% -f1 | sort -nr # sort numerically and inversely
+
 🧯 55. Incident Response Script Example
 #!/bin/bash
 
