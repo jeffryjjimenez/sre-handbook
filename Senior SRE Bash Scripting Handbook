@@ -952,28 +952,66 @@ ps -ef --sort=-pcpu | head -5  # -ef means all the processes and and complete fo
 df -h | awk '{print $5}' | cut -d% -f1 | sort -nr # sort numerically and inversely
 
 🧯 55. Incident Response Script Example
+
 #!/bin/bash
 
-log "Incident detected"
+log() {
+  echo "[INFO] $1"
+}
 
-if ! systemctl is-active --quiet httpd; then
+send_alert() {
+  echo "[ALERT] $1"
+}
+
+log "Incident check started"  # Prints
+
+if ! systemctl is-active --quiet apache2; then  # verify if Apache is down. # ! systemctl is-active --quiet apache2 : asks if apache2 is not active
   log "Restarting service"
-  systemctl restart httpd
+  sudo systemctl restart apache2
 
-  if ! systemctl is-active --quiet httpd; then
-    send_alert "CRITICAL: httpd failed to restart"
+  if ! systemctl is-active --quiet apache2; then
+    send_alert "CRITICAL: apache2 failed to restart"
   fi
 fi
+
+
 📅 56. Cron + Observability
-*/5 * * * * /opt/scripts/monitor.sh >> /var/log/monitor.log 2>&1
+
+*/5 * * * * /opt/scripts/monitor.sh >> /var/log/monitor.log 2>&1 # every 5 minutes runs the monitor and append the output to monitor.sh
+
 🧪 57. Testing Your Scripts
+
 Run with bash -x script.sh
 Test edge cases
 Simulate failures
 Run twice (idempotency test)
+
+Sample:
+
+ubuntu@ubuntu-vm:~$ cat test.sh
+#! /bin/bash
+
+echo hello
+VAR=test
+ubuntu@ubuntu-vm:~$ bash -x test.sh
++ echo hello  # it shows the command before executing it.
+hello
++ VAR=test
+
+Note: Without the "-x" only would see "Hello"
+
+
 🔥 58. Senior-Level Best Practices
 
-✔ Use set -euo pipefail
+✔ Use set -euo pipefail # to make scripts fail fast, catch undefined variables, and detect errors anywhere in pipelines.
+
+Sample:
+
+#!/bin/bash
+set -euo pipefail
+
+echo "Starting..."
+
 ✔ Validate inputs
 ✔ Log everything
 ✔ Handle failures explicitly
@@ -988,6 +1026,7 @@ Run twice (idempotency test)
 ✅ Backup + Validation
 
 🧱 60. Mini SRE Framework
+
 main() {
   log "Starting SRE automation"
 
@@ -998,45 +1037,63 @@ main() {
   log "Completed"
 }
 
-main "$@"
-🧱 61. Core Scripts (REAL SRE LEVEL)
-logging.sh
-LOG_FILE="/var/log/sre.log"
+main "$@" # passes all script arguments into main
+
+Example:
+
+./script.sh arg1 arg2
+
+passes:
+
+arg1 arg2
+
+into main.
+
+
+
+🧱 61. Core Scripts 
+
+logging.sh # Centralized logging library to timestamp and record all automation activity.
+LOG_FILE="/var/log/sre.log" 
 
 log() {
   echo "$(date '+%F %T') | $1" | tee -a "$LOG_FILE"
 }
-retry.sh
+retry.sh # Reusable retry logic for transient failures (network, APIs, flaky commands)
 retry() { ... }
-service_health.sh
+service_health.sh # Checks service availability and detects failures before they escalate.
 # (as provided)
-disk_monitor.sh
+disk_monitor.sh # Monitors filesystem usage and warns before storage issues cause incidents.
 # (as provided)
-log_watcher.sh
+log_watcher.sh # Scans logs for errors or patterns that may indicate problems.
 # (as provided)
-auto_heal.sh
+auto_heal.sh # Attempts automated recovery actions when failures are detected.
 # (as provided)
-remote_exec.sh
+remote_exec.sh # Executes commands across remote servers for distributed operations.
 # (as provided)
 deploy_web.sh
-# (as provided)
+# (as provided) # Automates deployment of application or web service changes.
+
 📊 62. SRE Scenarios (docs/scenarios.md)
 
 🔥 Service Outage
+
 🔥 Disk Full
 🔥 Log Explosion
 
-📄 63. .gitignore
-*.log
-*.tmp
-.env
-🧠 64. Git Setup
-git init
-git add .
-git commit -m "Initial SRE Bash Automation Toolkit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/sre-bash-automation.git
-git push -u origin main
+.gitignore
+
+*.log — Excludes log files from version control so generated runtime data isn’t committed.
+*.tmp — Ignores temporary files created during script execution or testing.
+.env — Keeps environment variables and secrets out of the repository.
+Git Setup
+git init — Initializes a new Git repository.
+git add . — Stages all project files for commit.
+git commit -m "Initial SRE Bash Automation Toolkit" — Creates the first snapshot of your automation toolkit.
+git branch -M main — Renames the default branch to main.
+git remote add origin ... — Connects the repo to a remote on GitHub.
+git push -u origin main — Pushes your code to GitHub and sets upstream tracking.
+
 🎯 65. What This Shows Recruiters
 
 ✅ Linux expertise
