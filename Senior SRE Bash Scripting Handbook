@@ -1107,3 +1107,326 @@ CI/CD (GitHub Actions)
 Dockerized script runner
 Kubernetes health checks
 Terraform integration
+
+
+SRE Scripts
+
+
+Comparisons:
+-eq   equal to for numbers
+==    equal to for letters
+-ne   not equal to
+!==   not equal to for letters
+-lt   less than
+-le   less than or equal to
+-gt   greater than
+-ge   greater than or equal to
+ 
+
+
+File Operations:
+-s    file exists and is not empty
+-f    file exists and is not a directory
+-d    directory exists
+-x    file is executable
+-w    file is writable
+-r    file is readable
+
+-----------------------------------------------------------------
+Basic Interactive Script
+
+#!/bin/bash
+
+echo "Please, enter your name: "
+read name
+
+echo "you entered $name , is it correct? (Y/N)"
+read -n 1 confirm    # reads one caracter and saves it on confirm variable
+echo
+echo "Welcome $name "
+
+Notes:
+
+read -n 1 -s CONFIRMAR  # only allows 1 caracter and "s" is for silent, so it does not show in the screen what was typed.
+echo -n "Please, enter your name: "  # here the -n is for not changing the line, so it is all in the same line.
+read -p "Username: " USR    # "p" is for prompt. That is the same than:
+
+echo -n "Username: "
+read USR
+
+read -sp "Password: " pass  # Prompt with silent output
+
+Sample:
+
+#!/bin/bash
+
+read -p "Username: " user
+read -sp "Password: " pass
+echo
+read -n 1 -s -p "Continue? (Y/N)" confirm
+echo
+
+echo "Welcome $user"
+
+
+----------------------------------
+
+#!/bin/bash
+
+echo "Hello, type your first number:"
+read first
+
+echo
+echo "Now add your second number:"
+read second
+
+product=$(( first * second ))
+
+echo "The product of the two numbers is: $product"
+
+----------------------------------
+
+
+#!/bin/bash
+
+echo -ne "Enter a valid filename: "
+read NAME
+
+if [ -e "$NAME" ]; then
+    echo "That file already exists"
+else
+    echo "Creating file $NAME"
+    touch "$NAME"
+    chmod 700 "$NAME"
+    echo "The file has been created with rwx permissions for the user"
+    echo "$(ls -l $NAME)"
+fi
+
+----------------------------------
+
+#!/bin/bash
+
+read -p "Enter a valid filename: " NAME
+
+if [ -e "$NAME" ]; then
+    echo "That file already exists."
+
+    read -n 1 -p "Do you want to delete it? (Y/N): " OPTION
+    echo
+
+    if [[ "$OPTION" == "Y" || "$OPTION" == "y" ]]; then
+        rm -f "$NAME"
+        echo "The file $NAME has been deleted."
+    else
+        echo "The file was not deleted."
+    fi
+
+else              # do this when the file does not exist
+    echo "Creating file $NAME"
+    touch "$NAME"
+    chmod 700 "$NAME"
+    echo "The file has been created with rwx permissions for the owner."
+fi
+
+----------------------------------
+
+#!/bin/bash
+
+echo "Guess the numeric value:"
+read a
+
+if [[ $a -eq 1 ]]; then
+    echo "Correct"
+elif [[ $a -eq 2 || $a -eq 3 ]]; then
+    echo "Very close"
+else
+    echo "Far off"
+fi
+
+
+----------------------------------
+
+#!/bin/bash
+
+echo "Welcome"
+echo
+
+echo "System uptime:"
+uptime
+
+echo "######################"
+echo "System memory usage:"
+free -m
+
+echo "######################"
+echo "Disk usage:"
+df -h
+
+-------------------------------------
+
+#!/bin/bash
+
+svc="apache2"
+packages="apache2 wget unzip"
+
+sudo apt-get update > /dev/null 2>&1
+sudo apt-get install -y $packages > /dev/null 2>&1
+
+sudo systemctl start $svc
+sudo systemctl enable $svc
+
+echo "Services are installed and Apache was also enabled."
+
+----------------------------------------
+
+#!/bin/bash
+
+sudo systemctl stop apache2
+
+sudo rm -rf /var/www/html/*
+
+sudo apt-get remove --purge apache2 wget unzip -y
+
+echo "Apache and related packages removed."
+
+----------------------------------------
+
+#!/bin/bash
+
+read -p "Enter a number: " number
+echo
+
+if [ "$number" -gt 100 ]; then
+    echo "Your number is $number"
+    echo "This number is greater than 100"
+else
+    echo "You entered a number less than or equal to 100"
+fi
+----------------------------------------
+
+#!/bin/bash
+
+value=$(ip addr show | grep -v LOOPBACK | grep -ic mtu), # grep -ic mtu : to cound matches (c)
+
+if [ "$value" -eq 1 ]; then
+    echo "Found one network interface"
+
+elif [ "$value" -gt 1 ]; then
+    echo "Found multiple network interfaces"
+
+else
+    echo "No network interfaces were found"
+fi
+
+----------------------------------------
+
+#!/bin/bash
+
+echo "#######################"
+date
+
+if systemctl is-active --quiet apache2; then
+    echo "The apache2 service is running"
+
+else
+    echo "The apache2 service is not running"
+    echo "Starting apache2 service..."
+
+    sudo systemctl start apache2 > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "Service started successfully"
+    else
+        echo "Service failed to start, please contact the admin"
+    fi
+fi
+
+----------------------------------------
+
+#!/bin/bash
+
+users="jeff carlos juan"
+
+for user in $users
+do
+    sudo useradd "$user"
+
+    echo "User $user added"
+
+    id "$user"
+done
+
+----------------------------------------
+
+#!/bin/bash
+
+counter=0
+
+while [ "$counter" -lt 5 ]
+do
+    echo "Value of counter is $counter"
+    counter=$((counter + 1))
+done
+
+echo "Out of the loop"
+
+----------------------------------------
+
+for host in $(cat hosts); do echo $host; done
+
+----------------------------------------
+
+#!/bin/bash
+
+for host in $(cat remhosts)
+do
+    echo "Connecting to $host..."
+
+    ssh username@$host "uptime"
+
+    ssh username@$host "sudo apt-get install git -y"
+
+    echo "Git installed on $host"
+    echo "----------------------"
+
+done
+
+----------------------------------------
+
+#!/bin/bash
+
+USR="devops"
+REMOTE_PATH="/tmp/"
+
+for host in $(cat remhosts)
+do
+    echo "Connecting to $host"
+    echo "Pushing script to $host"
+
+    scp multios_websetup.sh $USR@$host:$REMOTE_PATH
+
+    echo "Executing script on $host"
+
+    ssh $USR@$host "sudo bash /tmp/multios_websetup.sh"
+
+    ssh $USR@$host "sudo rm -f /tmp/multios_websetup.sh"
+
+done
+
+----------------------------------------
+
+----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
