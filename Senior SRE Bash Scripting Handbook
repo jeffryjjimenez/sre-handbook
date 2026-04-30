@@ -1415,9 +1415,85 @@ done
 
 ----------------------------------------
 
-----------------------------------------
+#!/bin/bash  
+
+read -r -p "Name of script to create: " script_name  
+# read input from user
+# -p shows the prompt message
+# -r prevents backslash interpretation (safer input handling)
+# script_name is the variable where input is stored
+
+if [[ -z "$script_name" ]]; then  
+    # -z checks if the string is empty
+    # if user just presses Enter, this condition is true
+
+    echo "Error: script name cannot be empty"
+    exit 1  # exit script with error
+fi
+
+touch "$script_name"  
+# create empty file with that name
+
+echo "#!/bin/bash" > "$script_name"  
+# write shebang (overwrites file if exists)
+
+echo "##### Automatically created script ###########" >> "$script_name"  
+# append comment line
+
+echo "pwd" >> "$script_name"  
+# append a simple command (prints current directory)
+
+chmod +x "$script_name"  
+# make script executable
+
+echo "Done. The script $script_name has been created and made executable."  
+# confirmation message
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+read -p "What is your age? " age
+
+if [ "$age" -gt 100 ]; then
+    echo "You are very old"
+else
+    echo "You are still young"
+fi
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+read -p "How old are you? " age
+
+if [[ "$age" -lt 0 || "$age" -gt 200 ]]; then
+    echo "Number not acceptable"
+    exit 1                            # Ends the script
+fi
+
+echo "Valid age: $age"
 
 
+-------------------------------------------------------------------
+
+
+if [[ "$age" -gt 26 && "$age" -lt 64 ]]; then
+    echo "You are between 26 and 64"
+    exit 0
+fi
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+echo "Some lines of code here"
+
+for i in ./*
+do
+    echo "Name of file is: $i"
+done
+
+-------------------------------------------------------------------
 
 
 
