@@ -1496,11 +1496,147 @@ done
 -------------------------------------------------------------------
 
 
+#!/bin/bash
+# This script renames a file
+
+read -r -p "Enter the file name to be renamed: " oldfilename
+read -r -p "Enter the new file name: " newfilename
+
+# Check if source file exists
+if [[ ! -e "$oldfilename" ]]; then
+    echo "Error: File '$oldfilename' does not exist"
+    exit 1
+fi
+
+# Check if destination already exists
+if [[ -e "$newfilename" ]]; then
+    echo "Error: File '$newfilename' already exists"
+    exit 1
+fi
+
+mv "$oldfilename" "$newfilename"
+
+echo "The file has been renamed to '$newfilename'"
 
 
 
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+for file in jeff/*
+do
+    echo "Assigning write permissions to $file"
+    chmod a+w "$file"
+    sleep 1
+    ls -lrth "$file"
+done
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+HOSTS="ubuntu01 fedora02 centos03 rhel06"
+
+for HOST in $HOSTS
+do
+    echo "Copying file to $HOST..."
+    scp "somefile" "$HOST:/var/tmp/"
+
+    if [ $? -eq 0 ]; then
+        echo "Copy to $HOST succeeded"
+    else
+        echo "Copy to $HOST failed"
+    fi
+
+    echo "----------------------"
+done
+
+-------------------------------------------------------------------
+
+to run script on the background:
+
+nohub /home/script.py $ or ./script &
+
+ps -ef | grep script  >>> shows the script running
+
+fg: it brings the last command back into the terminal
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+read -r -p "Please provide a username: " user
+echo
+
+# Check if user already exists
+if id "$user" &>/dev/null; then
+    echo "ERROR -- User '$user' already exists"
+    echo "Please choose another username"
+    exit 1
+fi
+
+# Create user
+sudo useradd -m "$user"
+
+echo "User '$user' account has been created"
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+set -x
+# Commands to debug
+set +x
+# Commands without debugging
+
+-------------------------------------------------------------------
+
+#!/bin/bash
+
+echo "Please provide a username?"
+read u
+echo
+
+# Check if the user already exists
+grep -q "$u" /etc/passwd
+if [ $? -eq 0 ]; then
+    echo "ERROR -- User $u already exists"
+    echo "Please choose another username"
+    echo
+    exit 0
+fi
+
+# Ask for the user description
+echo "Please provide user description?"
+read d
+echo
+
+# Create the user with the provided description
+useradd "$u" -c "$d"
+echo "$u account has been created"
+
+-------------------------------------------------------------------
 
 
+#!/bin/bash
+
+a=$(df -h | grep -v Use% | grep -v tmpfs | awk '{print $5}' | cut -d% -f1)
+
+for i in $a
+do
+    if [ "$i" -ge 20 ]; then
+        echo "Check disk space: $i%"
+    fi
+done
+
+
+-------------------------------------------------------------------
+
+
+df -h | tail -n +2 # this for not showing its title
+
+
+-------------------------------------------------------------------
 
 
 
