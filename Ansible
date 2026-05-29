@@ -56,11 +56,13 @@ Defines the systems Ansible will manage.
 
 ```bash
 /etc/ansible/hosts
+
+sudo mkdir -p /etc/ansible/hosts
 ```
 
 ### Example
 
-```ini
+```
 [webservers]
 10.0.0.10
 10.0.0.11
@@ -76,12 +78,43 @@ Defines the systems Ansible will manage.
 10.0.0.[10:20]
 ```
 
+Note:
+
+
 ### Check inventory
 
-```bash
-ansible-inventory --list
-```
 
+ansible-inventory --list
+
+ubuntu@ansible-control:~$ ansible-inventory --list
+{
+    "_meta": {
+        "hostvars": {}
+    },
+    "all": {
+        "children": [
+            "servers",
+            "ungrouped"
+        ]
+    },
+    "servers": {
+        "hosts": [
+            "192.168.1.100",
+            "192.168.1.101"
+        ]
+    }
+}
+ubuntu@ansible-control:~$ 
+
+Test it:
+
+ansible all -m ping
+
+If it fails, check and troubleshoot the hosts:
+
+nc -vz 192.168.1.101 22
+telnet 192.168.1.101 22
+sudo systemctl status ssh
 ---
 
 # 3. Ansible Playbooks
@@ -91,15 +124,16 @@ A playbook is a YAML file that defines automation tasks.
 ## Example
 
 ```yaml
+---
 - name: Example Playbook
-  hosts: all
-  become: yes
+  hosts: all   # Run this playbook on all hosts from the inventory.
+  become: yes  # Equivalent to running commands with sudo.
 
   tasks:
     - name: Install Apache
-      yum:
+      yum:                 # Use the yum package manager
         name: httpd
-        state: present
+        state: present      # Ensure it is installed (present)
 
     - name: Start Apache
       service:
@@ -138,8 +172,8 @@ vi first.yml
 ### Validate
 
 ```bash
-ansible-playbook --syntax-check first.yml
-ansible-playbook --check first.yml
+ansible-playbook --syntax-check first.yml  # to check that the yaml is  valid
+ansible-playbook --check first.yml  # dry run
 ansible-playbook first.yml
 ```
 
@@ -165,25 +199,29 @@ ansible-playbook first.yml
 # 6. Installing and Managing Services
 
 ```yaml
+---
 - name: Install and start Apache
   hosts: localhost
+  become: yes
 
   tasks:
     - name: Install Apache
-      yum:
-        name: httpd
+      apt:
+        name: apache2
         state: present
 
-    - name: Start httpd
+    - name: Start apache2
       service:
-        name: httpd
+        name: apache2
         state: started
 ```
 
 Check:
 
+systemctl status apache2
+
 ```bash
-rpm -qa | grep httpd
+dpkg -l | grep apache2
 ```
 
 ---
