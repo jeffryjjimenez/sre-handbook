@@ -230,11 +230,11 @@ dpkg -l | grep apache2
 
 ### Inventory
 
-```ini
+
 [servers]
 192.168.1.10
-192.168.1.11
-```
+
+
 
 ### SSH setup
 
@@ -247,6 +247,8 @@ ssh-copy-id 192.168.1.10
 
 ```bash
 ansible all -m ping
+ansible all -a "hostname"
+ansible all -a "uptime"
 ```
 
 ---
@@ -285,40 +287,35 @@ ansible all -m ping
 
 ---
 
-# 10. Firewall + Services
-
-```yaml
+---
 - name: Setup Apache and firewall
   hosts: all
-  become: yes
+  become: true
 
   tasks:
-    - name: Install Apache
-      yum:
-        name: httpd
+
+    - name: Install Apache2
+      apt:
+        name: apache2
         state: present
+        update_cache: yes
 
-    - name: Start Apache
+    - name: Start Apache2
       service:
-        name: httpd
+        name: apache2
         state: started
+        enabled: true
 
-    - name: Allow HTTP
-      firewalld:
-        service: http
-        permanent: true
-        state: enabled
-
-    - name: Reload firewalld
-      service:
-        name: firewalld
-        state: reloaded
+    - name: Allow HTTP through firewall
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
 ```
 
 Check:
 
-```bash
-firewall-cmd --list-all
+sudo ufw status
 ```
 
 ---
@@ -326,12 +323,26 @@ firewall-cmd --list-all
 # 11. Run Shell Commands
 
 ```yaml
+---
 - name: Run shell script
   hosts: all
+  become: true
 
   tasks:
+
+    - name: Copy script to remote host
+      copy:
+        src: /home/ubuntu/script.sh
+        dest: /tmp/script.sh
+        mode: '0755'
+
     - name: Execute script
-      shell: /home/jeff/script.sh
+      shell: /tmp/script.sh
+      register: script_output  # result saved on this variable
+
+    - name: Show script output
+      debug:        # module to print variables and messages
+        var: script_output.stdout_lines
 ```
 
 ---
@@ -374,11 +385,14 @@ firewall-cmd --list-all
 # 14. Update Passwords
 
 ```yaml
+---
 - name: Update password
   hosts: all
+  become: true
 
   tasks:
-    - name: Change password
+
+    - name: Change george password
       user:
         name: george
         update_password: always
@@ -386,42 +400,47 @@ firewall-cmd --list-all
 ```
 
 ```bash
-ansible-playbook playbook.yml --extra-vars "newpassword=abc123"
+ansible-playbook /etc/ansible/playbooks/update-password.yaml --extra-vars "newpassword=abc123"
 ```
 
 ---
-
-# 15. Download Files
-
-```yaml
+---
 - name: Download Tomcat
-  hosts: localhost
+  hosts: all
+  become: true
 
   tasks:
-    - name: Create directory
+
+    - name: Create Tomcat directory
       file:
         path: /opt/tomcat
         state: directory
-        mode: 0755
+        mode: '0755'
 
-    - name: Download package
+    - name: Download Tomcat package
       get_url:
-        url: https://downloads.apache.org/tomcat/
-        dest: /opt/tomcat
-```
-
+        url: https://downloads.apache.org/tomcat/tomcat-10/v10.1.42/bin/apache-tomcat-10.1.42.tar.gz
+        dest: /opt/tomcat/apache-tomcat-10.1.42.tar.gz
+        mode: '0644'
 ---
 
 # 16. Kill Processes (Troubleshooting)
 
 ```yaml
+---
 - name: Kill process
   hosts: all
+  become: true
 
   tasks:
+
     - name: Find process
       shell: "pgrep -f top"
       register: running_process
+
+    - name: Show found PIDs
+      debug:
+        var: running_process.stdout_lines
 
     - name: Kill process
       command: kill {{ item }}
@@ -444,24 +463,31 @@ ansible-playbook playbook.yml --start-at-task "Start httpd"
 ```bash
 ansible all -m ping
 ansible all -m file -a "path=/home/jeff/file state=touch mode=700"
+ansible all -b -m apt -a "name=telnet state=present update_cache=yes" # -b: become true. 
 ansible all -m yum -a "name=telnet state=present"
 ansible all -m service -a "name=httpd state=started"
 ansible all -a "/sbin/reboot"
 ansible all -m setup
+ansible all -m setup -a "filter=ansible_distribution"
 ```
 
 ---
 
 # 19. Roles (Production)
 
-```text
+```
 roles/
-   apache/
-      tasks/main.yml
-   ntpd/
-      tasks/main.yml
-   named/
-      tasks/main.yml
+  apache/
+    tasks/
+      main.yml
+
+  ntpd/
+    tasks/
+      main.yml
+
+  named/
+    tasks/
+      main.yml
 ```
 
 Playbook:
@@ -472,8 +498,34 @@ roles:
   - ntpd
   - named
 ```
+---
+- name: Install Apache
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+
+- name: Start Apache
+  service:
+    name: apache2
+    state: started
+    enabled: true
+
+But with roles:
 
 ---
+- name: Production server setup
+  hosts: all
+  become: true
+
+  roles:
+    - apache
+    - ntpd
+    - named
+
+---
+
+
 
 # 20. Ansible Galaxy
 
@@ -487,12 +539,37 @@ ansible-galaxy install geerlingguy.nginx
 # 21. Tags
 
 ```yaml
-tags: install
+---
+- name: Apache setup
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      tags: install
+
+    - name: Start Apache
+      service:
+        name: apache2
+        state: started
+      tags: start
+
+    - name: Enable Apache
+      service:
+        name: apache2
+        enabled: true
+      tags: config
 ```
 
 ```bash
 ansible-playbook playbook.yml -t install
 ansible-playbook playbook.yml --skip-tags install
+ansible-playbook playbook.yml --list-tags 
 ```
 
 ---
@@ -500,8 +577,21 @@ ansible-playbook playbook.yml --skip-tags install
 # 22. Variables
 
 ```yaml
-vars:
-  package: httpd
+---
+- name: Install package using variable
+  hosts: all
+  become: true
+
+  vars:
+    package: apache2
+
+  tasks:
+
+    - name: Install package
+      apt:
+        name: "{{ package }}"
+        state: present
+        update_cache: yes
 ```
 
 ---
@@ -509,7 +599,32 @@ vars:
 # 23. Handlers
 
 ```yaml
-notify: Restart apache
+---
+- name: Apache with handlers
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      notify: Restart apache  # notify to execute a handler
+
+    - name: Copy config file
+      copy:
+        src: /tmp/apache.conf
+        dest: /etc/apache2/apache2.conf
+      notify: Restart apache
+
+  handlers:   # call the handler which is a special task. Executes the task if there was changes, not immediately. 
+
+    - name: Restart apache
+      service:
+        name: apache2
+        state: restarted
 ```
 
 ---
@@ -517,28 +632,79 @@ notify: Restart apache
 # 24. Conditions
 
 ```yaml
-when: ansible_os_family == "RedHat"
-```
+- name: Install Apache on Ubuntu
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
 
+or:
+
+- name: Install Apache on RedHat
+  yum:
+    name: httpd
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install Apache on Ubuntu
+  apt:
+    name: apache2
+    state: present
+  when: ansible_os_family == "Debian"
+```
+To get facts here: ansible all -m setup
 ---
 
 # 25. Loops
 
 ```yaml
-loop:
-  - jerry
-  - kramer
+- name: Create users
+  user:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - jerry
+    - kramer
+
+Or:
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - curl
+    - git
+    - vim
+
+Which do:
+
+apt install curl
+apt install git
+apt install vim
 ```
+
+Another example:
+
+- name: Create users with shells
+  user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+  loop:
+    - { name: jerry, shell: /bin/bash }
+    - { name: kramer, shell: /bin/zsh }
 
 ---
 
 # 26. Tools Every SRE Should Know
 
 ```bash
-ansible-doc -l
-ansible-inventory --list
-ansible-galaxy
-ansible all -m setup
+ansible-doc -l   # list all the modules
+ansible-inventory --list  # shows inventory in json format
+ansible-galaxy  # get roles
+ansible all -m setup  # Collects facts of the system
 ```
 
 ---
@@ -571,8 +737,6 @@ ansible/
  └── ansible.cfg
 ```
 
----
 
-# Final SRE Principle
 
 > Ansible must be **idempotent, safe, and predictable**.
