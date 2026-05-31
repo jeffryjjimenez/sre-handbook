@@ -641,17 +641,26 @@ ansible-playbook playbook.yml --list-tags
 
 or:
 
-- name: Install Apache on RedHat
-  yum:
-    name: httpd
-    state: present
-  when: ansible_os_family == "RedHat"
+---
+- name: Install Apache based on OS
+  hosts: all
+  become: true
 
-- name: Install Apache on Ubuntu
-  apt:
-    name: apache2
-    state: present
-  when: ansible_os_family == "Debian"
+  tasks:
+
+    - name: Install Apache on RedHat
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Apache on Ubuntu
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
 ```
 To get facts here: ansible all -m setup
 ---
@@ -669,15 +678,22 @@ To get facts here: ansible all -m setup
 
 Or:
 
-- name: Install packages
-  apt:
-    name: "{{ item }}"
-    state: present
-    update_cache: yes
-  loop:
-    - curl
-    - git
-    - vim
+---
+- name: Install common packages
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - curl
+        - git
+        - vim
 
 Which do:
 
@@ -685,16 +701,37 @@ apt install curl
 apt install git
 apt install vim
 ```
+Verify:
+
+ansible all -a "which curl"
+ansible all -a "which git"
+ansible all -a "which vim"
+
+--
+
+ansible all -a "dpkg -s curl"  # -s for status
+ansible all -a "dpkg -s git"
+ansible all -a "dpkg -s vim"
+
 
 Another example:
 
-- name: Create users with shells
-  user:
-    name: "{{ item.name }}"
-    shell: "{{ item.shell }}"
-  loop:
-    - { name: jerry, shell: /bin/bash }
-    - { name: kramer, shell: /bin/zsh }
+---
+- name: Create users with different shells
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Create users
+      user:
+        name: "{{ item.name }}"
+        shell: "{{ item.shell }}"
+        state: present
+        create_home: true
+      loop:
+        - { name: jerry, shell: /bin/bash }
+        - { name: kramer, shell: /bin/zsh }
 
 ---
 
