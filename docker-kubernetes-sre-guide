@@ -1,101 +1,64 @@
-# 04 — Docker SRE Engineering Handbook
+Docker & Kubernetes SRE Engineering Handbook (Production Guide)
 
-This section is a production-focused Docker guide designed for Site Reliability Engineers (SREs).  
-It covers container fundamentals, architecture, debugging, and real-world production incident handling.
+This section is a production-focused guide for Senior Site Reliability Engineers (SREs) covering Docker, orchestration, Kubernetes, networking, deployments, debugging, and real-world incident response.
 
----
+It is designed to take you from fundamentals → production architecture → cloud-native systems (AWS EKS).
 
-# 1. Docker in Modern SRE Architecture
+1. Modern Containerized Architecture (SRE View)
 
-Modern systems follow this flow:
+Modern distributed systems follow this pipeline:
 
 Application Code
 ↓
 Docker Image
 ↓
-Container Registry
+Container Registry (Docker Hub / ECR / Private Registry)
 ↓
 Kubernetes Cluster
 ↓
-Services / Ingress
+Deployments / Pods / Services
 ↓
-Load Balancer
+Ingress Controller / Load Balancer
 ↓
-Users
+Users / Traffic
+SRE Responsibilities
 
-A Senior SRE is responsible for:
+A Senior SRE ensures:
 
-- Understanding system failures
-- Optimizing performance
-- Automating operations
-- Designing resilient infrastructure
+System reliability under failure
+Scalability under load
+Observability (logs, metrics, traces)
+Safe deployments & rollbacks
+Infrastructure automation
+2. Docker Fundamentals
 
----
+Docker packages applications with dependencies into isolated containers.
 
-# 2. Docker Fundamentals
-
-Docker is a platform that packages applications with their dependencies into containers.
-
-A container includes:
-
-- Application code
-- Runtime
-- System libraries
-- Environment configuration
-
----
-
-## Why Docker Matters
-
-- Consistent environments across systems
-- Fast deployments
-- Lightweight compared to VMs
-- Ideal for microservices architectures
-
----
-
-## Core Concepts
-
-### Image
-Immutable template used to create containers.
-
-### Container
-Running instance of an image.
-
-### Registry
-Storage system for images (Docker Hub, ECR, GCR).
-
----
-
-## Basic Commands
-
-```bash
+Core Concepts
+Image → Immutable blueprint
+Container → Running instance
+Registry → Image storage system
+Docker Engine → Runtime
+3. Basic Docker Commands
 docker version
 docker help
 docker search nginx
 docker pull nginx
 docker images
+
 docker ps
 docker ps -a
-
 Run Containers
 docker run nginx
 docker run -it ubuntu
 docker run -itd ubuntu
-
-Flags:
-
+Flags
 -i → interactive
 -t → terminal
 -d → detached mode
-
-
-3. Container Lifecycle
-Lifecycle Stages
-
+4. Container Lifecycle
 Created → Running → Paused → Stopped → Removed
-
-Management Commands
+Management
 docker start container
 docker stop container
 docker restart container
@@ -103,30 +66,31 @@ docker pause container
 docker unpause container
 docker kill container
 docker rm container
-Exec vs Attach
-Recommended (exec)
+Exec (Production Safe)
 docker exec -it container bash
+docker exec -it container sh
 
-✔ Safe for production
-✔ Does not attach to PID 1
+✔ Safe for debugging
+✔ Does NOT attach to main process
 
-Attach (not recommended)
-docker attach container
-
-⚠ Can interfere with main process
-
-Cleanup
-docker stop $(docker ps -aq)
-docker rm $(docker ps -aq)
-4. Images & Dockerfile
-Image Operations
+5. Debugging Containers
+docker logs container
+docker logs -f container
+docker inspect container
+docker stats
+docker top container
+Key Insight
+docker logs = application debugging
+docker exec = runtime inspection
+docker inspect = metadata + network + mounts
+6. Docker Images & Dockerfile (Production Standard)
+Build & Manage Images
 docker build -t app:1.0 .
 docker tag app:1.0 repo/app:v1
 docker push repo/app:v1
 docker pull nginx
 docker history nginx
-docker inspect nginx
-Dockerfile (Production Standard)
+Production Dockerfile (Example)
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -137,7 +101,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 CMD ["python", "app.py"]
-Multi-Stage Builds
+Multi-Stage Build (Best Practice)
 FROM node:18 AS builder
 
 WORKDIR /app
@@ -152,59 +116,46 @@ COPY --from=builder /app/dist ./dist
 CMD ["node", "dist/app.js"]
 SRE Rule
 
-Avoid docker commit in production.
-Use CI/CD pipelines for reproducible builds.
+🚫 Never use docker commit in production
+✔ Always use CI/CD pipelines
 
-5. Docker Networking
+7. Docker Networking
 Network Types
-Bridge (default)
-Isolated container network
-NAT-based communication
-Host
-Uses host network stack
-None
-No networking
+bridge (default) → isolated network
+host → shares host network
+none → no networking
 Commands
 docker network ls
 docker network inspect bridge
 docker network create mynetwork
 Port Mapping
 docker run -p 8080:80 nginx
-Core Concepts
-Network Namespace
-docker0 bridge
-veth pairs
-port mapping
 Internal DNS
 
-Containers communicate using Docker DNS:
+Containers resolve each other using:
 
 127.0.0.11
-
-6. Storage & Persistence
-Volume Management
+8. Docker Storage & Persistence
+Volumes
 docker volume create data_volume
 docker volume ls
 docker volume inspect data_volume
-docker volume rm data_volume
 Run with Volume
 docker run -v data_volume:/var/lib/mysql mysql
-Bind Mount
+Bind Mount (Host Path)
 docker run -v /host/data:/container/data nginx
-Storage Location
-
+Storage Locations
 /var/lib/docker
-
 SRE Insight
 
-Volumes persist data even if containers are deleted.
+Volumes persist even if containers are deleted.
 
-Critical for:
+Used for:
 
-databases
-logs
-stateful services
-7. Resource Management
+Databases
+Logs
+Stateful systems
+9. Resource Management
 docker run --cpus=1 nginx
 docker run --memory=512m nginx
 Why it matters
@@ -213,26 +164,17 @@ Prevents:
 
 OOMKilled
 CPU starvation
-noisy neighbor problems
-8. Logging & Observability
+noisy neighbor issues
+10. Logging & Observability
 docker logs container
-docker logs -f container
 docker stats
-docker top container
 docker events
-Best Practice
-Use stdout/stderr logging
-Avoid file-based logging inside containers
+Best Practices
+Use stdout/stderr
+Avoid file logging inside containers
 Centralize logs (ELK / Loki / Prometheus)
-9. Security
-docker run --user 1000 nginx
-docker run --read-only nginx
-docker run --cap-drop ALL nginx
-SRE Security Principles
-Run as non-root
-Reduce attack surface
-Scan images regularly
-10. Docker Compose
+11. Docker Compose (Multi-Service Systems)
+Example
 services:
   app:
     image: nginx
@@ -246,28 +188,24 @@ docker compose up -d
 docker compose down
 docker compose ps
 docker compose logs
+docker compose up -d --build
 SRE Insight
 
-Docker Compose simulates Kubernetes-style multi-service systems locally.
+Docker Compose simulates Kubernetes locally.
 
-11. Production Best Practices
+12. Production Best Practices
 Never use latest tag
-Always define resource limits
-Use restart policies
+Define resource limits
+Always use restart policies
 docker run --restart unless-stopped nginx
 Healthchecks
 HEALTHCHECK CMD curl -f http://localhost || exit 1
-Principles
-Minimal images
-Reproducible builds
-Immutable deployments
-12. Troubleshooting Runbooks
+13. Troubleshooting Runbooks
 Container not starting
 docker logs container
 docker inspect container
 High CPU / Memory
 docker stats
-top
 Port issues
 ss -tulnp
 docker ps
@@ -276,18 +214,18 @@ docker system df
 docker system prune -a
 DNS issues
 docker exec container cat /etc/resolv.conf
-13. Real Production Incidents
+14. Real Production Incidents
 CrashLoop Container
 
 Cause:
 
 bad config
-missing env variables
+missing env vars
 
 Fix:
 
 check logs
-rollback deployment
+rollback
 High CPU
 
 Cause:
@@ -303,8 +241,8 @@ Memory Crash (OOMKilled)
 
 Cause:
 
-memory leaks
-no limits defined
+memory leak
+no limits
 
 Fix:
 
@@ -314,24 +252,132 @@ Network Failure
 
 Cause:
 
-DNS issues
-firewall misconfiguration
+DNS misconfig
+firewall issues
 
 Fix:
 
 inspect networking
-verify DNS resolution
-Final SRE Mindset
+verify DNS
+15. Docker Exec & Runtime Debugging
+docker exec -it container sh
+docker exec -it container bash
+docker exec container ls
+Environment Variables
+printenv
+Set at runtime
+docker run -e USERNAME=admin nginx
+16. Images Registry (Local + Production)
+Local Registry
+docker run -d -p 5000:5000 --name registry registry:2
+Push Image
+docker push localhost:5000/my-image
+17. Kubernetes Fundamentals (SRE Level)
+Core Objects
+Pod
+ReplicaSet
+Deployment
+Service
+Ingress
+18. Pods
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+spec:
+  containers:
+    - name: nginx
+      image: nginx:alpine
+Commands
+kubectl get pods
+kubectl describe pod <name>
+kubectl logs <pod>
+kubectl exec -it <pod> -- sh
+19. ReplicaSets
 
-A Senior SRE does not just run containers.
+Ensures desired number of pods:
+
+replicas: 3
+Self-healing
+Label-based selection
+20. Deployments (Production Standard)
+Manages ReplicaSets
+Handles rolling updates
+Enables rollback
+kubectl get deploy
+kubectl apply -f deployment.yaml
+21. Services
+ClusterIP
+
+Internal communication
+
+NodePort
+
+External access
+
+Example
+type: ClusterIP
+Port Forwarding
+kubectl port-forward svc/app 7000:80
+22. Ingress (Production Gateway)
+
+Acts as reverse proxy routing layer.
+
+kind: Ingress
+
+Routes:
+
+/api → backend
+/ → frontend
+Controller
+
+Ingress controller manages routing dynamically.
+
+23. Kubernetes Networking
+Pods communicate via internal DNS
+Services expose stable endpoints
+kube-proxy handles routing
+24. Kubernetes Storage
+
+Same concepts as Docker:
+
+Volumes
+Persistent storage
+Stateful apps
+25. EKS (AWS Kubernetes)
+Setup Flow
+eksctl create cluster ...
+eksctl create nodegroup ...
+Concepts
+Cluster
+Nodegroups
+IAM roles
+Load balancers
+CloudFormation stacks
+26. kubectl Core Commands
+kubectl get pods
+kubectl get svc
+kubectl get deploy
+kubectl get rs
+kubectl logs
+kubectl describe
+27. Context Switching
+kubectl config current-context
+kubectl config use-context docker-desktop
+28. SRE Final Mindset
+
+A Senior SRE does not just deploy containers.
 
 They:
 
-Design systems that fail safely
-Automate everything repetitive
-Observe and measure everything
-Respond to incidents systematically
-Build resilient distributed systems
+Design failure-resilient systems
+Automate everything
+Observe everything
+Debug under pressure
+Build scalable distributed systems
+Treat infrastructure as code
+
+
 
 
 
