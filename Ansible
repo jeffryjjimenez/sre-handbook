@@ -540,6 +540,7 @@ ansible-galaxy install geerlingguy.nginx
 
 ```yaml
 ---
+---
 - name: Apache setup
   hosts: all
   become: true
@@ -564,14 +565,22 @@ ansible-galaxy install geerlingguy.nginx
         name: apache2
         enabled: true
       tags: config
-```
+
 
 ```bash
 ansible-playbook playbook.yml -t install
 ansible-playbook playbook.yml --skip-tags install
 ansible-playbook playbook.yml --list-tags 
 ```
+Example:
 
+ubuntu@ansible-control:~$ ansible-playbook /etc/ansible/playbooks/apache-tags.yaml --list-tags
+
+playbook: /etc/ansible/playbooks/apache-tags.yaml
+
+  play #1 (all): Apache setup	TAGS: []
+      TASK TAGS: [config, install, start]
+ubuntu@ansible-control:~$ 
 ---
 
 # 22. Variables
@@ -591,7 +600,7 @@ ansible-playbook playbook.yml --list-tags
       apt:
         name: "{{ package }}"
         state: present
-        update_cache: yes
+        update_cache: yes  # equals to: sudo apt update
 ```
 
 ---
@@ -599,6 +608,7 @@ ansible-playbook playbook.yml --list-tags
 # 23. Handlers
 
 ```yaml
+
 ---
 - name: Apache with handlers
   hosts: all
@@ -611,15 +621,18 @@ ansible-playbook playbook.yml --list-tags
         name: apache2
         state: present
         update_cache: yes
-      notify: Restart apache  # notify to execute a handler
+      notify: Restart apache
 
     - name: Copy config file
       copy:
         src: /tmp/apache.conf
-        dest: /etc/apache2/apache2.conf
+        dest: /tmp/apache.conf
+        owner: root
+        group: root
+        mode: '0644'
       notify: Restart apache
 
-  handlers:   # call the handler which is a special task. Executes the task if there was changes, not immediately. 
+  handlers:   # are only executed when there was changes. 
 
     - name: Restart apache
       service:
