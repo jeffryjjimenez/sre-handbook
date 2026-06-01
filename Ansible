@@ -461,14 +461,53 @@ ansible-playbook playbook.yml --start-at-task "Start httpd"
 # 18. Ad-Hoc Commands
 
 ```bash
+# 18. Ad-Hoc Commands
+
+# Connectivity
 ansible all -m ping
-ansible all -m file -a "path=/home/jeff/file state=touch mode=700"
-ansible all -b -m apt -a "name=telnet state=present update_cache=yes" # -b: become true. 
-ansible all -m yum -a "name=telnet state=present"
-ansible all -m service -a "name=httpd state=started"
-ansible all -a "/sbin/reboot"
+
+# Create file
+ansible all -m file -a "path=/tmp/testfile state=touch mode=700"
+
+# Delete file
+ansible all -m file -a "path=/tmp/testfile state=absent"
+
+# Copy file
+ansible all -m copy -a "src=/tmp/localfile dest=/tmp/remotefile"
+
+# Install package (Ubuntu)
+ansible all -b -m apt -a "name=telnet state=present update_cache=yes"
+
+# Remove package
+ansible all -b -m apt -a "name=telnet state=absent"
+
+# Start service
+ansible all -b -m service -a "name=apache2 state=started"
+
+# Start and enable service
+ansible all -b -m service -a "name=apache2 state=started enabled=yes"
+
+# Check service status
+ansible all -m shell -a "systemctl status apache2"
+
+# Create user
+ansible all -b -m user -a "name=jsmith shell=/bin/bash state=present"
+
+# Add user to group
+ansible all -b -m user -a "name=jsmith groups=sudo append=yes"
+
+# Delete user
+ansible all -b -m user -a "name=jsmith state=absent remove=yes"
+
+# Collect facts
 ansible all -m setup
+
+# Collect specific facts
 ansible all -m setup -a "filter=ansible_distribution"
+
+# Reboot server
+ansible all -a "/sbin/reboot"
+```
 ```
 
 ---
