@@ -1,6 +1,7 @@
-Docker & Kubernetes SRE Engineering Handbook (Production Guide)
+Docker & Kubernetes SRE Engineering Handbook 
 
-This section is a production-focused guide for Senior Site Reliability Engineers (SREs) covering Docker, orchestration, Kubernetes, networking, deployments, debugging, and real-world incident response.
+This section is a production-focused guide for Senior Site Reliability Engineers (SREs) covering Docker, orchestration,
+Kubernetes, networking, deployments, debugging, and real-world incident response.
 
 It is designed to take you from fundamentals → production architecture → cloud-native systems (AWS EKS).
 
@@ -21,6 +22,7 @@ Deployments / Pods / Services
 Ingress Controller / Load Balancer
 ↓
 Users / Traffic
+
 SRE Responsibilities
 
 A Senior SRE ensures:
@@ -30,151 +32,212 @@ Scalability under load
 Observability (logs, metrics, traces)
 Safe deployments & rollbacks
 Infrastructure automation
+
 2. Docker Fundamentals
 
 Docker packages applications with dependencies into isolated containers.
 
 Core Concepts
+
 Image → Immutable blueprint
 Container → Running instance
 Registry → Image storage system
 Docker Engine → Runtime
+
 3. Basic Docker Commands
+
 docker version
 docker help
-docker search nginx
-docker pull nginx
+docker search nginx  # looks for nginx images from the terminal 
+docker pull nginx    
 docker images
 
-docker ps
-docker ps -a
+docker ps   # shows the active containers
+docker ps -a   # shows all the containers: running, stopped, exited...
+
 Run Containers
+
 docker run nginx
-docker run -it ubuntu
-docker run -itd ubuntu
+docker run -it ubuntu # we create the container and enter to it.
+docker run -itd ubuntu # with d, the container is created but we do not enter to it. 
+
 Flags
 -i → interactive
 -t → terminal
 -d → detached mode
+
 4. Container Lifecycle
+
 Created → Running → Paused → Stopped → Removed
+
 Management
-docker start container
-docker stop container
-docker restart container
-docker pause container
-docker unpause container
-docker kill container
-docker rm container
+
+docker start container     # starts a stopped container
+docker stop container      # stops a container gracefully (allows cleanup/shutdown)
+docker restart container   # restarts a container (stop + start)
+docker pause container     # suspends all processes inside the container
+docker unpause container   # resumes a paused container
+docker kill container      # forcefully stops a container immediately (SIGKILL)
+docker rm container        # removes a container from the system (must be stopped first)
+docker rmi image          # removes a Docker image from the local system (must not be used by running containers)
+
 Exec (Production Safe)
-docker exec -it container bash
+
+docker exec -it container bash   # to exec into a running container using bash sell.
 docker exec -it container sh
 
 ✔ Safe for debugging
 ✔ Does NOT attach to main process
 
 5. Debugging Containers
-docker logs container
-docker logs -f container
-docker inspect container
-docker stats
-docker top container
+
+docker logs container        # shows the logs/output of a container
+docker logs -f container     # follows (streams) logs in real time
+docker inspect container     # shows detailed low-level info about a container (JSON format)
+docker stats                 # displays real-time CPU, memory, and network usage of containers
+docker top container        # shows running processes inside a container
+
 Key Insight
+
 docker logs = application debugging
 docker exec = runtime inspection
 docker inspect = metadata + network + mounts
+
 6. Docker Images & Dockerfile (Production Standard)
+
 Build & Manage Images
-docker build -t app:1.0 .
-docker tag app:1.0 repo/app:v1
-docker push repo/app:v1
-docker pull nginx
-docker history nginx
-Production Dockerfile (Example)
-FROM python:3.11-slim
 
-WORKDIR /app
+docker build -t app:1.0 .          # builds a Docker image from the current directory and tags it as app:1.0
+docker tag app:1.0 repo/app:v1     # creates a new tag for an existing image (used for versioning or pushing to registries). target: repo/app:v1
+docker push repo/app:v1           # uploads the image to a remote Docker registry (e.g., Docker Hub)
+docker pull nginx                 # downloads the nginx image from a remote registry
+docker history nginx              # shows the layered history of how an image was built
+Docker file:
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app                     # sets the working directory inside the container
 
-COPY . .
+COPY requirements.txt .         # copies only requirements.txt into the container
+RUN pip install --no-cache-dir -r requirements.txt   # installs Python dependencies without caching
 
-CMD ["python", "app.py"]
-Multi-Stage Build (Best Practice)
-FROM node:18 AS builder
+COPY . .                        # copies the rest of the application code into the container
 
-WORKDIR /app
-COPY . .
-RUN npm install && npm run build
+CMD ["python", "app.py"]        # default command that runs when the container starts
 
-FROM node:18-slim
 
-WORKDIR /app
-COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/app.js"]
 SRE Rule
 
-🚫 Never use docker commit in production
-✔ Always use CI/CD pipelines
+SRE Rule
+
+🚫 Never use docker commit in production   # avoid manual, non-reproducible container changes
+✔ Always use CI/CD pipelines              # ensure builds are automated, versioned, and reproducible
 
 7. Docker Networking
+
 Network Types
-bridge (default) → isolated network
-host → shares host network
-none → no networking
+
+bridge (default)  # default isolated network; containers get private IPs and communicate via virtual bridge
+host              # container uses the host machine’s network directly (no isolation)
+none              # disables all networking for the container (completely isolated)
+
 Commands
-docker network ls
-docker network inspect bridge
-docker network create mynetwork
+
+docker network ls                  # lists all Docker networks on the host
+docker network inspect bridge      # shows detailed configuration of the default bridge network (JSON output)
+docker network create mynetwork    # creates a new user-defined bridge network called "mynetwork"
+
 Port Mapping
-docker run -p 8080:80 nginx
-Internal DNS
 
-Containers resolve each other using:
+docker run -p 8080:80 nginx   # maps host port 8080 → container port 80 (nginx becomes accessible via localhost:8080)
 
-127.0.0.11
+So when you open:
+
+http://localhost:8080
+
+👉 you are actually hitting nginx inside the container on port 80.
+
 8. Docker Storage & Persistence
+
 Volumes
-docker volume create data_volume
-docker volume ls
-docker volume inspect data_volume
-Run with Volume
+
+docker volume create data_volume        # creates a named persistent volume managed by Docker
+docker volume ls                        # lists all Docker volumes on the system
+docker volume inspect data_volume       # shows detailed metadata about a specific volume
+
+Run with Volume (Persistence)
 docker run -v data_volume:/var/lib/mysql mysql
+
+👉 Mounts a Docker-managed volume into the container
+
+🧠 Meaning:
+data_volume → persistent storage managed by Docker
+/var/lib/mysql → where MySQL stores its data inside the container
+
+👉 Result: data survives container deletion. It is used in prod
+
 Bind Mount (Host Path)
+
 docker run -v /host/data:/container/data nginx
-Storage Locations
-/var/lib/docker
+
+🧠 Meaning:
+
+/host/data → real folder on your Mac/Linux
+/container/data → folder inside container
+
+👉 This directly links host filesystem ↔ container
+
+📦 Volumes
+
+“Docker-managed persistent disk”
+
+🧷 Bind mounts
+
+“Shared folder between host and container”
+
+
 SRE Insight
 
-Volumes persist even if containers are deleted.
+
+Volumes persist even if containers are deleted.   # data is stored independently of container lifecycle
 
 Used for:
 
-Databases
-Logs
-Stateful systems
+Databases        # persistent storage for structured data (e.g., PostgreSQL, MySQL)
+Logs             # durable log storage for debugging and auditing
+Stateful systems  # any workload that must keep state across restarts (e.g., queues, caches)
+
+
 9. Resource Management
-docker run --cpus=1 nginx
-docker run --memory=512m nginx
+
+docker run --cpus=1 nginx        # limits the container to use at most 1 CPU core
+docker run --memory=512m nginx   # limits the container to 512 MB of RAM
+
 Why it matters
 
 Prevents:
 
-OOMKilled
-CPU starvation
-noisy neighbor issues
+| Resource | Risk without limits      |
+| -------- | ------------------------ |
+| CPU      | latency spikes, slowdown |
+| Memory   | crashes (OOMKilled)      |
+| Disk/IO  | system-wide lag          |
+
+
+
 10. Logging & Observability
-docker logs container
-docker stats
-docker events
-Best Practices
-Use stdout/stderr
-Avoid file logging inside containers
-Centralize logs (ELK / Loki / Prometheus)
+
+docker logs container        # shows the container’s stdout/stderr output (application logs)
+docker logs -f container     # follows logs in real time (like tail -f)
+docker stats                 # live CPU, memory, network, and IO usage per container
+docker events                # real-time stream of Docker daemon events (start/stop/create/kill, etc.)
+
+
 11. Docker Compose (Multi-Service Systems)
-Example
+
+Docker Compose lets you define and run multiple containers as a single application.
+
+Example:
+
 services:
   app:
     image: nginx
@@ -183,199 +246,156 @@ services:
 
   redis:
     image: redis:7
-Commands
-docker compose up -d
-docker compose down
-docker compose ps
-docker compose logs
-docker compose up -d --build
-SRE Insight
 
-Docker Compose simulates Kubernetes locally.
+docker compose up -d        # start all services in background
+docker compose down         # stop and remove containers, network, etc.
+docker compose ps           # list running compose services
+docker compose logs         # view logs from all services
+docker compose up -d --build # rebuild images and start services
+
+
 
 12. Production Best Practices
-Never use latest tag
-Define resource limits
-Always use restart policies
+
 docker run --restart unless-stopped nginx
+# keeps the container running unless it is explicitly stopped (auto-restarts on crash or reboot)
+
+Never use latest tag
+nginx:latest   ❌
+nginx:1.25     ✅
+
+Define resource limits
+with --cpus and --memory
+
+Always use restart policies
+--restart unless-stopped
+| Policy         | Meaning                         |
+| -------------- | ------------------------------- |
+| no             | never restart                   |
+| on-failure     | restart only if crash           |
+| always         | always restart                  |
+| unless-stopped | restart unless manually stopped |
+
+
+
 Healthchecks
 HEALTHCHECK CMD curl -f http://localhost || exit 1
+
+States:
+starting
+healthy
+unhealthy
+
 13. Troubleshooting Runbooks
+
 Container not starting
+
 docker logs container
+# shows application output (stdout/stderr) to diagnose startup crashes or errors
+
 docker inspect container
+# returns full container metadata (config, state, network, mounts, env vars)
+
 High CPU / Memory
 docker stats
+
 Port issues
 ss -tulnp
 docker ps
+
+
 Disk full
 docker system df
-docker system prune -a
+docker system prune -a # to clean up
+
+Removes:
+
+stopped containers
+unused images
+build cache
+
 DNS issues
-docker exec container cat /etc/resolv.conf
+docker exec container cat /etc/resolv.conf #checks internal DNS config
+
 14. Real Production Incidents
+
 CrashLoop Container
 
 Cause:
 
 bad config
-missing env vars
+missing environment variables
+app exits immediately after start
 
-Fix:
+🔍 How to debug
 
-check logs
-rollback
-High CPU
+docker logs container
+docker inspect container
 
-Cause:
+🔧 Fix
 
-traffic spike
-inefficient code
-
-Fix:
-
-scale services
-apply limits
+correct config/env vars
+rollback to previous stable image
+fix startup command
+---------------
 Memory Crash (OOMKilled)
 
-Cause:
+Cause
 
 memory leak
-no limits
+no memory limits defined
 
-Fix:
+Fix
 
-increase memory
-fix application
+increase memory limit
+fix memory leak in application
+---------------
+
 Network Failure
 
 Cause:
-
-DNS misconfig
-firewall issues
+- DNS misconfiguration
+- firewall / security rules blocking traffic
 
 Fix:
+- inspect container networking (docker network inspect / docker exec)
+- verify DNS resolution (resolv.conf, ping service names)
 
-inspect networking
-verify DNS
 15. Docker Exec & Runtime Debugging
+
 docker exec -it container sh
+# opens an interactive shell inside the running container (minimal environments usually use sh)
+
 docker exec -it container bash
+# opens a Bash shell inside the container (only works if bash is installed in the image)
+
 docker exec container ls
-Environment Variables
+# runs a single command inside the container without opening an interactive session
+
+Environment variables
+Print variables inside container
 printenv
-Set at runtime
+
+👉 shows all environment variables available at runtime
+
+Set variables at runtime
 docker run -e USERNAME=admin nginx
-16. Images Registry (Local + Production)
-Local Registry
-docker run -d -p 5000:5000 --name registry registry:2
-Push Image
+
+🧠 Meaning
+-e injects environment variables into the container process
+used for configuration without rebuilding images
+
+Push image to registry
 docker push localhost:5000/my-image
-17. Kubernetes Fundamentals (SRE Level)
-Core Objects
-Pod
-ReplicaSet
-Deployment
-Service
-Ingress
-18. Pods
-apiVersion: v1
-kind: Pod
-metadata:
-  name: webserver
-spec:
-  containers:
-    - name: nginx
-      image: nginx:alpine
-Commands
-kubectl get pods
-kubectl describe pod <name>
-kubectl logs <pod>
-kubectl exec -it <pod> -- sh
-19. ReplicaSets
 
-Ensures desired number of pods:
+🧠 Important requirement
 
-replicas: 3
-Self-healing
-Label-based selection
-20. Deployments (Production Standard)
-Manages ReplicaSets
-Handles rolling updates
-Enables rollback
-kubectl get deploy
-kubectl apply -f deployment.yaml
-21. Services
-ClusterIP
+Before pushing, image must be tagged correctly:
 
-Internal communication
+docker tag my-image localhost:5000/my-image # localhost:5000 for local registry. my-image for repo inside registry
 
-NodePort
 
-External access
 
-Example
-type: ClusterIP
-Port Forwarding
-kubectl port-forward svc/app 7000:80
-22. Ingress (Production Gateway)
-
-Acts as reverse proxy routing layer.
-
-kind: Ingress
-
-Routes:
-
-/api → backend
-/ → frontend
-Controller
-
-Ingress controller manages routing dynamically.
-
-23. Kubernetes Networking
-Pods communicate via internal DNS
-Services expose stable endpoints
-kube-proxy handles routing
-24. Kubernetes Storage
-
-Same concepts as Docker:
-
-Volumes
-Persistent storage
-Stateful apps
-25. EKS (AWS Kubernetes)
-Setup Flow
-eksctl create cluster ...
-eksctl create nodegroup ...
-Concepts
-Cluster
-Nodegroups
-IAM roles
-Load balancers
-CloudFormation stacks
-26. kubectl Core Commands
-kubectl get pods
-kubectl get svc
-kubectl get deploy
-kubectl get rs
-kubectl logs
-kubectl describe
-27. Context Switching
-kubectl config current-context
-kubectl config use-context docker-desktop
-28. SRE Final Mindset
-
-A Senior SRE does not just deploy containers.
-
-They:
-
-Design failure-resilient systems
-Automate everything
-Observe everything
-Debug under pressure
-Build scalable distributed systems
-Treat infrastructure as code
 
 
 
