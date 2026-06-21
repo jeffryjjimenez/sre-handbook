@@ -1,0 +1,1348 @@
+Terraform for Senior SRE Engineers
+
+Table of Contents
+
+Core Commands
+Logging
+Variables & Outputs
+Data Sources
+Lifecycle Rules
+Meta-Arguments
+HCL Language Fundamentals
+Modules
+State Management & Remote Backends
+Workspaces
+CI/CD Integration
+Security Best Practices
+Advanced Patterns
+Testing Strategies
+Drift Detection & Observability
+Disaster Recovery & Day-2 Operations
+Performance at Scale
+Real-World SRE Scenarios
+Interview Prep & Competency Map
+Quick Reference & Cheatsheets
+
+
+Core Commands
+
+terraform init
+Initializes a Terraform project. Downloads providers, modules, and configures the backend.
+bashterraform init
+Upgrade providers to the latest allowed version.
+bashterraform init -upgrade
+Migrate state when changing backend configuration.
+bashterraform init -migrate-state
+Pass backend config values directly — useful for CI/CD secrets.
+bashterraform init \
+  -backend-config="bucket=my-state-bucket" \
+  -backend-config="key=prod/terraform.tfstate" \
+  -backend-config="region=us-east-1"
+
+terraform fmt
+Formats Terraform files using Terraform standards. Improves readability and standardizes code.
+bashterraform fmt
+Format all directories recursively.
+bashterraform fmt -recursive
+CI mode — fails if any file needs formatting (does not modify files).
+bashterraform fmt -check
+
+terraform validate
+Checks Terraform syntax. Verifies references, variables, and providers. Does NOT create infrastructure.
+bashterraform validate
+
+terraform plan
+Shows the execution plan before making changes. Displays what Terraform will create, update, or destroy.
+bashterraform plan
+Pass variables from the command line.
+bashterraform plan -var="aws_region=us-east-1"
+Pass variables from a file.
+bashterraform plan -var-file=production.tfvars
+Save the plan to a file — always do this in CI/CD.
+bashterraform plan -out=tfplan
+Show plan in JSON format — useful for OPA policy evaluation.
+bashterraform show -json tfplan | jq .
+Target a specific resource.
+bashterraform plan -target="aws_instance.web_server"
+Mark a resource for forced replacement.
+bashterraform plan -replace="aws_instance.web_server"
+Disable state refresh — faster when no drift is expected.
+bashterraform plan -refresh=false
+Detect-only mode — exit code 2 means drift was found.
+bashterraform plan -detailed-exitcode
+Destroy plan — preview what would be deleted.
+bashterraform plan -destroy
+
+terraform apply
+Creates or updates infrastructure.
+bashterraform apply
+Always apply from a saved plan in production.
+bashterraform apply tfplan
+Pass variables.
+bashterraform apply -var="aws_region=us-east-1"
+Automatic approval — for CI/CD only, never for manual production runs.
+bashterraform apply -auto-approve
+Reduce parallelism to avoid provider rate limits (default is 10).
+bashterraform apply -parallelism=5
+Structured JSON output — useful for logging and audit.
+bashterraform apply -json tfplan 2>&1 | tee apply.log
+
+terraform destroy
+Deletes all infrastructure managed by Terraform.
+bashterraform destroy
+Target destruction of a specific resource.
+bashterraform destroy -target="module.database"
+
+terraform show
+Displays the current Terraform state. Useful for inspecting deployed resources.
+bashterraform show
+Export state as JSON.
+bashterraform show -json
+Show a saved plan.
+bashterraform show tfplan
+
+terraform output
+Displays output variables defined in the configuration.
+bashterraform output
+Show a specific output.
+bashterraform output public_ip
+Get all outputs as JSON — useful for scripting.
+bashterraform output -json
+Extract a specific value with jq.
+bashterraform output -json | jq '.load_balancer_dns.value'
+Example output definition:
+hcloutput "public_ip" {
+  description = "Public IP of the web server"
+  value       = aws_instance.web.public_ip
+}
+
+terraform providers
+Displays all providers required by the configuration.
+bashterraform providers
+Mirror providers to another location — useful for air-gapped environments.
+bashterraform providers mirror /path/to/plugins
+Lock provider versions for all target platforms — commit the lock file to Git.
+bashterraform providers lock \
+  -platform=linux_amd64 \
+  -platform=darwin_arm64 \
+  -platform=windows_amd64
+
+terraform graph
+Displays resource dependencies in DOT format.
+bashterraform graph
+Generate a visual SVG — requires Graphviz installed.
+bashterraform graph | dot -Tsvg > graph.svg
+Useful for troubleshooting and architecture visualization.
+
+terraform console
+Opens an interactive Terraform console. Useful for testing functions and expressions.
+bashterraform console
+Examples:
+text> max(-1, 2, -10, 200)
+200
+
+> min(-1, 2, -10, 200)
+-10
+
+> upper("ibm")
+"IBM"
+
+> lower("IBM")
+"ibm"
+
+> length(["a", "b", "c"])
+3
+
+> toset(["apple", "apple", "banana"])
+toset(["apple", "banana"])
+
+> cidrsubnet("10.0.0.0/16", 8, 1)
+"10.0.1.0/24"
+
+> cidrhost("10.0.1.0/24", 5)
+"10.0.1.5"
+
+> format("%s-%s", "prod", "api")
+"prod-api"
+
+> contains(["dev", "prod"], "prod")
+true
+
+terraform workspace
+Workspaces allow multiple environments using the same code.
+Create a workspace.
+bashterraform workspace new dev
+List workspaces.
+bashterraform workspace list
+Select a workspace.
+bashterraform workspace select dev
+Display the current workspace.
+bashterraform workspace show
+Delete a workspace.
+bashterraform workspace delete dev
+Reference the current workspace in configuration.
+hclterraform.workspace
+
+⚠️ Workspaces share the same backend and provider credentials. For true production isolation — separate AWS accounts, different blast radius — use separate directories per environment instead of workspaces.
+
+
+terraform state list
+Lists all resources stored in the Terraform state file.
+bashterraform state list
+
+terraform state show
+Displays detailed information about a specific resource.
+bashterraform state show aws_instance.web
+
+terraform state mv
+Moves resources inside the Terraform state. Useful during refactoring.
+bashterraform state mv aws_instance.web module.compute.aws_instance.web
+Move a for_each resource.
+bashterraform state mv 'aws_subnet.this["old-key"]' 'aws_subnet.this["new-key"]'
+
+terraform state pull
+Downloads the remote state file to stdout — useful for manual inspection or backup.
+bashterraform state pull > backup.tfstate
+
+terraform state rm
+Removes a resource from the Terraform state. Does NOT delete the real infrastructure.
+bashterraform state rm aws_instance.web
+
+terraform import
+Imports existing infrastructure into Terraform. Only updates the state file — Terraform does NOT generate HCL code automatically.
+bashterraform import aws_instance.web i-0123456789
+Import a for_each resource.
+bashterraform import 'aws_subnet.this["private-1"]' subnet-0abc123
+After importing, always run plan to verify alignment.
+bashterraform plan  # Should show no changes if import was correct
+
+💡 Terraform 1.5+ introduced import blocks in HCL, allowing imports to be declared as code and reviewed in PRs.
+
+hclimport {
+  to = aws_s3_bucket.my_bucket
+  id = "my-existing-bucket-name"
+}
+
+terraform taint / -replace
+Marks a resource for recreation during the next apply.
+bashterraform taint aws_instance.web
+Modern recommendation — prefer -replace over taint.
+bashterraform apply -replace="aws_instance.web"
+
+terraform untaint
+Removes the tainted state from a resource.
+bashterraform untaint aws_instance.web
+
+terraform refresh
+Synchronizes Terraform state with real infrastructure.
+bashterraform refresh
+
+⚠️ This command is mostly obsolete. Terraform automatically refreshes state during plan and apply. Use terraform plan instead.
+
+
+terraform force-unlock
+Force-releases a stuck state lock. Use carefully — only when a lock is genuinely stuck.
+bashterraform force-unlock LOCK_ID
+
+Logging
+Enable detailed logs.
+bashexport TF_LOG=TRACE
+Available log levels (most to least verbose):
+textTRACE
+DEBUG
+INFO
+WARN
+ERROR
+Save logs to a file.
+bashexport TF_LOG_PATH=/tmp/terraform.log
+Disable logs.
+bashunset TF_LOG
+unset TF_LOG_PATH
+JSON structured logging — available since Terraform 1.1.
+bashterraform apply -json 2>&1 | jq -r '.@message // empty'
+
+Variables & Outputs
+Declaring Variables
+File: variables.tf
+hclvariable "environment" {
+  description = "Deployment environment (dev/staging/production)"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "production"], var.environment)
+    error_message = "Environment must be dev, staging, or production."
+  }
+}
+
+variable "instance_count" {
+  description = "Number of EC2 instances to create"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.instance_count >= 1 && var.instance_count <= 20
+    error_message = "Instance count must be between 1 and 20."
+  }
+}
+
+variable "filename" {
+  type        = string
+  description = "Path of the file"
+  default     = "/root/pets.txt"
+}
+
+# Sensitive variable — value is masked in logs and plan output
+variable "db_password" {
+  description = "Database master password"
+  type        = string
+  sensitive   = true
+}
+
+# Complex object variable
+variable "database_config" {
+  description = "RDS database configuration"
+  type = object({
+    instance_class    = string
+    allocated_storage = number
+    engine_version    = string
+    multi_az          = bool
+  })
+  default = {
+    instance_class    = "db.t3.micro"
+    allocated_storage = 20
+    engine_version    = "15.4"
+    multi_az          = false
+  }
+}
+
+Passing Variables
+Command line:
+bashterraform apply -var="filename=/root/pets.txt"
+Environment variables — Terraform automatically loads TF_VAR_<variable_name>:
+bashexport TF_VAR_filename="/root/pets.txt"
+From a .tfvars file:
+bashterraform apply -var-file=production.tfvars
+
+Variable Precedence (Highest to Lowest)
+PrioritySource1 (Highest)-var='key=value' or -var-file=file on CLI2*.auto.tfvars or *.auto.tfvars.json (alphabetical)3terraform.tfvars.json4terraform.tfvars5TF_VAR_name environment variables6 (Lowest)default values in variable blocks
+
+Outputs
+File: outputs.tf
+hcloutput "public_ip" {
+  description = "Public IP of the web server"
+  value       = aws_instance.web.public_ip
+}
+
+# Sensitive output — masked in terraform apply output
+output "rds_connection_string" {
+  description = "RDS PostgreSQL connection string"
+  value       = "postgresql://${var.db_username}@${aws_db_instance.main.endpoint}/${var.db_name}"
+  sensitive   = true
+}
+
+# Complex output from a module
+output "vpc_info" {
+  description = "VPC networking details"
+  value = {
+    vpc_id          = module.vpc.vpc_id
+    private_subnets = module.vpc.private_subnet_ids
+    public_subnets  = module.vpc.public_subnet_ids
+  }
+}
+
+Local Values
+File: locals.tf
+hcllocals {
+  # Common naming prefix
+  name_prefix = "${var.project}-${var.environment}"
+
+  # Common tags applied everywhere
+  common_tags = merge(var.additional_tags, {
+    Project     = var.project
+    Environment = var.environment
+    ManagedBy   = "terraform"
+    Owner       = var.team_name
+    CostCenter  = var.cost_center
+  })
+
+  # Derived configuration
+  is_production = var.environment == "production"
+  instance_type = local.is_production ? "m5.2xlarge" : "t3.small"
+
+  # Computed CIDR blocks
+  az_count     = length(data.aws_availability_zones.available.names)
+  subnet_cidrs = [for i in range(local.az_count) : cidrsubnet(var.vpc_cidr, 8, i)]
+}
+
+Data Sources
+Data sources allow Terraform to read resources that Terraform does not manage. They are read-only.
+hcldata "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# Reference data source output
+resource "aws_instance" "web" {
+  ami = data.aws_ami.ubuntu.id
+}
+Remote State as Data Source
+hcldata "terraform_remote_state" "networking" {
+  backend = "s3"
+
+  config = {
+    bucket = "mycompany-terraform-state"
+    key    = "environments/production/networking/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+# Use outputs from another state
+resource "aws_instance" "app" {
+  subnet_id = data.terraform_remote_state.networking.outputs.private_subnet_ids[0]
+}
+
+Lifecycle Rules
+create_before_destroy
+Creates the new resource before deleting the old one. Essential for zero-downtime updates.
+hcllifecycle {
+  create_before_destroy = true
+}
+prevent_destroy
+Prevents accidental deletion. Use on critical resources like databases and S3 buckets.
+hcllifecycle {
+  prevent_destroy = true
+}
+ignore_changes
+Ignores changes made outside Terraform — useful when external tools manage certain attributes.
+hcllifecycle {
+  ignore_changes = [
+    ami,           # AMI updated by external patching tool
+    tags["LastUpdated"],
+  ]
+}
+replace_triggered_by
+Forces resource replacement when a referenced resource changes.
+hcllifecycle {
+  replace_triggered_by = [
+    aws_security_group.app.id,
+  ]
+}
+
+Meta-Arguments
+depends_on
+Creates explicit dependencies. Use only when the dependency cannot be expressed via resource references.
+hclresource "aws_instance" "app" {
+  # ...
+  depends_on = [
+    aws_iam_role_policy_attachment.app_policy,
+    aws_db_instance.main,
+  ]
+}
+count
+Creates multiple resources. Best for simple boolean existence checks.
+hclresource "aws_instance" "servers" {
+  count         = var.server_count
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "server-${count.index + 1}"
+  }
+}
+
+# Reference: aws_instance.servers[0], aws_instance.servers[1] ...
+for_each
+Creates resources from maps or sets. Prefer for_each over count — removing an element only deletes that specific resource instead of renumbering all subsequent ones.
+hclvariable "subnets" {
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+  default = {
+    private-1 = { cidr = "10.0.1.0/24", az = "us-east-1a" }
+    private-2 = { cidr = "10.0.2.0/24", az = "us-east-1b" }
+    public-1  = { cidr = "10.0.10.0/24", az = "us-east-1a" }
+  }
+}
+
+resource "aws_subnet" "this" {
+  for_each = var.subnets
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.az
+
+  tags = { Name = each.key }
+}
+
+# Reference: aws_subnet.this["private-1"].id
+
+HCL Language Fundamentals
+Data Types
+TypeExampleUse Casestring"us-east-1"Region names, resource namesnumber3, 3.14Instance counts, port numbersbooltrue / falseFeature flags, encryption togglelist(string)["a", "b", "c"]AZs, security group IDsset(string)toset(["a", "b"])Unique values, no orderingmap(string){ key = "value" }Tags, environment configsobject({...}){ name = string }Complex structured variablesanyanyAvoid — loses type safety
+
+Expressions & Functions
+hcl# Conditional expression (ternary)
+instance_type = var.environment == "prod" ? "m5.xlarge" : "t3.micro"
+
+# String functions
+upper("hello")              # => "HELLO"
+lower("WORLD")              # => "world"
+format("%s-%s", env, app)   # => "prod-api"
+trimspace("  hello  ")      # => "hello"
+replace("a-b-c", "-", "_")  # => "a_b_c"
+split(",", "a,b,c")         # => ["a", "b", "c"]
+join("-", ["a", "b"])        # => "a-b"
+
+# Collection functions
+length(["a", "b", "c"])           # => 3
+contains(["a", "b"], "a")         # => true
+flatten([["a"], ["b", "c"]])       # => ["a", "b", "c"]
+merge({ a = 1 }, { b = 2 })       # => { a = 1, b = 2 }
+keys({ a = 1, b = 2 })            # => ["a", "b"]
+values({ a = 1, b = 2 })          # => [1, 2]
+lookup(var.tags, "env", "unknown") # safe map lookup with default
+coalesce(var.override, local.default)  # first non-null value
+try(var.config.optional_field, "default")  # safe attribute access
+
+# CIDR helpers
+cidrsubnet("10.0.0.0/16", 8, 1)  # => "10.0.1.0/24"
+cidrhost("10.0.1.0/24", 5)        # => "10.0.1.5"
+
+# Filesystem functions
+file("./scripts/init.sh")       # read file contents
+filebase64("./certs/cert.pem")  # read as base64
+templatefile("./tmpl.tpl", { region = var.region })  # render template
+
+For Expressions
+hcl# Transform a list
+locals {
+  upper_zones = [for az in var.availability_zones : upper(az)]
+}
+
+# Filter a list
+locals {
+  prod_instances = [for id, inst in var.instances : inst if inst.env == "prod"]
+}
+
+# Transform list to map
+locals {
+  instance_ids = { for name, inst in aws_instance.servers : name => inst.id }
+}
+
+# Splat expression — shorthand for list of attribute values
+all_ids = aws_subnet.private[*].id
+
+Dynamic Blocks
+hclvariable "ingress_rules" {
+  type = list(object({
+    port        = number
+    protocol    = string
+    description = string
+    cidr_blocks = list(string)
+  }))
+  default = [
+    { port = 443, protocol = "tcp", description = "HTTPS", cidr_blocks = ["0.0.0.0/0"] },
+    { port = 80,  protocol = "tcp", description = "HTTP",  cidr_blocks = ["0.0.0.0/0"] },
+  ]
+}
+
+resource "aws_security_group" "web" {
+  name   = "web-sg"
+  vpc_id = aws_vpc.main.id
+
+  dynamic "ingress" {
+    for_each = var.ingress_rules
+
+    content {
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = ingress.value.protocol
+      description = ingress.value.description
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound"
+  }
+}
+
+Modules
+Modules are containers for multiple resources used together. They enable code reuse, enforce standards, and let teams compose infrastructure from well-tested building blocks.
+Standard Module Structure
+textmodules/networking/vpc/
+├── main.tf          # Core resources
+├── variables.tf     # Input variables
+├── outputs.tf       # Exported values
+├── versions.tf      # Provider & Terraform version constraints
+├── README.md        # Auto-generated via terraform-docs
+└── examples/
+    └── basic/
+        ├── main.tf
+        └── outputs.tf
+Writing a Module
+hcl# modules/networking/vpc/main.tf
+resource "aws_vpc" "this" {
+  cidr_block           = var.cidr_block
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = merge(var.tags, { Name = var.name })
+}
+
+resource "aws_subnet" "private" {
+  count = length(var.private_subnet_cidrs)
+
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-private-${count.index + 1}"
+    Tier = "private"
+  })
+}
+Calling a Module
+hclmodule "vpc" {
+  source  = "../../modules/networking/vpc"
+  # Or from Terraform Registry:
+  # source  = "terraform-aws-modules/vpc/aws"
+  # version = "~> 5.0"
+
+  name       = local.name_prefix
+  cidr_block = var.vpc_cidr
+
+  availability_zones   = data.aws_availability_zones.available.names
+  private_subnet_cidrs = local.private_subnet_cidrs
+  public_subnet_cidrs  = local.public_subnet_cidrs
+
+  tags = local.common_tags
+}
+
+# Access module outputs
+resource "aws_instance" "app" {
+  subnet_id = module.vpc.private_subnet_ids[0]
+}
+Module Sources
+Source TypeExampleLocal path"../../modules/networking"Terraform Registry"terraform-aws-modules/vpc/aws"GitHub (tagged)"github.com/org/repo//path?ref=v1.2.3"S3 bucket"s3::https://s3.amazonaws.com/bucket/module.zip"
+
+💡 Always version-pin external modules. Use the Terraform Registry for well-maintained modules — terraform-aws-modules is the gold standard for AWS.
+
+
+State Management & Remote Backends
+Why Remote State?
+Local state is only suitable for personal experiments. Remote state enables team collaboration, state locking to prevent concurrent modifications, and versioning for rollback. All production Terraform must use a remote backend.
+AWS S3 Backend (Most Common)
+hcl# backend.tf
+terraform {
+  backend "s3" {
+    bucket         = "mycompany-terraform-state"
+    key            = "environments/production/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    kms_key_id     = "arn:aws:kms:us-east-1:123456789012:key/mrk-xxx"
+
+    # State locking via DynamoDB
+    dynamodb_table = "terraform-state-locks"
+  }
+}
+Bootstrap the State Infrastructure
+hclresource "aws_s3_bucket" "terraform_state" {
+  bucket = "mycompany-terraform-state"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_s3_bucket_versioning" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+  versioning_configuration { status = "Enabled" }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.terraform_state.arn
+    }
+  }
+}
+
+resource "aws_dynamodb_table" "terraform_state_lock" {
+  name         = "terraform-state-locks"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+State Commands — SRE Daily Operations
+bash# List all resources in state
+terraform state list
+
+# Inspect a specific resource
+terraform state show "aws_instance.web_server"
+
+# Rename resource after refactoring
+terraform state mv "aws_instance.old_name" "aws_instance.new_name"
+
+# Move resource into a module
+terraform state mv "aws_instance.web" "module.compute.aws_instance.web"
+
+# Unmanage a resource without destroying it
+terraform state rm "aws_instance.legacy"
+
+# Import existing resource
+terraform import aws_s3_bucket.my_bucket my-existing-bucket-name
+
+# Force-unlock a stuck state (use carefully!)
+terraform force-unlock LOCK_ID
+
+# Backup current remote state locally
+terraform state pull > backup.tfstate
+
+Workspaces
+bashterraform workspace new staging    # Create workspace
+terraform workspace list           # List all workspaces
+terraform workspace select prod    # Switch workspace
+terraform workspace show           # Show current workspace
+terraform workspace delete dev     # Delete workspace
+Using the workspace name in configuration:
+hcllocals {
+  workspace_config = {
+    default = {
+      instance_type  = "t3.micro"
+      instance_count = 1
+    }
+    staging = {
+      instance_type  = "t3.medium"
+      instance_count = 2
+    }
+    production = {
+      instance_type  = "m5.xlarge"
+      instance_count = 4
+    }
+  }
+
+  config = local.workspace_config[terraform.workspace]
+}
+
+resource "aws_instance" "app" {
+  count         = local.config.instance_count
+  instance_type = local.config.instance_type
+
+  tags = {
+    Environment = terraform.workspace
+  }
+}
+
+CI/CD Integration
+CI/CD Principles for Infrastructure
+
+Plan on Pull Request — every PR triggers a plan; engineers review the diff before merge.
+Apply on Main — only after peer review and approval.
+Save plans as artifacts — apply the exact saved plan, not a fresh re-plan.
+Secrets from vault — never hardcode credentials; use OIDC/dynamic credentials.
+
+GitHub Actions — Complete Pipeline
+yaml# .github/workflows/terraform.yml
+name: Terraform CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['infrastructure/**']
+  push:
+    branches: [main]
+    paths: ['infrastructure/**']
+
+permissions:
+  contents: read
+  id-token: write       # For OIDC authentication to AWS
+  pull-requests: write  # To post plan comments
+
+env:
+  TF_VERSION:   '1.7.5'
+  AWS_REGION:   'us-east-1'
+  WORKING_DIR:  './infrastructure/environments/production'
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC — no long-lived keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - run: terraform init
+      - run: terraform fmt -check -recursive
+      - run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -no-color 2>&1 | tee plan.txt
+
+      - name: Post Plan to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const plan = require('fs').readFileSync('${{ env.WORKING_DIR }}/plan.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\`\`\`\n${plan.slice(0, 65000)}\n\`\`\``
+            })
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}/tfplan
+
+  terraform-apply:
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production  # Requires manual approval in GitHub
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - run: terraform init
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKING_DIR }}
+      - run: terraform apply -auto-approve tfplan
+AWS OIDC — No Long-Lived Credentials
+hclresource "aws_iam_openid_connect_provider" "github" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+}
+
+resource "aws_iam_role" "github_actions" {
+  name = "GitHubActionsRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.github.arn
+      }
+      Condition = {
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:myorg/myrepo:*"
+        }
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+}
+
+Security Best Practices
+Secrets Management — Never Store Secrets in Code
+hcl# Fetch secret from AWS Secrets Manager
+data "aws_secretsmanager_secret_version" "db_password" {
+  secret_id = "production/database/master-password"
+}
+
+resource "aws_db_instance" "main" {
+  password = data.aws_secretsmanager_secret_version.db_password.secret_string
+}
+Static Analysis Tools
+ToolPurposetfsecSecurity scanning — checks CIS benchmarks and common misconfigscheckovPolicy-as-code scanner for Terraform and other IaCtflintLinter — catches bugs and enforces best practicestrivyComprehensive IaC scanner (also scans containers)infracostCloud cost estimation from Terraform plansterraform-docsAuto-generates module README from variables and outputs
+OPA Policy Example
+rego# policy/enforce_tags.rego
+package terraform.required_tags
+
+required_tags := {"Environment", "Owner", "CostCenter", "ManagedBy"}
+
+deny[msg] {
+  resource := input.planned_values.root_module.resources[_]
+  resource.type == "aws_instance"
+  missing := required_tags - {tag | resource.values.tags[tag]}
+  count(missing) > 0
+  msg := sprintf("aws_instance %v missing required tags: %v",
+    [resource.address, missing])
+}
+bash# Evaluate OPA policy against a Terraform plan
+terraform show -json tfplan > plan.json
+opa eval --input plan.json --data policy/ data.terraform.required_tags.deny
+Security Checklist
+
+Enable encryption at rest for all storage resources (S3, EBS, RDS, ElastiCache).
+Never use 0.0.0.0/0 in security group ingress without explicit justification.
+Enforce MFA for all IAM users. Use IAM roles — not access keys — for services.
+Enable CloudTrail, Config, and GuardDuty in every account managed by Terraform.
+Mark sensitive outputs and variables with sensitive = true.
+Block public access on all S3 buckets by default.
+Use AWS KMS customer managed keys for state bucket and sensitive resources.
+Implement least-privilege IAM policies. Never use AdministratorAccess.
+Scan Terraform code in CI with tfsec and checkov on every pull request.
+Review the Terraform plan carefully before every apply — especially resource replacements.
+
+
+Advanced Patterns
+Provider Configuration with Default Tags
+hclterraform {
+  required_version = ">= 1.6.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region  = var.aws_region
+  profile = var.aws_profile
+
+  default_tags {
+    tags = {
+      Environment = var.environment
+      ManagedBy   = "terraform"
+      Team        = var.team_name
+      CostCenter  = var.cost_center
+    }
+  }
+}
+Multiple Provider Aliases
+hclprovider "aws" {
+  alias  = "us_east"
+  region = "us-east-1"
+}
+
+provider "aws" {
+  alias  = "eu_west"
+  region = "eu-west-1"
+}
+
+resource "aws_s3_bucket" "us_backup" {
+  provider = aws.us_east
+  bucket   = "myapp-backup-us-east"
+}
+
+resource "aws_s3_bucket" "eu_backup" {
+  provider = aws.eu_west
+  bucket   = "myapp-backup-eu-west"
+}
+Full lifecycle Block
+hclresource "aws_instance" "critical_db" {
+  # ...
+
+  lifecycle {
+    prevent_destroy       = true
+    create_before_destroy = true
+
+    ignore_changes = [
+      ami,
+      user_data,
+      tags["LastUpdated"],
+    ]
+
+    replace_triggered_by = [
+      aws_security_group.app.id,
+    ]
+  }
+}
+
+Testing Strategies
+Testing Pyramid for Infrastructure
+LevelToolSpeedStatic analysistflint, tfsec, checkovSeconds — no cloud callsUnit teststerraform test (native, v1.6+)Minutes — isolated module testingIntegration testsTerratest (Go)10–30 min — deploys real infraE2E testsTerratest + app tests30–60 min — full stack validation
+Terraform Native Testing (v1.6+)
+hcl# tests/vpc_test.tftest.hcl
+variables {
+  environment  = "test"
+  vpc_cidr     = "10.0.0.0/16"
+  project_name = "myapp"
+}
+
+run "vpc_creates_successfully" {
+  command = apply
+
+  assert {
+    condition     = aws_vpc.main.cidr_block == "10.0.0.0/16"
+    error_message = "VPC CIDR should be 10.0.0.0/16"
+  }
+
+  assert {
+    condition     = aws_vpc.main.enable_dns_hostnames == true
+    error_message = "DNS hostnames must be enabled"
+  }
+
+  assert {
+    condition     = length(aws_subnet.private) == 3
+    error_message = "Should create 3 private subnets"
+  }
+}
+bashterraform test
+terraform test -filter=tests/vpc_test.tftest.hcl
+terraform test -verbose
+
+Drift Detection & Observability
+Detecting Drift
+bash# Manual drift check — exit code 2 means drift detected
+terraform plan -detailed-exitcode
+
+# Automated drift detection script
+#!/bin/bash
+set -e
+terraform plan -detailed-exitcode -out=/dev/null
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 2 ]; then
+  echo "DRIFT DETECTED — sending alert"
+  curl -X POST $SLACK_WEBHOOK_URL \
+    -H "Content-Type: application/json" \
+    -d '{"text":"🚨 Terraform drift detected in production!"}'
+  exit 1
+fi
+Scheduled Drift Detection in CI
+yaml# .github/workflows/drift-detection.yml
+name: Drift Detection
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours
+  workflow_dispatch:
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform init
+      - name: Check for drift
+        id: drift
+        run: |
+          terraform plan -detailed-exitcode -no-color 2>&1 | tee plan.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+      - name: Alert on drift
+        if: steps.drift.outputs.exit_code == '2'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: '{"text":"Infrastructure drift detected in production"}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+Disaster Recovery & Day-2 Operations
+State Recovery — Lost or Corrupted State
+bash# Step 1: Check S3 versioning for previous state versions
+aws s3api list-object-versions \
+  --bucket mycompany-terraform-state \
+  --prefix environments/production/terraform.tfstate
+
+# Step 2: Restore a specific version
+aws s3api get-object \
+  --bucket mycompany-terraform-state \
+  --key environments/production/terraform.tfstate \
+  --version-id VERSION_ID_HERE \
+  terraform.tfstate
+
+# Step 3: Push recovered state
+terraform state push terraform.tfstate
+
+# Step 4: Verify — should show no changes
+terraform plan
+Resource Deleted from State but Still Exists
+bash# Import the existing resource back into state
+terraform import aws_vpc.main vpc-0123456789abcdef0
+terraform import aws_s3_bucket.logs my-logs-bucket
+terraform import aws_iam_role.app_role MyAppRole
+
+# Verify alignment — should show no or minimal changes
+terraform plan
+Provider Version Upgrades
+bash# 1. Review provider changelog (github.com/hashicorp/terraform-provider-aws/releases)
+# 2. Update version constraints in required_providers
+# 3. Download new provider
+terraform init -upgrade
+
+# 4. Review plan for provider-introduced changes
+terraform plan
+
+# 5. Test in dev environment first!
+
+# 6. Lock versions for all platforms
+terraform providers lock \
+  -platform=linux_amd64 \
+  -platform=darwin_arm64 \
+  -platform=windows_amd64
+
+# 7. Commit the lock file
+git add .terraform.lock.hcl
+
+Performance at Scale
+Common Performance Problems
+ProblemSolutionSlow plans with many resourcesUse -refresh=false when no drift is expectedProvider rate limitingReduce -parallelism (default 10)Monolithic state fileSplit state by service or layerLong CI provider downloadsCache ~/.terraform.d/plugin-cache in CISlow data source queriesConsolidate data sources in locals
+State Splitting Strategy
+textinfrastructure/
+└── layers/
+    ├── 01-foundation/    # VPC, subnets, hosted zones — changes rarely
+    ├── 02-security/      # KMS, WAF, Security Hub
+    ├── 03-data/          # RDS, ElastiCache, S3
+    ├── 04-compute/       # EKS, ASGs, Lambda
+    └── 05-application/   # ALB, ECS services — changes often
+Each layer reads outputs from the layer below via remote state data source.
+Provider Caching in CI
+yaml- uses: actions/cache@v4
+  with:
+    path: ~/.terraform.d/plugin-cache
+    key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+    restore-keys: |
+      ${{ runner.os }}-terraform-
+
+- name: Configure Terraform plugin cache
+  run: |
+    mkdir -p ~/.terraform.d/plugin-cache
+    echo 'plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"' > ~/.terraformrc
+
+Real-World SRE Scenarios
+Production VPC Module
+hcldata "aws_availability_zones" "available" {
+  state = "available"
+}
+
+locals {
+  az_count = min(length(data.aws_availability_zones.available.names), var.az_count)
+}
+
+resource "aws_vpc" "this" {
+  cidr_block           = var.cidr_block
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = merge(var.tags, { Name = var.name })
+}
+
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
+  tags   = merge(var.tags, { Name = "${var.name}-igw" })
+}
+
+resource "aws_subnet" "public" {
+  count = local.az_count
+
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = cidrsubnet(var.cidr_block, 4, count.index)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = false  # Never auto-assign public IPs
+
+  tags = merge(var.tags, {
+    Name                     = "${var.name}-public-${count.index + 1}"
+    Tier                     = "public"
+    "kubernetes.io/role/elb" = "1"
+  })
+}
+
+resource "aws_subnet" "private" {
+  count = local.az_count
+
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = cidrsubnet(var.cidr_block, 4, count.index + 8)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = merge(var.tags, {
+    Name                              = "${var.name}-private-${count.index + 1}"
+    Tier                              = "private"
+    "kubernetes.io/role/internal-elb" = "1"
+  })
+}
+
+resource "aws_eip" "nat" {
+  count  = var.enable_nat_gateway ? local.az_count : 0
+  domain = "vpc"
+  tags   = merge(var.tags, { Name = "${var.name}-nat-eip-${count.index + 1}" })
+}
+
+resource "aws_nat_gateway" "this" {
+  count         = var.enable_nat_gateway ? local.az_count : 0
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags       = merge(var.tags, { Name = "${var.name}-nat-${count.index + 1}" })
+  depends_on = [aws_internet_gateway.this]
+}
+EKS Cluster with Managed Node Groups
+hclmodule "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
+
+  cluster_name    = "${local.name_prefix}-eks"
+  cluster_version = "1.29"
+
+  vpc_id                         = module.vpc.vpc_id
+  subnet_ids                     = module.vpc.private_subnet_ids
+  cluster_endpoint_public_access = false
+
+  cluster_addons = {
+    coredns            = { most_recent = true }
+    kube-proxy         = { most_recent = true }
+    vpc-cni            = { most_recent = true }
+    aws-ebs-csi-driver = { most_recent = true }
+  }
+
+  eks_managed_node_groups = {
+    general = {
+      instance_types = ["m5.xlarge"]
+      min_size       = 2
+      max_size       = 10
+      desired_size   = 3
+
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = 50
+            volume_type           = "gp3"
+            encrypted             = true
+            delete_on_termination = true
+          }
+        }
+      }
+    }
+  }
+
+  tags = local.common_tags
+}
+
+Interview Prep & Competency Map
+Senior SRE Terraform Competency Framework
+LevelSkill AreaWhat You Should DemonstrateL3 (Mid)Basic HCLWrite resources, variables, outputs from scratchL3 (Mid)State managementExplain plan/apply/state commands and why state mattersL4 (Senior)Module designDesign reusable modules with proper abstractionsL4 (Senior)CI/CD integrationImplement full GitHub Actions or Atlantis pipelineL4 (Senior)SecurityOIDC, OPA policies, secrets management, tfsec in CIL5 (Staff)Multi-accountDesign AWS Organizations + Terraform structureL5 (Staff)PerformanceDebug slow plans, architect state splittingL5 (Staff)Disaster recoveryLead state recovery procedures, design runbooksL6 (Principal)Platform designBuild Terraform platform for 50+ engineers
+Common Interview Questions
+Q: What is Terraform state and why is it important?
+State is a JSON mapping between your Terraform configuration and real-world infrastructure. It stores resource IDs, metadata, and dependencies. Without state, Terraform cannot make safe incremental changes — it wouldn't know what already exists. State enables the execution plan by comparing current state to desired configuration. State locking prevents two engineers from running apply simultaneously and corrupting infrastructure.
+Q: How do you handle Terraform in a team of 20 engineers?
+Remote state backend with locking (S3 + DynamoDB for AWS). CI/CD pipeline where plans run on PRs and applies happen after approval on main. A versioned module library so teams share tested building blocks. Mandatory code review for all infrastructure changes. Automated security scanning (tfsec, checkov) and scheduled drift detection.
+Q: A colleague manually deleted a resource Terraform manages. What do you do?
+Run terraform plan — it will show the resource as needing to be created. If we want to recreate it, terraform apply provisions it fresh. If a replacement was manually created, use terraform import to bring it under Terraform management. Going forward: IAM policies restricting console modifications, drift detection alerts, and a post-mortem to strengthen runbooks.
+Q: Explain the difference between count and for_each.
+count creates a list-indexed set of resources (aws_subnet.private[0], [1], [2]). If you remove a middle element, Terraform renumbers all subsequent resources — causing unwanted replacements. for_each creates a map-keyed set (aws_subnet.private["private-1"]). Removing an element only deletes that specific resource. Use count only for simple boolean existence (count = var.enabled ? 1 : 0). Use for_each for everything else.
+Anti-Patterns to Know
+
+Hardcoded values everywhere — use variables and locals.
+Manual state edits — always use terraform state commands.
+No remote state in teams — local tfstate is a collaboration disaster.
+No version pinning — unpinned providers cause surprise breakages.
+Giant monolithic modules — modules should do one thing well.
+Secrets in tfvars or code — use Secrets Manager, Vault, or SOPS.
+No -out flag in CI/CD — always save plans to avoid drift between plan and apply.
+Overuse of -target — leaves state inconsistent and creates technical debt.
+No drift detection — manual changes silently diverge from code.
+No tagging strategy — impossible to attribute costs without consistent tags.
+
+
+Quick Reference & Cheatsheets
+Essential CLI Commands
+CommandPurposeterraform initInitialize working directoryterraform init -upgradeUpgrade providers to latest allowedterraform validateValidate configuration syntaxterraform fmt -recursiveFormat all .tf files in placeterraform fmt -checkCI: fail if files need formattingterraform plan -out=tfplanGenerate and save planterraform show -json tfplanShow plan as JSONterraform apply tfplanApply saved planterraform apply -auto-approveApply without prompt (CI only)terraform destroyDestroy all resourcesterraform output -jsonGet all outputs as JSONterraform state listList all resources in stateterraform state show ADDRShow resource details in stateterraform state mv SRC DSTRename resource in stateterraform state rm ADDRRemove resource from stateterraform import ADDR IDImport existing resource to stateterraform force-unlock IDForce release state lockterraform consoleInteractive expression evaluatorterraform graph | dot -TsvgVisualize resource dependency graphterraform providers lockLock provider versions (all platforms)
+HCL Quick Reference
+hcl# String interpolation
+name = "${var.project}-${var.environment}"
+
+# Conditional
+type = var.env == "prod" ? "m5.xlarge" : "t3.micro"
+
+# For expression — list
+upper_azs = [for az in var.azs : upper(az)]
+
+# For expression — map
+ids = { for k, v in aws_subnet.this : k => v.id }
+
+# Splat expression
+all_ids = aws_subnet.private[*].id
+
+# Null coalescing
+value = coalesce(var.override, local.default)
+
+# Safe attribute access
+value = try(var.config.optional_field, "default")
+
+# One-of validation
+contains(["dev", "prod"], var.env)
+
+# CIDR helpers
+cidrsubnet("10.0.0.0/16", 8, 1)  # => "10.0.1.0/24"
+cidrhost("10.0.1.0/24", 5)        # => "10.0.1.5"
+Recommended Tools
+CategoryToolVersion managertfenv / miseLintingtflintSecurity scantfsecPolicy scancheckovCost estimateinfracostDocs generatorterraform-docsSecret encryptionSOPSCI/CD (dedicated)AtlantisManaged CI/CDTerraform Cloud
+Variable Precedence
+PriorityMethod1 (Highest)-var or -var-file on CLI2*.auto.tfvars / *.auto.tfvars.json3terraform.tfvars.json4terraform.tfvars5TF_VAR_name environment variables6 (Lowest)default values in variable blocks
+
+Senior SRE Golden Rules
+
+Never apply directly to production without a saved plan reviewed by a peer.
+Never hardcode secrets — use Secrets Manager, Vault, or SOPS.
+Never edit terraform.tfstate manually — use terraform state commands.
+Never store state locally in production — always use a remote backend with locking.
+Enable state locking — prevents concurrent runs from corrupting state.
+Use reusable modules — one well-tested module is better than ten copies.
+Avoid provisioners whenever possible — use cloud-init, user_data, or config management tools instead.
+Prefer for_each over count — safer when elements are added or removed.
+Prefer apply -replace over taint — modern and explicit.
+Separate environments — use separate state files and ideally separate accounts.
+Design for High Availability — multi-AZ, multi-region where RPO/RTO demands it.
+Design for Disaster Recovery — state versioning, runbooks, and regular recovery drills.
+Build idempotent infrastructure — every terraform apply on unchanged config should produce no changes.
+Automate everything — if you do it more than once, codify it.
+
+
+Built for SREs who build infrastructure that never sleeps.
