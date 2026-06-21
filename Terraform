@@ -1,0 +1,585 @@
+# Terraform for Senior SRE Engineers
+
+# Terraform Core Commands
+
+---
+
+# terraform init
+
+# Initializes a Terraform project.
+# Downloads providers, modules and configures the backend.
+
+```bash
+terraform init
+```
+
+---
+
+# terraform fmt
+
+# Formats Terraform files using Terraform standards.
+# Improves readability and standardizes code.
+
+```bash
+terraform fmt
+```
+
+Format all directories recursively.
+
+```bash
+terraform fmt -recursive
+```
+
+---
+
+# terraform validate
+
+# Checks Terraform syntax.
+# Verifies references, variables and providers.
+# Does NOT create infrastructure.
+
+```bash
+terraform validate
+```
+
+---
+
+# terraform plan
+
+# Shows the execution plan before making changes.
+# Displays what Terraform will create, update or destroy.
+
+```bash
+terraform plan
+```
+
+Pass variables from the command line.
+
+```bash
+terraform plan -var="aws_region=us-east-1"
+```
+
+---
+
+# terraform apply
+
+# Creates or updates infrastructure.
+
+```bash
+terraform apply
+```
+
+Pass variables.
+
+```bash
+terraform apply -var="aws_region=us-east-1"
+```
+
+Automatic approval.
+
+```bash
+terraform apply -auto-approve
+```
+
+---
+
+# terraform destroy
+
+# Deletes all infrastructure managed by Terraform.
+
+```bash
+terraform destroy
+```
+
+---
+
+# terraform show
+
+# Displays the current Terraform state.
+# Useful for inspecting deployed resources.
+
+```bash
+terraform show
+```
+
+Export state as JSON.
+
+```bash
+terraform show -json
+```
+
+---
+
+# terraform output
+
+# Displays output variables defined in the configuration.
+
+```bash
+terraform output
+```
+
+Show a specific output.
+
+```bash
+terraform output public_ip
+```
+
+Example:
+
+```hcl
+output "public_ip" {
+
+ value = aws_instance.web.public_ip
+
+}
+```
+
+---
+
+# terraform providers
+
+# Displays all providers required by the configuration.
+
+```bash
+terraform providers
+```
+
+Mirror providers to another location.
+
+```bash
+terraform providers mirror /path/to/plugins
+```
+
+Useful for offline environments.
+
+---
+
+# terraform graph
+
+# Displays resource dependencies.
+
+```bash
+terraform graph
+```
+
+Useful for troubleshooting and architecture visualization.
+
+---
+
+# terraform console
+
+# Opens an interactive Terraform console.
+# Useful for testing functions and expressions.
+
+```bash
+terraform console
+```
+
+Examples:
+
+```text
+max(-1,2,-10,200)
+
+200
+```
+
+```text
+min(-1,2,-10,200)
+
+-10
+```
+
+```text
+upper("ibm")
+
+IBM
+```
+
+```text
+lower("IBM")
+
+ibm
+```
+
+```text
+length(["a","b","c"])
+
+3
+```
+
+```text
+toset(["apple","apple","banana"])
+
+["apple","banana"]
+```
+
+---
+
+# terraform workspace
+
+# Workspaces allow multiple environments using the same code.
+
+Create a workspace.
+
+```bash
+terraform workspace new dev
+```
+
+List workspaces.
+
+```bash
+terraform workspace list
+```
+
+Select a workspace.
+
+```bash
+terraform workspace select dev
+```
+
+Display the current workspace.
+
+```bash
+terraform workspace show
+```
+
+Reference the current workspace.
+
+```hcl
+terraform.workspace
+```
+
+---
+
+# terraform state list
+
+# Lists all resources stored in the Terraform state file.
+
+```bash
+terraform state list
+```
+
+---
+
+# terraform state show
+
+# Displays detailed information about a resource.
+
+```bash
+terraform state show aws_instance.web
+```
+
+---
+
+# terraform state mv
+
+# Moves resources inside the Terraform state.
+# Useful during refactoring.
+
+```bash
+terraform state mv
+```
+
+Example:
+
+```bash
+terraform state mv aws_instance.web module.compute.aws_instance.web
+```
+
+---
+
+# terraform state pull
+
+# Downloads the remote state file.
+
+```bash
+terraform state pull
+```
+
+---
+
+# terraform state rm
+
+# Removes a resource from the Terraform state.
+# It does NOT delete the real infrastructure.
+
+```bash
+terraform state rm aws_instance.web
+```
+
+---
+
+# terraform import
+
+# Imports existing infrastructure into Terraform.
+# Only updates the state file.
+# Terraform does NOT generate code.
+
+```bash
+terraform import aws_instance.web i-0123456789
+```
+
+---
+
+# terraform taint
+
+# Marks a resource for recreation during the next apply.
+
+```bash
+terraform taint aws_instance.web
+```
+
+Modern recommendation:
+
+```bash
+terraform apply -replace="aws_instance.web"
+```
+
+Prefer -replace over taint.
+
+---
+
+# terraform untaint
+
+# Removes the tainted state.
+
+```bash
+terraform untaint aws_instance.web
+```
+
+---
+
+# terraform refresh
+
+# Synchronizes Terraform state with real infrastructure.
+# This command is mostly obsolete.
+# Terraform automatically refreshes state during plan and apply.
+
+```bash
+terraform refresh
+```
+
+---
+
+# Terraform Logging
+
+# Enable detailed logs.
+
+```bash
+export TF_LOG=TRACE
+```
+
+Available levels:
+
+```text
+TRACE
+
+DEBUG
+
+INFO
+
+WARN
+
+ERROR
+```
+
+Save logs to a file.
+
+```bash
+export TF_LOG_PATH=/tmp/terraform.log
+```
+
+Disable logs.
+
+```bash
+unset TF_LOG
+
+unset TF_LOG_PATH
+```
+
+---
+
+# Variables
+
+# Variables make configurations reusable.
+
+File:
+
+```text
+variables.tf
+```
+
+Example:
+
+```hcl
+variable "filename" {
+
+ type        = string
+
+ description = "Path of the file"
+
+ default     = "/root/pets.txt"
+
+}
+```
+
+---
+
+# Passing Variables
+
+Command line:
+
+```bash
+terraform apply -var="filename=/root/pets.txt"
+```
+
+Environment variables:
+
+```bash
+export TF_VAR_filename="/root/pets.txt"
+```
+
+Terraform automatically loads:
+
+```text
+TF_VAR_<variable_name>
+```
+
+---
+
+# Data Sources
+
+# Data sources allow Terraform to read resources
+# that Terraform does not manage.
+
+Example:
+
+```hcl
+data "aws_vpc" "default" {
+
+ default = true
+
+}
+```
+
+Example:
+
+```hcl
+data "aws_ami" "latest" {
+
+ most_recent = true
+
+}
+```
+
+Data sources are read-only.
+
+---
+
+# Lifecycle Rules
+
+# create_before_destroy
+
+# Creates the new resource before deleting the old one.
+
+```hcl
+lifecycle {
+
+ create_before_destroy = true
+
+}
+```
+
+# prevent_destroy
+
+# Prevents accidental deletion.
+
+```hcl
+lifecycle {
+
+ prevent_destroy = true
+
+}
+```
+
+# ignore_changes
+
+# Ignores changes made outside Terraform.
+
+```hcl
+lifecycle {
+
+ ignore_changes = [
+
+   tags
+
+ ]
+
+}
+```
+
+---
+
+# Meta Arguments
+
+# depends_on
+
+# Creates explicit dependencies.
+
+```hcl
+depends_on = [
+
+ aws_security_group.web
+
+]
+```
+
+# count
+
+# Creates multiple resources.
+
+```hcl
+count = 3
+```
+
+# for_each
+
+# Creates resources from maps or sets.
+
+```hcl
+for_each = var.servers
+```
+
+Prefer for_each over count.
+
+---
+
+# Senior SRE Golden Rules
+
+# Never apply directly to production.
+
+# Never hardcode secrets.
+
+# Never edit terraform.tfstate manually.
+
+# Never store state locally in production.
+
+# Enable state locking.
+
+# Use reusable modules.
+
+# Avoid Provisioners whenever possible.
+
+# Prefer for_each over count.
+
+# Prefer apply -replace over taint.
+
+# Separate environments.
+
+# Design for High Availability.
+
+# Design for Disaster Recovery.
+
+# Build idempotent infrastructure.
+
+# Automate everything possible.
