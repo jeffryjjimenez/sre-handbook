@@ -11,14 +11,14 @@ Service discovery
 
 Kubernetes is designed for distributed systems reliability.
 
-Kubernetes Cluster Architecture
+Kubernetes Cluster Architecture:
 
 A Kubernetes cluster consists of two main parts:
 
 Control Plane (Master)
 Worker Nodes
 
-Control Plane
+Control Plane:
 
 The control plane manages the entire cluster and makes global decisions.
 
@@ -29,7 +29,7 @@ etcd
 Scheduler
 Controller Manager
 
-API Server
+API Server:
 
 The API Server is the entry point to the cluster.
 
@@ -139,7 +139,7 @@ containerd
 CRI-O
 Docker (legacy support)
 
-Kube Proxy
+Kube Proxy:
 
 Kube Proxy manages networking rules.
 
@@ -155,8 +155,9 @@ IPVS
 
 IPVS is more scalable in large clusters.
 
-Kubernetes Core Concepts
-Pods
+Kubernetes Core Concepts:
+
+Pods:
 
 The smallest deployable unit in Kubernetes is a Pod.
 
@@ -438,6 +439,7 @@ resources:
     cpu: "500m"
   limits:
     cpu: "1"
+
 QoS Classes (Very Important for SRE)
 
 Kubernetes assigns QoS classes.
@@ -488,7 +490,7 @@ livenessProbe:
   httpGet:
     path: /
     port: 80
-Scheduling Deep Dive (Senior SRE Knowledge)
+
 
 The scheduler considers:
 
